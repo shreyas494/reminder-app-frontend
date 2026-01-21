@@ -1,0 +1,257 @@
+import { useEffect, useState } from "react";
+import API from "../services/api";
+import dayjs from "dayjs";
+import AddReminderModal from "../components/AddReminderModal";
+
+export default function Dashboard() {
+  const [reminders, setReminders] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editReminder, setEditReminder] = useState(null);
+
+  useEffect(() => {
+    fetchReminders();
+  }, []);
+
+  const fetchReminders = async () => {
+    const res = await API.get("/reminders");
+    setReminders(res.data);
+  };
+
+  /* ================= REMAINING TIME ================= */
+  const remainingTime = (expiry) => {
+    const now = dayjs();
+    const end = dayjs(expiry);
+
+    if (end.isBefore(now)) return "Expired";
+
+    const months = end.diff(now, "month");
+    if (months >= 1) return `${months} month(s)`;
+
+    return `${end.diff(now, "day")} day(s)`;
+  };
+
+  /* ================= STATUS ================= */
+  const getStatus = (r) => {
+    if (dayjs(r.expiryDate).isBefore(dayjs())) {
+      return <Badge color="red">Expired</Badge>;
+    }
+    if (r.renewed) {
+      return <Badge color="blue">Renewed</Badge>;
+    }
+    return <Badge color="green">Active</Badge>;
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-64px)] px-6 py-10 bg-gray-100 dark:bg-[#0b1120]">
+
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          Subscriptions
+        </h1>
+
+        <button
+          onClick={() => {
+            setEditReminder(null);
+            setShowModal(true);
+          }}
+          className="px-5 py-2 bg-blue-600 hover:bg-blue-700
+                     text-white rounded-lg font-semibold"
+        >
+          + Add Reminder
+        </button>
+      </div>
+
+      {/* TABLE */}
+      <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
+                      border border-gray-200 dark:border-gray-700
+                      rounded-2xl shadow-xl overflow-x-auto">
+
+        <table className="w-full text-sm">
+          <thead className="bg-gray-200 dark:bg-gray-800">
+            <tr>
+              <Th>#</Th>
+              <Th>Client</Th>
+              <Th>Contact</Th>
+              <Th>Mobile</Th>
+              <Th>Project</Th>
+              <Th>Expiry</Th>
+              <Th>Remaining</Th>
+              <Th>Status</Th>
+              <Th>Amount</Th>
+              <Th>Actions</Th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {reminders.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="10"
+                  className="text-center py-16 text-gray-500 dark:text-gray-400"
+                >
+                  No reminders found.
+                </td>
+              </tr>
+            ) : (
+              reminders.map((r, i) => {
+                const isExpired = dayjs(r.expiryDate).isBefore(dayjs());
+
+                return (
+                  <tr
+                    key={r._id}
+                    className="border-t border-gray-200 dark:border-gray-700
+                               hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  >
+                    <Td>{i + 1}</Td>
+                    <Td>{r.clientName}</Td>
+                    <Td>{r.contactPerson}</Td>
+
+                    <Td>
+                      <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
+                    </Td>
+
+                    <Td>{r.projectName}</Td>
+
+                    <Td>{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
+
+                    <Td>{remainingTime(r.expiryDate)}</Td>
+
+                    <Td>{getStatus(r)}</Td>
+
+                    <Td>₹{r.amount || "-"}</Td>
+
+                    {/* ================= ACTIONS ================= */}
+                    <Td>
+                      {!isExpired && (
+                        <button
+                          onClick={() => {
+                            setEditReminder(r);
+                            setShowModal(true);
+                          }}
+                          className="text-blue-600 dark:text-blue-400 hover:underline mr-4"
+                        >
+                          Edit / Renew
+                        </button>
+                      )}
+
+                      <button
+                        onClick={async () => {
+                          const ok = window.confirm(
+                            "Are you sure you want to delete this reminder?"
+                          );
+                          if (!ok) return;
+
+                          await API.delete(`/reminders/${r._id}`);
+                          fetchReminders();
+                        }}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </Td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
+      {showModal && (
+        <AddReminderModal
+          existing={editReminder}
+          onAdded={fetchReminders}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ================= CALL BUTTON ================= */
+function CallButton({ mobile1, mobile2 }) {
+  const [open, setOpen] = useState(false);
+
+  if (mobile1 && !mobile2) {
+    return (
+      <a
+        href={`tel:${mobile1}`}
+        className="text-green-600 dark:text-green-400 hover:underline"
+      >
+        Call
+      </a>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-green-600 dark:text-green-400 hover:underline"
+      >
+        Call
+      </button>
+
+      {open && (
+        <div
+          className="absolute z-10 mt-2 w-40
+                     bg-white dark:bg-[#111827]
+                     border border-gray-300 dark:border-gray-700
+                     rounded-lg shadow-lg"
+        >
+          <a
+            href={`tel:${mobile1}`}
+            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            📞 Mobile 1
+          </a>
+
+          {mobile2 && (
+            <a
+              href={`tel:${mobile2}`}
+              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              📞 Mobile 2
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================= HELPERS ================= */
+function Th({ children }) {
+  return (
+    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
+      {children}
+    </th>
+  );
+}
+
+function Td({ children }) {
+  return (
+    <td className="p-3 text-gray-700 dark:text-gray-300">
+      {children}
+    </td>
+  );
+}
+
+function Badge({ children, color }) {
+  const colors = {
+    green:
+      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    red:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    blue:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  };
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs ${colors[color]}`}>
+      {children}
+    </span>
+  );
+}
