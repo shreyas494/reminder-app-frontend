@@ -10,7 +10,11 @@ import {
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width:768px)");
+
+  const Picker = isMobile
+    ? MobileDateTimePicker
+    : DesktopDateTimePicker;
 
   const [form, setForm] = useState({
     clientName: "",
@@ -128,10 +132,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     }
   };
 
-  const Picker = isMobile
-    ? MobileDateTimePicker
-    : DesktopDateTimePicker;
-
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white dark:bg-[#111827] border dark:border-gray-700 shadow-2xl">
@@ -169,7 +169,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           <Input label="Domain Name" value={form.domainName}
             onChange={(v) => setForm({ ...form, domainName: v })} />
 
-          {/* ✅ FIXED PICKERS */}
+          {/* ✅ DATE PICKERS (FIXED) */}
           <Picker
             label="Activation Date & Time *"
             value={form.activationDate}
@@ -303,10 +303,24 @@ const inputClass =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 " +
   "dark:bg-[#020617] dark:text-gray-100 dark:border-gray-600";
 
+/* 🔑 CRITICAL FIX: portal + z-index */
 const pickerProps = {
   textField: {
     fullWidth: true,
     size: "small",
-    inputProps: { readOnly: true }, // ✅ allows mobile dialog
+    inputProps: {
+      readOnly: true,
+    },
+  },
+  popper: {
+    disablePortal: true,
+    sx: {
+      zIndex: 10001,
+    },
+  },
+  dialog: {
+    sx: {
+      zIndex: 10001,
+    },
   },
 };
