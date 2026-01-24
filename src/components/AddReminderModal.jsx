@@ -10,7 +10,7 @@ import {
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
-  const isMobile = useMediaQuery("(max-width:768px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [form, setForm] = useState({
     clientName: "",
@@ -24,9 +24,11 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     expiryDate: null,
     amount: "",
 
+    // 🔁 RECURRING (UNCHANGED)
     recurringEnabled: false,
     recurringInterval: "daily",
 
+    // 🔄 RENEW (UNCHANGED)
     renewed: false,
     renewedExpiryDate: null,
   });
@@ -55,8 +57,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         existing.amount !== undefined && existing.amount !== null
           ? String(existing.amount)
           : "",
+
       recurringEnabled: existing.recurringEnabled || false,
       recurringInterval: existing.recurringInterval || "daily",
+
       renewed: existing.renewed || false,
       renewedExpiryDate: existing.renewedExpiryDate
         ? dayjs(existing.renewedExpiryDate)
@@ -124,6 +128,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     }
   };
 
+  const Picker = isMobile
+    ? MobileDateTimePicker
+    : DesktopDateTimePicker;
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white dark:bg-[#111827] border dark:border-gray-700 shadow-2xl">
@@ -161,23 +169,93 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           <Input label="Domain Name" value={form.domainName}
             onChange={(v) => setForm({ ...form, domainName: v })} />
 
-          {/* ✅ RESPONSIVE PICKERS */}
-          <ResponsiveDateTimePicker
+          {/* ✅ FIXED PICKERS */}
+          <Picker
             label="Activation Date & Time *"
             value={form.activationDate}
             onChange={(v) => setForm({ ...form, activationDate: v })}
-            isMobile={isMobile}
+            ampm
+            slotProps={pickerProps}
           />
 
-          <ResponsiveDateTimePicker
+          <Picker
             label="Expiry Date & Time *"
             value={form.expiryDate}
             onChange={(v) => setForm({ ...form, expiryDate: v })}
-            isMobile={isMobile}
+            ampm
+            slotProps={pickerProps}
           />
 
           <Input label="Amount (₹)" type="number" value={form.amount}
             onChange={(v) => setForm({ ...form, amount: v })} />
+
+          {/* 🔁 RECURRING (UNCHANGED) */}
+          <div className="rounded-lg border p-4 dark:border-gray-700">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.recurringEnabled}
+                onChange={(e) =>
+                  setForm({ ...form, recurringEnabled: e.target.checked })
+                }
+              />
+              <span className="dark:text-gray-300">
+                Enable recurring reminders
+              </span>
+            </label>
+
+            {form.recurringEnabled && (
+              <div className="flex gap-6 mt-3">
+                <label className="flex items-center gap-2 dark:text-gray-300">
+                  <input
+                    type="radio"
+                    checked={form.recurringInterval === "daily"}
+                    onChange={() =>
+                      setForm({ ...form, recurringInterval: "daily" })
+                    }
+                  />
+                  Daily
+                </label>
+
+                <label className="flex items-center gap-2 dark:text-gray-300">
+                  <input
+                    type="radio"
+                    checked={form.recurringInterval === "weekly"}
+                    onChange={() =>
+                      setForm({ ...form, recurringInterval: "weekly" })
+                    }
+                  />
+                  Weekly
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* 🔄 RENEW (UNCHANGED) */}
+          {isEdit && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.renewed}
+                onChange={(e) =>
+                  setForm({ ...form, renewed: e.target.checked })
+                }
+              />
+              <span className="dark:text-gray-300">Renewed</span>
+            </div>
+          )}
+
+          {isEdit && form.renewed && (
+            <Picker
+              label="New Expiry Date & Time"
+              value={form.renewedExpiryDate}
+              onChange={(v) =>
+                setForm({ ...form, renewedExpiryDate: v })
+              }
+              ampm
+              slotProps={pickerProps}
+            />
+          )}
 
           <div className="flex justify-end gap-3 pt-6">
             <button
@@ -199,23 +277,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         </form>
       </div>
     </div>
-  );
-}
-
-/* ================= RESPONSIVE PICKER ================= */
-function ResponsiveDateTimePicker({ label, value, onChange, isMobile }) {
-  const Picker = isMobile
-    ? MobileDateTimePicker
-    : DesktopDateTimePicker;
-
-  return (
-    <Picker
-      label={label}
-      value={value}
-      onChange={onChange}
-      ampm
-      slotProps={pickerProps}
-    />
   );
 }
 
@@ -246,6 +307,6 @@ const pickerProps = {
   textField: {
     fullWidth: true,
     size: "small",
-    inputProps: { readOnly: true }, // 🔑 fixes mobile keyboard bug
+    inputProps: { readOnly: true }, // ✅ allows mobile dialog
   },
 };
