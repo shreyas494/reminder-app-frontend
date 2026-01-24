@@ -17,7 +17,6 @@ export default function Dashboard() {
     setReminders(res.data);
   };
 
-  /* ================= REMAINING TIME ================= */
   const remainingTime = (expiry) => {
     const now = dayjs();
     const end = dayjs(expiry);
@@ -30,7 +29,6 @@ export default function Dashboard() {
     return `${end.diff(now, "day")} day(s)`;
   };
 
-  /* ================= STATUS ================= */
   const getStatus = (r) => {
     if (dayjs(r.expiryDate).isBefore(dayjs())) {
       return <Badge color="red">Expired</Badge>;
@@ -42,11 +40,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-6 py-10 bg-gray-100 dark:bg-[#0b1120]">
-
+    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
         </h1>
 
@@ -55,7 +52,8 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="px-5 py-2 bg-blue-600 hover:bg-blue-700
+          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base
+                     bg-blue-600 hover:bg-blue-700
                      text-white rounded-lg font-semibold"
         >
           + Add Reminder
@@ -67,18 +65,18 @@ export default function Dashboard() {
                       border border-gray-200 dark:border-gray-700
                       rounded-2xl shadow-xl overflow-x-auto">
 
-        <table className="w-full text-sm">
+        <table className="min-w-[900px] w-full text-sm">
           <thead className="bg-gray-200 dark:bg-gray-800">
             <tr>
               <Th>#</Th>
               <Th>Client</Th>
-              <Th>Contact</Th>
+              <Th className="hidden md:table-cell">Contact</Th>
               <Th>Mobile</Th>
               <Th>Project</Th>
               <Th>Expiry</Th>
-              <Th>Remaining</Th>
+              <Th className="hidden lg:table-cell">Remaining</Th>
               <Th>Status</Th>
-              <Th>Amount</Th>
+              <Th className="hidden lg:table-cell">Amount</Th>
               <Th>Actions</Th>
             </tr>
           </thead>
@@ -86,10 +84,7 @@ export default function Dashboard() {
           <tbody>
             {reminders.length === 0 ? (
               <tr>
-                <td
-                  colSpan="10"
-                  className="text-center py-16 text-gray-500 dark:text-gray-400"
-                >
+                <td colSpan="10" className="text-center py-16 text-gray-500 dark:text-gray-400">
                   No reminders found.
                 </td>
               </tr>
@@ -105,50 +100,40 @@ export default function Dashboard() {
                   >
                     <Td>{i + 1}</Td>
                     <Td>{r.clientName}</Td>
-                    <Td>{r.contactPerson}</Td>
-
-                    <Td>
-                      <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
-                    </Td>
-
+                    <Td className="hidden md:table-cell">{r.contactPerson}</Td>
+                    <Td><CallButton mobile1={r.mobile1} mobile2={r.mobile2} /></Td>
                     <Td>{r.projectName}</Td>
-
                     <Td>{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
-
-                    <Td>{remainingTime(r.expiryDate)}</Td>
-
+                    <Td className="hidden lg:table-cell">{remainingTime(r.expiryDate)}</Td>
                     <Td>{getStatus(r)}</Td>
+                    <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
-                    <Td>₹{r.amount || "-"}</Td>
-
-                    {/* ================= ACTIONS ================= */}
                     <Td>
-                      {!isExpired && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {!isExpired && (
+                          <button
+                            onClick={() => {
+                              setEditReminder(r);
+                              setShowModal(true);
+                            }}
+                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            Edit / Renew
+                          </button>
+                        )}
+
                         <button
-                          onClick={() => {
-                            setEditReminder(r);
-                            setShowModal(true);
+                          onClick={async () => {
+                            const ok = window.confirm("Delete this reminder?");
+                            if (!ok) return;
+                            await API.delete(`/reminders/${r._id}`);
+                            fetchReminders();
                           }}
-                          className="text-blue-600 dark:text-blue-400 hover:underline mr-4"
+                          className="text-red-600 dark:text-red-400 hover:underline"
                         >
-                          Edit / Renew
+                          Delete
                         </button>
-                      )}
-
-                      <button
-                        onClick={async () => {
-                          const ok = window.confirm(
-                            "Are you sure you want to delete this reminder?"
-                          );
-                          if (!ok) return;
-
-                          await API.delete(`/reminders/${r._id}`);
-                          fetchReminders();
-                        }}
-                        className="text-red-600 dark:text-red-400 hover:underline"
-                      >
-                        Delete
-                      </button>
+                      </div>
                     </Td>
                   </tr>
                 );
@@ -158,7 +143,6 @@ export default function Dashboard() {
         </table>
       </div>
 
-      {/* MODAL */}
       {showModal && (
         <AddReminderModal
           existing={editReminder}
@@ -170,70 +154,18 @@ export default function Dashboard() {
   );
 }
 
-/* ================= CALL BUTTON ================= */
-function CallButton({ mobile1, mobile2 }) {
-  const [open, setOpen] = useState(false);
-
-  if (mobile1 && !mobile2) {
-    return (
-      <a
-        href={`tel:${mobile1}`}
-        className="text-green-600 dark:text-green-400 hover:underline"
-      >
-        Call
-      </a>
-    );
-  }
-
+/* HELPERS */
+function Th({ children, className = "" }) {
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="text-green-600 dark:text-green-400 hover:underline"
-      >
-        Call
-      </button>
-
-      {open && (
-        <div
-          className="absolute z-10 mt-2 w-40
-                     bg-white dark:bg-[#111827]
-                     border border-gray-300 dark:border-gray-700
-                     rounded-lg shadow-lg"
-        >
-          <a
-            href={`tel:${mobile1}`}
-            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            📞 Mobile 1
-          </a>
-
-          {mobile2 && (
-            <a
-              href={`tel:${mobile2}`}
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              📞 Mobile 2
-            </a>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ================= HELPERS ================= */
-function Th({ children }) {
-  return (
-    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
+    <th className={`p-3 text-left font-semibold text-gray-800 dark:text-gray-200 ${className}`}>
       {children}
     </th>
   );
 }
 
-function Td({ children }) {
+function Td({ children, className = "" }) {
   return (
-    <td className="p-3 text-gray-700 dark:text-gray-300">
+    <td className={`p-3 text-gray-700 dark:text-gray-300 ${className}`}>
       {children}
     </td>
   );
@@ -241,17 +173,49 @@ function Td({ children }) {
 
 function Badge({ children, color }) {
   const colors = {
-    green:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    red:
-      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    blue:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   };
 
   return (
     <span className={`px-3 py-1 rounded-full text-xs ${colors[color]}`}>
       {children}
     </span>
+  );
+}
+
+function CallButton({ mobile1, mobile2 }) {
+  const [open, setOpen] = useState(false);
+
+  if (mobile1 && !mobile2) {
+    return (
+      <a href={`tel:${mobile1}`} className="text-green-600 dark:text-green-400 hover:underline">
+        Call
+      </a>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)} className="text-green-600 dark:text-green-400 hover:underline">
+        Call
+      </button>
+
+      {open && (
+        <div className="absolute z-10 mt-2 w-40 bg-white dark:bg-[#111827]
+                        border border-gray-300 dark:border-gray-700
+                        rounded-lg shadow-lg">
+          <a href={`tel:${mobile1}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+            📞 Mobile 1
+          </a>
+          {mobile2 && (
+            <a href={`tel:${mobile2}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+              📞 Mobile 2
+            </a>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
