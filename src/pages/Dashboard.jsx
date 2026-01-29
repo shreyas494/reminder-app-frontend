@@ -17,10 +17,10 @@ export default function Dashboard() {
     setReminders(res.data);
   };
 
-  /* ✅ SINGLE SOURCE OF TRUTH */
+  /* 🔑 SINGLE SOURCE OF TRUTH */
   const getExpiry = (r) => dayjs(r.expiryDate);
 
-  /* ✅ RENEWAL DETECTION (FINAL & CORRECT) */
+  /* 🔑 RENEWAL DETECTION */
   const hasBeenRenewed = (r) =>
     Array.isArray(r.renewals) && r.renewals.length > 0;
 
@@ -36,15 +36,14 @@ export default function Dashboard() {
     return `${end.diff(now, "day")} day(s)`;
   };
 
-  const getStatus = (r) => {
+  const getStatusBadge = (r) => {
     const end = getExpiry(r);
-    const renewed = hasBeenRenewed(r);
 
     if (end.isBefore(dayjs())) {
       return <Badge color="red">Expired</Badge>;
     }
 
-    if (renewed) {
+    if (hasBeenRenewed(r)) {
       return <Badge color="blue">Renewed</Badge>;
     }
 
@@ -116,8 +115,22 @@ export default function Dashboard() {
                     <Td><CallButton mobile1={r.mobile1} mobile2={r.mobile2} /></Td>
                     <Td>{r.projectName}</Td>
                     <Td>{expiry.format("DD MMM YYYY")}</Td>
-                    <Td className="hidden lg:table-cell">{remainingTime(r)}</Td>
-                    <Td>{getStatus(r)}</Td>
+
+                    {/* Desktop Remaining */}
+                    <Td className="hidden lg:table-cell">
+                      {remainingTime(r)}
+                    </Td>
+
+                    {/* Status + Mobile Remaining */}
+                    <Td>
+                      <div className="flex flex-col gap-1">
+                        {getStatusBadge(r)}
+                        <span className="text-xs text-gray-400 lg:hidden">
+                          {remainingTime(r)}
+                        </span>
+                      </div>
+                    </Td>
+
                     <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
                     <Td>
