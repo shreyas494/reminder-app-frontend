@@ -17,15 +17,16 @@ export default function Dashboard() {
     setReminders(res.data);
   };
 
-  /* 🔑 SINGLE SOURCE OF TRUTH */
-  const getEffectiveExpiry = (r) =>
-    r.renewed && r.renewedExpiryDate
-      ? dayjs(r.renewedExpiryDate)
-      : dayjs(r.expiryDate);
+  /* ✅ SINGLE SOURCE OF TRUTH */
+  const getExpiry = (r) => dayjs(r.expiryDate);
+
+  /* ✅ RENEWAL DETECTION (FINAL & CORRECT) */
+  const hasBeenRenewed = (r) =>
+    Array.isArray(r.renewals) && r.renewals.length > 0;
 
   const remainingTime = (r) => {
     const now = dayjs();
-    const end = getEffectiveExpiry(r);
+    const end = getExpiry(r);
 
     if (end.isBefore(now)) return "Expired";
 
@@ -36,13 +37,14 @@ export default function Dashboard() {
   };
 
   const getStatus = (r) => {
-    const end = getEffectiveExpiry(r);
+    const end = getExpiry(r);
+    const renewed = hasBeenRenewed(r);
 
     if (end.isBefore(dayjs())) {
       return <Badge color="red">Expired</Badge>;
     }
 
-    if (r.renewed) {
+    if (renewed) {
       return <Badge color="blue">Renewed</Badge>;
     }
 
@@ -99,8 +101,8 @@ export default function Dashboard() {
               </tr>
             ) : (
               reminders.map((r, i) => {
-                const effectiveExpiry = getEffectiveExpiry(r);
-                const isExpired = effectiveExpiry.isBefore(dayjs());
+                const expiry = getExpiry(r);
+                const isExpired = expiry.isBefore(dayjs());
 
                 return (
                   <tr
@@ -113,7 +115,7 @@ export default function Dashboard() {
                     <Td className="hidden md:table-cell">{r.contactPerson}</Td>
                     <Td><CallButton mobile1={r.mobile1} mobile2={r.mobile2} /></Td>
                     <Td>{r.projectName}</Td>
-                    <Td>{effectiveExpiry.format("DD MMM YYYY")}</Td>
+                    <Td>{expiry.format("DD MMM YYYY")}</Td>
                     <Td className="hidden lg:table-cell">{remainingTime(r)}</Td>
                     <Td>{getStatus(r)}</Td>
                     <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
