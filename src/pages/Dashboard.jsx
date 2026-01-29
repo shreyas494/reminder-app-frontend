@@ -52,7 +52,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
-
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
@@ -123,8 +122,11 @@ export default function Dashboard() {
 
                     {/* Status + Mobile Remaining */}
                     <Td>
-                      <div className="flex flex-col gap-1">
-                        {getStatusBadge(r)}
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <span className="inline-flex justify-center">
+                          {getStatusBadge(r)}
+                        </span>
+
                         <span className="text-xs text-gray-400 lg:hidden">
                           {remainingTime(r)}
                         </span>
@@ -179,7 +181,7 @@ export default function Dashboard() {
   );
 }
 
-/* ===== Helpers (UNCHANGED) ===== */
+/* ===== Helpers ===== */
 
 function Th({ children, className = "" }) {
   return (
@@ -205,7 +207,9 @@ function Badge({ children, color }) {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs ${colors[color]}`}>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${colors[color]}`}
+    >
       {children}
     </span>
   );
@@ -224,7 +228,10 @@ function CallButton({ mobile1, mobile2 }) {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="text-green-600 dark:text-green-400 hover:underline">
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-green-600 dark:text-green-400 hover:underline"
+      >
         Call
       </button>
 
