@@ -28,11 +28,11 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     expiryDate: null,
     amount: "",
 
-    // 🔁 RECURRING (UNCHANGED)
+    /* 🔁 RECURRING */
     recurringEnabled: false,
     recurringInterval: "daily",
 
-    // 🔄 RENEW (UNCHANGED)
+    /* 🔄 RENEW */
     renewed: false,
     renewedExpiryDate: null,
   });
@@ -65,10 +65,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       recurringEnabled: existing.recurringEnabled || false,
       recurringInterval: existing.recurringInterval || "daily",
 
-      renewed: existing.renewed || false,
-      renewedExpiryDate: existing.renewedExpiryDate
-        ? dayjs(existing.renewedExpiryDate)
-        : null,
+      renewed: false,
+      renewedExpiryDate: null,
     });
   }, [existing]);
 
@@ -100,7 +98,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         domainName: form.domainName || undefined,
 
         activationDate: form.activationDate.toISOString(),
-        expiryDate: form.expiryDate.toISOString(),
+
+        /* 🔑 SINGLE SOURCE OF TRUTH */
+        expiryDate:
+          form.renewed && form.renewedExpiryDate
+            ? form.renewedExpiryDate.toISOString()
+            : form.expiryDate.toISOString(),
 
         amount:
           form.amount !== "" && form.amount !== null
@@ -169,7 +172,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           <Input label="Domain Name" value={form.domainName}
             onChange={(v) => setForm({ ...form, domainName: v })} />
 
-          {/* ✅ DATE PICKERS (FIXED) */}
           <Picker
             label="Activation Date & Time *"
             value={form.activationDate}
@@ -189,8 +191,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           <Input label="Amount (₹)" type="number" value={form.amount}
             onChange={(v) => setForm({ ...form, amount: v })} />
 
-          {/* 🔁 RECURRING (UNCHANGED) */}
-          <div className="rounded-lg border p-4 dark:border-gray-700">
+          {/* 🔁 RECURRING (RESTORED) */}
+          <div className="rounded-lg border p-4 dark:border-gray-700 space-y-3">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -205,7 +207,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
             </label>
 
             {form.recurringEnabled && (
-              <div className="flex gap-6 mt-3">
+              <div className="flex gap-6">
                 <label className="flex items-center gap-2 dark:text-gray-300">
                   <input
                     type="radio"
@@ -231,7 +233,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
             )}
           </div>
 
-          {/* 🔄 RENEW (UNCHANGED) */}
+          {/* 🔄 RENEW */}
           {isEdit && (
             <div className="flex items-center gap-2">
               <input
@@ -303,24 +305,17 @@ const inputClass =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 " +
   "dark:bg-[#020617] dark:text-gray-100 dark:border-gray-600";
 
-/* 🔑 CRITICAL FIX: portal + z-index */
 const pickerProps = {
   textField: {
     fullWidth: true,
     size: "small",
-    inputProps: {
-      readOnly: true,
-    },
+    inputProps: { readOnly: true },
   },
   popper: {
     disablePortal: true,
-    sx: {
-      zIndex: 10001,
-    },
+    sx: { zIndex: 10001 },
   },
   dialog: {
-    sx: {
-      zIndex: 10001,
-    },
+    sx: { zIndex: 10001 },
   },
 };

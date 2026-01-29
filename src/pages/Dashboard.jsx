@@ -17,9 +17,15 @@ export default function Dashboard() {
     setReminders(res.data);
   };
 
-  const remainingTime = (expiry) => {
+  /* 🔑 SINGLE SOURCE OF TRUTH */
+  const getEffectiveExpiry = (r) =>
+    r.renewed && r.renewedExpiryDate
+      ? dayjs(r.renewedExpiryDate)
+      : dayjs(r.expiryDate);
+
+  const remainingTime = (r) => {
     const now = dayjs();
-    const end = dayjs(expiry);
+    const end = getEffectiveExpiry(r);
 
     if (end.isBefore(now)) return "Expired";
 
@@ -30,18 +36,22 @@ export default function Dashboard() {
   };
 
   const getStatus = (r) => {
-    if (dayjs(r.expiryDate).isBefore(dayjs())) {
+    const end = getEffectiveExpiry(r);
+
+    if (end.isBefore(dayjs())) {
       return <Badge color="red">Expired</Badge>;
     }
+
     if (r.renewed) {
       return <Badge color="blue">Renewed</Badge>;
     }
+
     return <Badge color="green">Active</Badge>;
   };
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
-      {/* HEADER */}
+
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
@@ -60,7 +70,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* TABLE */}
       <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
                       border border-gray-200 dark:border-gray-700
                       rounded-2xl shadow-xl overflow-x-auto">
@@ -90,7 +99,8 @@ export default function Dashboard() {
               </tr>
             ) : (
               reminders.map((r, i) => {
-                const isExpired = dayjs(r.expiryDate).isBefore(dayjs());
+                const effectiveExpiry = getEffectiveExpiry(r);
+                const isExpired = effectiveExpiry.isBefore(dayjs());
 
                 return (
                   <tr
@@ -103,8 +113,8 @@ export default function Dashboard() {
                     <Td className="hidden md:table-cell">{r.contactPerson}</Td>
                     <Td><CallButton mobile1={r.mobile1} mobile2={r.mobile2} /></Td>
                     <Td>{r.projectName}</Td>
-                    <Td>{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
-                    <Td className="hidden lg:table-cell">{remainingTime(r.expiryDate)}</Td>
+                    <Td>{effectiveExpiry.format("DD MMM YYYY")}</Td>
+                    <Td className="hidden lg:table-cell">{remainingTime(r)}</Td>
                     <Td>{getStatus(r)}</Td>
                     <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
@@ -154,7 +164,8 @@ export default function Dashboard() {
   );
 }
 
-/* HELPERS */
+/* ===== Helpers (UNCHANGED) ===== */
+
 function Th({ children, className = "" }) {
   return (
     <th className={`p-3 text-left font-semibold text-gray-800 dark:text-gray-200 ${className}`}>
