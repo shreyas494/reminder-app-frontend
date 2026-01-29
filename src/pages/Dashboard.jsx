@@ -36,22 +36,17 @@ export default function Dashboard() {
     return `${end.diff(now, "day")} day(s)`;
   };
 
-  const getStatusBadge = (r) => {
+  const getStatusLabel = (r) => {
     const end = getExpiry(r);
 
-    if (end.isBefore(dayjs())) {
-      return <Badge color="red">Expired</Badge>;
-    }
-
-    if (hasBeenRenewed(r)) {
-      return <Badge color="blue">Renewed</Badge>;
-    }
-
-    return <Badge color="green">Active</Badge>;
+    if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
+    if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
+    return { text: "Active", color: "green" };
   };
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
+
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
@@ -84,7 +79,7 @@ export default function Dashboard() {
               <Th>Project</Th>
               <Th>Expiry</Th>
               <Th className="hidden lg:table-cell">Remaining</Th>
-              <Th>Status</Th>
+              <Th className="text-center lg:text-left">Status</Th>
               <Th className="hidden lg:table-cell">Amount</Th>
               <Th>Actions</Th>
             </tr>
@@ -101,6 +96,7 @@ export default function Dashboard() {
               reminders.map((r, i) => {
                 const expiry = getExpiry(r);
                 const isExpired = expiry.isBefore(dayjs());
+                const status = getStatusLabel(r);
 
                 return (
                   <tr
@@ -120,13 +116,10 @@ export default function Dashboard() {
                       {remainingTime(r)}
                     </Td>
 
-                    {/* Status + Mobile Remaining */}
-                    <Td>
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <span className="inline-flex justify-center">
-                          {getStatusBadge(r)}
-                        </span>
-
+                    {/* Status (PERFECTLY CENTERED ON MOBILE) */}
+                    <Td className="text-center lg:text-left">
+                      <div className="flex flex-col items-center lg:items-start gap-1">
+                        <Badge color={status.color}>{status.text}</Badge>
                         <span className="text-xs text-gray-400 lg:hidden">
                           {remainingTime(r)}
                         </span>
@@ -208,7 +201,14 @@ function Badge({ children, color }) {
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${colors[color]}`}
+      className={`
+        inline-flex items-center justify-center
+        px-3 py-1
+        rounded-full
+        text-xs font-medium
+        whitespace-nowrap
+        ${colors[color]}
+      `}
     >
       {children}
     </span>
