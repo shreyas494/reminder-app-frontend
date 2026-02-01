@@ -10,11 +10,11 @@ import {
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
-  const isMobile = useMediaQuery("(max-width:768px)");
+  const mode = existing?._mode || "edit"; // "edit" | "renew"
+  const isRenewMode = mode === "renew";
 
-  const Picker = isMobile
-    ? MobileDateTimePicker
-    : DesktopDateTimePicker;
+  const isMobile = useMediaQuery("(max-width:768px)");
+  const Picker = isMobile ? MobileDateTimePicker : DesktopDateTimePicker;
 
   const [form, setForm] = useState({
     clientName: "",
@@ -65,26 +65,44 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       recurringEnabled: existing.recurringEnabled || false,
       recurringInterval: existing.recurringInterval || "daily",
 
-      renewed: false,
+      renewed: isRenewMode,
       renewedExpiryDate: null,
     });
-  }, [existing]);
+  }, [existing, isRenewMode]);
 
   /* ================= SUBMIT ================= */
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (
-      !form.clientName ||
-      !form.contactPerson ||
-      !form.mobile1 ||
-      !form.projectName ||
-      !form.activationDate ||
-      !form.expiryDate
-    ) {
-      setError("Missing required fields");
-      return;
+    if (isRenewMode) {
+      if (!form.renewedExpiryDate) {
+        setError("Please select new expiry date");
+        return;
+      }
+    } else {
+      if (
+        !form.clientName ||
+        !form.contactPerson ||
+        !form.mobile1 ||
+        !form.email ||
+        !form.projectName ||
+        !form.activationDate ||
+        !form.expiryDate
+      ) {
+        setError("Missing required fields");
+        return;
+      }
+
+      if (!/^\d{10}$/.test(form.mobile1)) {
+        setError("Mobile No 1 must be 10 digits");
+        return;
+      }
+
+      if (form.mobile2 && !/^\d{10}$/.test(form.mobile2)) {
+        setError("Mobile No 2 must be 10 digits");
+        return;
+      }
     }
 
     try {
@@ -93,17 +111,15 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         contactPerson: form.contactPerson,
         mobile1: form.mobile1,
         mobile2: form.mobile2 || undefined,
-        email: form.email || undefined,
+        email: form.email,
         projectName: form.projectName,
         domainName: form.domainName || undefined,
 
-        activationDate: form.activationDate.toISOString(),
-
-        /* 🔑 SINGLE SOURCE OF TRUTH */
+        activationDate: form.activationDate?.toISOString(),
         expiryDate:
           form.renewed && form.renewedExpiryDate
             ? form.renewedExpiryDate.toISOString()
-            : form.expiryDate.toISOString(),
+            : form.expiryDate?.toISOString(),
 
         amount:
           form.amount !== "" && form.amount !== null
@@ -138,118 +154,108 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white dark:bg-[#111827] border dark:border-gray-700 shadow-2xl">
-
         <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">
-          {isEdit ? "Edit / Renew Reminder" : "Add Reminder"}
+          {isRenewMode
+            ? "Renew Subscription"
+            : isEdit
+            ? "Edit Reminder"
+            : "Add Reminder"}
         </h2>
 
         {error && (
-          <div className="mb-4 text-red-600 dark:text-red-400">
-            {error}
-          </div>
+          <div className="mb-4 text-red-600 dark:text-red-400">{error}</div>
         )}
 
         <form onSubmit={submit} className="space-y-4">
+          {!isRenewMode && (
+            <>
+              <Input label="Client Name" required value={form.clientName}
+                onChange={(v) => setForm({ ...form, clientName: v })} />
 
-          <Input label="Client Name" required value={form.clientName}
-            onChange={(v) => setForm({ ...form, clientName: v })} />
+              <Input label="Contact Person" required value={form.contactPerson}
+                onChange={(v) => setForm({ ...form, contactPerson: v })} />
 
-          <Input label="Contact Person" required value={form.contactPerson}
-            onChange={(v) => setForm({ ...form, contactPerson: v })} />
+              <Input label="Mobile No 1" required value={form.mobile1}
+                onChange={(v) => setForm({ ...form, mobile1: v })} />
 
-          <Input label="Mobile No 1" required value={form.mobile1}
-            onChange={(v) => setForm({ ...form, mobile1: v })} />
+              <Input label="Mobile No 2 (Optional)" value={form.mobile2}
+                onChange={(v) => setForm({ ...form, mobile2: v })} />
 
-          <Input label="Mobile No 2 (Optional)" value={form.mobile2}
-            onChange={(v) => setForm({ ...form, mobile2: v })} />
+              <Input label="Email" required type="email" value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })} />
 
-          <Input label="Email (Optional)" type="email" value={form.email}
-            onChange={(v) => setForm({ ...form, email: v })} />
+              <Input label="Project Name" required value={form.projectName}
+                onChange={(v) => setForm({ ...form, projectName: v })} />
 
-          <Input label="Project Name" required value={form.projectName}
-            onChange={(v) => setForm({ ...form, projectName: v })} />
+              <Input label="Domain Name" value={form.domainName}
+                onChange={(v) => setForm({ ...form, domainName: v })} />
 
-          <Input label="Domain Name" value={form.domainName}
-            onChange={(v) => setForm({ ...form, domainName: v })} />
-
-          <Picker
-            label="Activation Date & Time *"
-            value={form.activationDate}
-            onChange={(v) => setForm({ ...form, activationDate: v })}
-            ampm
-            slotProps={pickerProps}
-          />
-
-          <Picker
-            label="Expiry Date & Time *"
-            value={form.expiryDate}
-            onChange={(v) => setForm({ ...form, expiryDate: v })}
-            ampm
-            slotProps={pickerProps}
-          />
-
-          <Input label="Amount (₹)" type="number" value={form.amount}
-            onChange={(v) => setForm({ ...form, amount: v })} />
-
-          {/* 🔁 RECURRING (RESTORED) */}
-          <div className="rounded-lg border p-4 dark:border-gray-700 space-y-3">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={form.recurringEnabled}
-                onChange={(e) =>
-                  setForm({ ...form, recurringEnabled: e.target.checked })
-                }
+              <Picker
+                label="Activation Date & Time *"
+                value={form.activationDate}
+                onChange={(v) => setForm({ ...form, activationDate: v })}
+                ampm
+                slotProps={pickerProps}
               />
-              <span className="dark:text-gray-300">
-                Enable recurring reminders
-              </span>
-            </label>
 
-            {form.recurringEnabled && (
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 dark:text-gray-300">
+              <Picker
+                label="Expiry Date & Time *"
+                value={form.expiryDate}
+                onChange={(v) => setForm({ ...form, expiryDate: v })}
+                ampm
+                slotProps={pickerProps}
+              />
+
+              <Input label="Amount (₹)" type="number" value={form.amount}
+                onChange={(v) => setForm({ ...form, amount: v })} />
+
+              {/* 🔁 RECURRING */}
+              <div className="rounded-lg border p-4 dark:border-gray-700 space-y-3">
+                <label className="flex items-center gap-2">
                   <input
-                    type="radio"
-                    checked={form.recurringInterval === "daily"}
-                    onChange={() =>
-                      setForm({ ...form, recurringInterval: "daily" })
+                    type="checkbox"
+                    checked={form.recurringEnabled}
+                    onChange={(e) =>
+                      setForm({ ...form, recurringEnabled: e.target.checked })
                     }
                   />
-                  Daily
+                  <span className="dark:text-gray-300">
+                    Enable recurring reminders
+                  </span>
                 </label>
 
-                <label className="flex items-center gap-2 dark:text-gray-300">
-                  <input
-                    type="radio"
-                    checked={form.recurringInterval === "weekly"}
-                    onChange={() =>
-                      setForm({ ...form, recurringInterval: "weekly" })
-                    }
-                  />
-                  Weekly
-                </label>
+                {form.recurringEnabled && (
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 dark:text-gray-300">
+                      <input
+                        type="radio"
+                        checked={form.recurringInterval === "daily"}
+                        onChange={() =>
+                          setForm({ ...form, recurringInterval: "daily" })
+                        }
+                      />
+                      Daily
+                    </label>
+
+                    <label className="flex items-center gap-2 dark:text-gray-300">
+                      <input
+                        type="radio"
+                        checked={form.recurringInterval === "weekly"}
+                        onChange={() =>
+                          setForm({ ...form, recurringInterval: "weekly" })
+                        }
+                      />
+                      Weekly
+                    </label>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {/* 🔄 RENEW */}
-          {isEdit && (
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={form.renewed}
-                onChange={(e) =>
-                  setForm({ ...form, renewed: e.target.checked })
-                }
-              />
-              <span className="dark:text-gray-300">Renewed</span>
-            </div>
+            </>
           )}
 
-          {isEdit && form.renewed && (
+          {isRenewMode && (
             <Picker
-              label="New Expiry Date & Time"
+              label="New Expiry Date & Time *"
               value={form.renewedExpiryDate}
               onChange={(v) =>
                 setForm({ ...form, renewedExpiryDate: v })
@@ -270,12 +276,15 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+              className={`px-5 py-2 rounded-lg text-white ${
+                isRenewMode
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              {isEdit ? "Update" : "Save"}
+              {isRenewMode ? "Renew" : isEdit ? "Update" : "Save"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
@@ -305,17 +314,58 @@ const inputClass =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 " +
   "dark:bg-[#020617] dark:text-gray-100 dark:border-gray-600";
 
+/* ✅ FIXED PICKER PROPS */
 const pickerProps = {
   textField: {
     fullWidth: true,
     size: "small",
     inputProps: { readOnly: true },
   },
+
+  /* 🖥 Desktop picker (Popper) */
   popper: {
-    disablePortal: true,
-    sx: { zIndex: 10001 },
+    disablePortal: false, // 🔑 REQUIRED – renders ABOVE modal
+    placement: "top-start",
+
+    modifiers: [
+      {
+        name: "offset",
+        options: {
+          offset: [0, 8],
+        },
+      },
+    ],
+
+    sx: {
+      zIndex: 20000, // 🔑 higher than modal (9999)
+
+      /* ✅ SMALLER but proportional */
+      "& .MuiPickersLayout-root": {
+        transform: "scale(0.9)",
+        transformOrigin: "top left",
+      },
+
+      "& .MuiPickersLayout-contentWrapper": {
+        maxHeight: "260px",
+        overflowY: "auto",
+      },
+
+      "& .MuiMultiSectionDigitalClock-root": {
+        maxHeight: "200px",
+      },
+
+      "& .MuiPickersDay-root": {
+        width: 34,
+        height: 34,
+      },
+    },
   },
+
+  /* 📱 Mobile picker (Dialog) */
   dialog: {
-    sx: { zIndex: 10001 },
+    sx: {
+      zIndex: 20000,
+    },
   },
 };
+

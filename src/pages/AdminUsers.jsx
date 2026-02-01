@@ -42,7 +42,7 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120] transition-colors">
+    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -60,15 +60,11 @@ export default function AdminUsers() {
         </Link>
       </div>
 
-      {/* TABLE WRAPPER WITH SCROLL */}
-      <div
-        className="max-w-7xl mx-auto
-                   bg-white dark:bg-[#111827]
-                   border border-gray-200 dark:border-gray-700
-                   rounded-2xl shadow-xl
-                   overflow-x-auto"
-      >
-        <table className="min-w-[900px] w-full border-collapse text-sm">
+      {/* TABLE */}
+      <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
+                      border border-gray-200 dark:border-gray-700
+                      rounded-2xl shadow-xl overflow-x-auto">
+        <table className="min-w-[900px] w-full text-sm">
           <thead className="bg-gray-200 dark:bg-gray-800">
             <tr>
               <Th>Name</Th>
@@ -83,19 +79,13 @@ export default function AdminUsers() {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-16 text-gray-600 dark:text-gray-400"
-                >
+                <td colSpan="6" className="text-center py-16 text-gray-500">
                   Loading users…
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-16 text-gray-600 dark:text-gray-400"
-                >
+                <td colSpan="6" className="text-center py-16 text-gray-500">
                   No users found.
                 </td>
               </tr>
@@ -113,11 +103,9 @@ export default function AdminUsers() {
                     <Td className="break-all">{user.email}</Td>
 
                     <Td>
-                      {isSuperAdmin ? (
-                        <Badge color="blue">Super Admin</Badge>
-                      ) : (
-                        <Badge color="gray">User</Badge>
-                      )}
+                      <Badge color={isSuperAdmin ? "blue" : "gray"}>
+                        {isSuperAdmin ? "Super Admin" : "User"}
+                      </Badge>
                     </Td>
 
                     <Td>
@@ -132,9 +120,7 @@ export default function AdminUsers() {
 
                     <Td>
                       {isSuperAdmin ? (
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                          Always Enabled
-                        </span>
+                        <Badge color="blue">Always Enabled</Badge>
                       ) : user.googleEnabled ? (
                         <Badge color="green">Enabled</Badge>
                       ) : (
@@ -142,6 +128,7 @@ export default function AdminUsers() {
                       )}
                     </Td>
 
+                    {/* ✅ ACTION BUTTONS */}
                     <Td>
                       {isSuperAdmin ? (
                         <span className="text-blue-600 dark:text-blue-400 font-semibold">
@@ -149,38 +136,36 @@ export default function AdminUsers() {
                         </span>
                       ) : (
                         <div className="flex flex-col sm:flex-row gap-2">
-                          {/* Enable / Disable User */}
                           {user.isActive ? (
-                            <button
+                            <ActionButton
+                              color="red"
                               onClick={() => disableUser(user._id)}
-                              className="text-red-600 dark:text-red-400 hover:underline"
                             >
                               Disable
-                            </button>
+                            </ActionButton>
                           ) : (
-                            <button
+                            <ActionButton
+                              color="green"
                               onClick={() => enableUser(user._id)}
-                              className="text-green-600 dark:text-green-400 hover:underline"
                             >
                               Enable
-                            </button>
+                            </ActionButton>
                           )}
 
-                          {/* Google Toggle */}
                           {user.googleEnabled ? (
-                            <button
+                            <ActionButton
+                              color="amber"
                               onClick={() => disableGoogle(user._id)}
-                              className="text-red-600 dark:text-red-400 hover:underline"
                             >
                               Disable Google
-                            </button>
+                            </ActionButton>
                           ) : (
-                            <button
+                            <ActionButton
+                              color="blue"
                               onClick={() => enableGoogle(user._id)}
-                              className="text-green-600 dark:text-green-400 hover:underline"
                             >
                               Enable Google
-                            </button>
+                            </ActionButton>
                           )}
                         </div>
                       )}
@@ -196,19 +181,19 @@ export default function AdminUsers() {
   );
 }
 
-/* ---------- HELPERS ---------- */
+/* ===== HELPERS ===== */
 
 function Th({ children }) {
   return (
-    <th className="p-4 text-left font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
       {children}
     </th>
   );
 }
 
-function Td({ children }) {
+function Td({ children, className = "" }) {
   return (
-    <td className="p-4 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+    <td className={`p-3 text-gray-700 dark:text-gray-300 ${className}`}>
       {children}
     </td>
   );
@@ -216,19 +201,34 @@ function Td({ children }) {
 
 function Badge({ children, color }) {
   const colors = {
-    green:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    red:
-      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    blue:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    gray:
-      "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200",
+    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    gray: "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200",
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm ${colors[color]}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
       {children}
     </span>
+  );
+}
+
+/* 🔘 SAME ACTION BUTTON AS DASHBOARD */
+function ActionButton({ children, onClick, color }) {
+  const colors = {
+    blue: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
+    green: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300",
+    red: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300",
+    amber: "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition ${colors[color]}`}
+    >
+      {children}
+    </button>
   );
 }

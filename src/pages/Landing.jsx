@@ -45,16 +45,7 @@ export default function Landing() {
                 Get Started
               </Link>
 
-              <Link
-                to="/register"
-                className="px-8 py-3 rounded-lg
-                           border border-gray-300 dark:border-gray-600
-                           text-gray-800 dark:text-gray-200
-                           hover:bg-gray-200 dark:hover:bg-gray-800
-                           font-semibold transition"
-              >
-                Create Account
-              </Link>
+              
             </>
           )}
         </div>
