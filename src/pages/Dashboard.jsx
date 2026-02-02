@@ -12,15 +12,15 @@ export default function Dashboard() {
     fetchReminders();
   }, []);
 
+  /* ✅ FIXED: backend now returns { data, page, totalPages } */
   const fetchReminders = async () => {
     const res = await API.get("/reminders");
-    setReminders(res.data);
+    setReminders(res.data.data || []); // 🔑 CRITICAL FIX
   };
 
   /* 🔑 SINGLE SOURCE OF TRUTH */
   const getExpiry = (r) => dayjs(r.expiryDate);
 
-  /* 🔑 RENEWAL DETECTION */
   const hasBeenRenewed = (r) =>
     Array.isArray(r.renewals) && r.renewals.length > 0;
 
@@ -78,7 +78,7 @@ export default function Dashboard() {
               <Th>Project</Th>
               <Th>Expiry</Th>
               <Th className="hidden lg:table-cell">Remaining</Th>
-              <Th className="text-center lg:text-left">Status</Th>
+              <Th>Status</Th>
               <Th className="hidden lg:table-cell">Amount</Th>
               <Th>Actions</Th>
             </tr>
@@ -106,9 +106,11 @@ export default function Dashboard() {
                     <Td>{i + 1}</Td>
                     <Td>{r.clientName}</Td>
                     <Td className="hidden md:table-cell">{r.contactPerson}</Td>
+
                     <Td>
                       <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
                     </Td>
+
                     <Td>{r.projectName}</Td>
                     <Td>{expiry.format("DD MMM YYYY")}</Td>
 
@@ -116,8 +118,8 @@ export default function Dashboard() {
                       {remainingTime(r)}
                     </Td>
 
-                    <Td className="text-center lg:text-left">
-                      <div className="flex flex-col items-center lg:items-start gap-1">
+                    <Td>
+                      <div className="flex flex-col gap-1">
                         <Badge color={status.color}>{status.text}</Badge>
                         <span className="text-xs text-gray-400 lg:hidden">
                           {remainingTime(r)}
@@ -127,7 +129,6 @@ export default function Dashboard() {
 
                     <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
-                    {/* 🔑 ACTION BUTTONS */}
                     <Td>
                       <div className="flex flex-col sm:flex-row gap-2">
                         {!isExpired && (
@@ -186,19 +187,19 @@ export default function Dashboard() {
   );
 }
 
-/* ===== Helpers ===== */
+/* ===== HELPERS ===== */
 
-function Th({ children, className = "" }) {
+function Th({ children }) {
   return (
-    <th className={`p-3 text-left font-semibold text-gray-800 dark:text-gray-200 ${className}`}>
+    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
       {children}
     </th>
   );
 }
 
-function Td({ children, className = "" }) {
+function Td({ children }) {
   return (
-    <td className={`p-3 text-gray-700 dark:text-gray-300 ${className}`}>
+    <td className="p-3 text-gray-700 dark:text-gray-300">
       {children}
     </td>
   );
@@ -206,72 +207,62 @@ function Td({ children, className = "" }) {
 
 function Badge({ children, color }) {
   const colors = {
-    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    green: "bg-green-100 text-green-700",
+    red: "bg-red-100 text-red-700",
+    blue: "bg-blue-100 text-blue-700",
   };
 
   return (
-    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
       {children}
     </span>
   );
 }
 
-/* 🔘 ACTION BUTTON */
 function ActionButton({ children, onClick, color }) {
   const colors = {
-    blue: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
-    amber: "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
-    red: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300",
+    blue: "bg-blue-100 text-blue-700",
+    amber: "bg-amber-100 text-amber-700",
+    red: "bg-red-100 text-red-700",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition ${colors[color]}`}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${colors[color]}`}
     >
       {children}
     </button>
   );
 }
 
-/* 📞 CALL BUTTON (UNCHANGED BEHAVIOR) */
 function CallButton({ mobile1, mobile2 }) {
-  const [open, setOpen] = useState(false);
-
   if (mobile1 && !mobile2) {
     return (
-      <a href={`tel:${mobile1}`} className="text-green-600 dark:text-green-400 underline">
+      <a
+        href={`tel:${mobile1}`}
+        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+      >
         Call
       </a>
     );
   }
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm
-                   bg-green-100 text-green-700 hover:bg-green-200
-                   dark:bg-green-900/30 dark:text-green-300"
+    <div className="flex gap-2">
+      <a
+        href={`tel:${mobile1}`}
+        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
       >
-        Call
-      </button>
-
-      {open && (
-        <div className="absolute z-10 mt-2 w-40 bg-white dark:bg-[#111827]
-                        border border-gray-300 dark:border-gray-700
-                        rounded-lg shadow-lg">
-          <a href={`tel:${mobile1}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
-            📞 Mobile 1
-          </a>
-          {mobile2 && (
-            <a href={`tel:${mobile2}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
-              📞 Mobile 2
-            </a>
-          )}
-        </div>
+        Call 1
+      </a>
+      {mobile2 && (
+        <a
+          href={`tel:${mobile2}`}
+          className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+        >
+          Call 2
+        </a>
       )}
     </div>
   );
