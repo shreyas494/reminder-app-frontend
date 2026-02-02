@@ -4,11 +4,11 @@ const API = axios.create({
   baseURL: "https://reminder-app-backend-aaac.onrender.com/api",
 });
 
-
-
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
-  if (token) req.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
   return req;
 });
 

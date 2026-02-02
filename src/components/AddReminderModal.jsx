@@ -10,7 +10,7 @@ import {
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
-  const mode = existing?._mode || "edit"; // "edit" | "renew"
+  const mode = existing?._mode || "edit"; // edit | renew
   const isRenewMode = mode === "renew";
 
   const isMobile = useMediaQuery("(max-width:768px)");
@@ -28,12 +28,11 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     expiryDate: null,
     amount: "",
 
-    /* 🔁 RECURRING */
+    // 🔁 recurring
     recurringEnabled: false,
     recurringInterval: "daily",
 
-    /* 🔄 RENEW */
-    renewed: false,
+    // 🔄 renew
     renewedExpiryDate: null,
   });
 
@@ -44,12 +43,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     if (!existing) return;
 
     setForm({
-      clientName: existing.clientName,
-      contactPerson: existing.contactPerson,
-      mobile1: existing.mobile1,
+      clientName: existing.clientName || "",
+      contactPerson: existing.contactPerson || "",
+      mobile1: existing.mobile1 || "",
       mobile2: existing.mobile2 || "",
       email: existing.email || "",
-      projectName: existing.projectName,
+      projectName: existing.projectName || "",
       domainName: existing.domainName || "",
       activationDate: existing.activationDate
         ? dayjs(existing.activationDate)
@@ -62,13 +61,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           ? String(existing.amount)
           : "",
 
-      recurringEnabled: existing.recurringEnabled || false,
+      recurringEnabled: !!existing.recurringEnabled,
       recurringInterval: existing.recurringInterval || "daily",
 
-      renewed: isRenewMode,
       renewedExpiryDate: null,
     });
-  }, [existing, isRenewMode]);
+  }, [existing]);
 
   /* ================= SUBMIT ================= */
   const submit = async (e) => {
@@ -86,9 +84,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         !form.contactPerson ||
         !form.mobile1 ||
         !form.email ||
-        !form.projectName ||
-        !form.activationDate ||
-        !form.expiryDate
+        !form.projectName
       ) {
         setError("Missing required fields");
         return;
@@ -106,6 +102,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     }
 
     try {
+      /* ================= PAYLOAD ================= */
       const payload = {
         clientName: form.clientName,
         contactPerson: form.contactPerson,
@@ -114,13 +111,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         email: form.email,
         projectName: form.projectName,
         domainName: form.domainName || undefined,
-
-        activationDate: form.activationDate?.toISOString(),
-        expiryDate:
-          form.renewed && form.renewedExpiryDate
-            ? form.renewedExpiryDate.toISOString()
-            : form.expiryDate?.toISOString(),
-
         amount:
           form.amount !== "" && form.amount !== null
             ? Number(form.amount)
@@ -130,18 +120,24 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         recurringInterval: form.recurringEnabled
           ? form.recurringInterval
           : undefined,
-
-        renewed: isEdit ? form.renewed : false,
-        renewedExpiryDate:
-          isEdit && form.renewed && form.renewedExpiryDate
-            ? form.renewedExpiryDate.toISOString()
-            : undefined,
       };
 
+      // 🔄 RENEW ONLY
+      if (isRenewMode) {
+        payload.expiryDate = form.renewedExpiryDate.toISOString();
+      }
+
+      // ✏️ EDIT
       if (isEdit) {
         await API.put(`/reminders/${existing._id}`, payload);
-      } else {
-        await API.post("/reminders", payload);
+      }
+      // ➕ ADD
+      else {
+        await API.post("/reminders", {
+          ...payload,
+          activationDate: form.activationDate.toISOString(),
+          expiryDate: form.expiryDate.toISOString(),
+        });
       }
 
       onAdded();
@@ -154,6 +150,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white dark:bg-[#111827] border dark:border-gray-700 shadow-2xl">
+
         <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">
           {isRenewMode
             ? "Renew Subscription"
@@ -167,6 +164,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         )}
 
         <form onSubmit={submit} className="space-y-4">
+
+          {/* ================= ADD / EDIT ================= */}
           {!isRenewMode && (
             <>
               <Input label="Client Name" required value={form.clientName}
@@ -190,10 +189,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
               <Input label="Domain Name" value={form.domainName}
                 onChange={(v) => setForm({ ...form, domainName: v })} />
 
+              {/* 🔒 dates locked in edit */}
               <Picker
                 label="Activation Date & Time *"
                 value={form.activationDate}
                 onChange={(v) => setForm({ ...form, activationDate: v })}
+                disabled={isEdit}
                 ampm
                 slotProps={pickerProps}
               />
@@ -202,6 +203,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 label="Expiry Date & Time *"
                 value={form.expiryDate}
                 onChange={(v) => setForm({ ...form, expiryDate: v })}
+                disabled={isEdit}
                 ampm
                 slotProps={pickerProps}
               />
@@ -209,7 +211,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
               <Input label="Amount (₹)" type="number" value={form.amount}
                 onChange={(v) => setForm({ ...form, amount: v })} />
 
-              {/* 🔁 RECURRING */}
+              {/* 🔁 RECURRING (RESTORED, UNCHANGED) */}
               <div className="rounded-lg border p-4 dark:border-gray-700 space-y-3">
                 <label className="flex items-center gap-2">
                   <input
@@ -253,6 +255,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
             </>
           )}
 
+          {/* ================= RENEW ONLY ================= */}
           {isRenewMode && (
             <Picker
               label="New Expiry Date & Time *"
@@ -266,25 +269,21 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           )}
 
           <div className="flex justify-end gap-3 pt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg border dark:border-gray-600"
-            >
+            <button type="button" onClick={onClose}
+              className="px-4 py-2 rounded-lg border dark:border-gray-600">
               Cancel
             </button>
 
-            <button
-              type="submit"
+            <button type="submit"
               className={`px-5 py-2 rounded-lg text-white ${
                 isRenewMode
                   ? "bg-green-600 hover:bg-green-700"
                   : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
+              }`}>
               {isRenewMode ? "Renew" : isEdit ? "Update" : "Save"}
             </button>
           </div>
+
         </form>
       </div>
     </div>
@@ -314,58 +313,8 @@ const inputClass =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 " +
   "dark:bg-[#020617] dark:text-gray-100 dark:border-gray-600";
 
-/* ✅ FIXED PICKER PROPS */
 const pickerProps = {
-  textField: {
-    fullWidth: true,
-    size: "small",
-    inputProps: { readOnly: true },
-  },
-
-  /* 🖥 Desktop picker (Popper) */
-  popper: {
-    disablePortal: false, // 🔑 REQUIRED – renders ABOVE modal
-    placement: "top-start",
-
-    modifiers: [
-      {
-        name: "offset",
-        options: {
-          offset: [0, 8],
-        },
-      },
-    ],
-
-    sx: {
-      zIndex: 20000, // 🔑 higher than modal (9999)
-
-      /* ✅ SMALLER but proportional */
-      "& .MuiPickersLayout-root": {
-        transform: "scale(0.9)",
-        transformOrigin: "top left",
-      },
-
-      "& .MuiPickersLayout-contentWrapper": {
-        maxHeight: "260px",
-        overflowY: "auto",
-      },
-
-      "& .MuiMultiSectionDigitalClock-root": {
-        maxHeight: "200px",
-      },
-
-      "& .MuiPickersDay-root": {
-        width: 34,
-        height: 34,
-      },
-    },
-  },
-
-  /* 📱 Mobile picker (Dialog) */
-  dialog: {
-    sx: {
-      zIndex: 20000,
-    },
-  },
+  textField: { fullWidth: true, size: "small", inputProps: { readOnly: true } },
+  popper: { disablePortal: false, sx: { zIndex: 20000 } },
+  dialog: { sx: { zIndex: 20000 } },
 };
-
