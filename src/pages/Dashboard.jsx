@@ -48,9 +48,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-6 py-8 bg-[#0b1120]">
-
-      {/* HEADER — ONLY MOBILE FIX */}
-      <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-white">Subscriptions</h1>
 
         <button
@@ -58,12 +57,7 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="
-            w-full sm:w-auto
-            px-5 py-2
-            bg-blue-600 hover:bg-blue-700
-            text-white rounded-lg font-semibold
-          "
+          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
         >
           + Add Reminder
         </button>
@@ -109,13 +103,12 @@ export default function Dashboard() {
                     <Td>{r.clientName}</Td>
                     <Td>{r.contactPerson}</Td>
 
+                    {/* ✅ CALL BUTTON WITH MOBILE SELECTOR */}
                     <Td>
-                      <a
-                        href={`tel:${r.mobile1}`}
-                        className="px-4 py-1.5 rounded-full bg-green-900/40 text-green-300 hover:bg-green-900/60 transition"
-                      >
-                        Call
-                      </a>
+                      <CallButton
+                        mobile1={r.mobile1}
+                        mobile2={r.mobile2}
+                      />
                     </Td>
 
                     <Td>{r.projectName}</Td>
@@ -174,7 +167,7 @@ export default function Dashboard() {
         </table>
       </div>
 
-      {/* PAGINATION — UNCHANGED */}
+      {/* PAGINATION */}
       <div className="flex justify-center items-center gap-6 mt-6 text-gray-300">
         <button
           disabled={page === 1}
@@ -208,10 +201,14 @@ export default function Dashboard() {
   );
 }
 
-/* ===== HELPERS (UNCHANGED) ===== */
+/* ===== HELPERS ===== */
 
 function Th({ children }) {
-  return <th className="p-4 text-left font-semibold text-gray-300">{children}</th>;
+  return (
+    <th className="p-4 text-left font-semibold text-gray-300">
+      {children}
+    </th>
+  );
 }
 
 function Td({ children }) {
@@ -246,5 +243,56 @@ function ActionButton({ children, onClick, color }) {
     >
       {children}
     </button>
+  );
+}
+
+/* ✅ CALL BUTTON WITH DROPDOWN */
+function CallButton({ mobile1, mobile2 }) {
+  const [open, setOpen] = useState(false);
+
+  if (mobile1 && !mobile2) {
+    return (
+      <a
+        href={`tel:${mobile1}`}
+        className="px-4 py-1.5 rounded-full
+                   bg-green-900/40 text-green-300
+                   hover:bg-green-900/60 transition"
+      >
+        Call
+      </a>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="px-4 py-1.5 rounded-full
+                   bg-green-900/40 text-green-300
+                   hover:bg-green-900/60 transition"
+      >
+        Call
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-2 w-36 bg-[#111827] border border-gray-700 rounded-lg shadow-lg">
+          <a
+            href={`tel:${mobile1}`}
+            className="block px-4 py-2 text-sm hover:bg-[#1f2937]"
+          >
+            📞 Mobile 1
+          </a>
+
+          {mobile2 && (
+            <a
+              href={`tel:${mobile2}`}
+              className="block px-4 py-2 text-sm hover:bg-[#1f2937]"
+            >
+              📞 Mobile 2
+            </a>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
