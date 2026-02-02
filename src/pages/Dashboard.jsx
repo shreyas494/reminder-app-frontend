@@ -17,8 +17,10 @@ export default function Dashboard() {
     setReminders(res.data);
   };
 
+  /* 🔑 SINGLE SOURCE OF TRUTH */
   const getExpiry = (r) => dayjs(r.expiryDate);
 
+  /* 🔑 RENEWAL DETECTION */
   const hasBeenRenewed = (r) =>
     Array.isArray(r.renewals) && r.renewals.length > 0;
 
@@ -54,13 +56,18 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base
+                     bg-blue-600 hover:bg-blue-700
+                     text-white rounded-lg font-semibold"
         >
           + Add Reminder
         </button>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-x-auto">
+      <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
+                      border border-gray-200 dark:border-gray-700
+                      rounded-2xl shadow-xl overflow-x-auto">
+
         <table className="min-w-[900px] w-full text-sm">
           <thead className="bg-gray-200 dark:bg-gray-800">
             <tr>
@@ -71,92 +78,101 @@ export default function Dashboard() {
               <Th>Project</Th>
               <Th>Expiry</Th>
               <Th className="hidden lg:table-cell">Remaining</Th>
-              <Th>Status</Th>
+              <Th className="text-center lg:text-left">Status</Th>
               <Th className="hidden lg:table-cell">Amount</Th>
               <Th>Actions</Th>
             </tr>
           </thead>
 
           <tbody>
-            {reminders.map((r, i) => {
-              const expiry = getExpiry(r);
-              const isExpired = expiry.isBefore(dayjs());
-              const status = getStatusLabel(r);
+            {reminders.length === 0 ? (
+              <tr>
+                <td colSpan="10" className="text-center py-16 text-gray-500 dark:text-gray-400">
+                  No reminders found.
+                </td>
+              </tr>
+            ) : (
+              reminders.map((r, i) => {
+                const expiry = getExpiry(r);
+                const isExpired = expiry.isBefore(dayjs());
+                const status = getStatusLabel(r);
 
-              return (
-                <tr
-                  key={r._id}
-                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                >
-                  <Td>{i + 1}</Td>
-                  <Td>{r.clientName}</Td>
-                  <Td className="hidden md:table-cell">{r.contactPerson}</Td>
+                return (
+                  <tr
+                    key={r._id}
+                    className="border-t border-gray-200 dark:border-gray-700
+                               hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  >
+                    <Td>{i + 1}</Td>
+                    <Td>{r.clientName}</Td>
+                    <Td className="hidden md:table-cell">{r.contactPerson}</Td>
 
-                  <Td>
-                    <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
-                  </Td>
+                    <Td>
+                      <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
+                    </Td>
 
-                  <Td>{r.projectName}</Td>
-                  <Td>{expiry.format("DD MMM YYYY")}</Td>
+                    <Td>{r.projectName}</Td>
+                    <Td>{expiry.format("DD MMM YYYY")}</Td>
 
-                  <Td className="hidden lg:table-cell">{remainingTime(r)}</Td>
+                    <Td className="hidden lg:table-cell">
+                      {remainingTime(r)}
+                    </Td>
 
-                  <Td>
-                    <div className="flex flex-row items-center gap-2 flex-wrap">
-                      <Badge color={status.color}>{status.text}</Badge>
-                      <span className="text-xs text-gray-400">
-                        {remainingTime(r)}
-                      </span>
-                    </div>
-                  </Td>
+                    <Td className="text-center lg:text-left">
+                      <div className="flex flex-col items-center lg:items-start gap-1">
+                        <Badge color={status.color}>{status.text}</Badge>
+                        <span className="text-xs text-gray-400 lg:hidden">
+                          {remainingTime(r)}
+                        </span>
+                      </div>
+                    </Td>
 
-                  <Td className="hidden lg:table-cell">
-                    ₹{r.amount || "-"}
-                  </Td>
+                    <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
-                  {/* ✅ FIXED SINGLE-LINE ACTIONS */}
-                  <Td>
-                    <div className="flex flex-row flex-wrap items-center gap-2">
-                      {!isExpired && (
-                        <>
-                          <ActionButton
-                            color="blue"
-                            onClick={() => {
-                              setEditReminder({ ...r, _mode: "edit" });
-                              setShowModal(true);
-                            }}
-                          >
-                            Edit
-                          </ActionButton>
+                    {/* ✅ ACTION BUTTONS */}
+                    <Td>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {!isExpired && (
+                          <>
+                            <ActionButton
+                              color="blue"
+                              onClick={() => {
+                                setEditReminder({ ...r, _mode: "edit" });
+                                setShowModal(true);
+                              }}
+                            >
+                              Edit
+                            </ActionButton>
 
-                          <ActionButton
-                            color="amber"
-                            onClick={() => {
-                              setEditReminder({ ...r, _mode: "renew" });
-                              setShowModal(true);
-                            }}
-                          >
-                            Renew
-                          </ActionButton>
-                        </>
-                      )}
+                            <ActionButton
+                              color="amber"
+                              onClick={() => {
+                                setEditReminder({ ...r, _mode: "renew" });
+                                setShowModal(true);
+                              }}
+                            >
+                              Renew
+                            </ActionButton>
+                          </>
+                        )}
 
-                      <ActionButton
-                        color="red"
-                        onClick={async () => {
-                          const ok = window.confirm("Delete this reminder?");
-                          if (!ok) return;
-                          await API.delete(`/reminders/${r._id}`);
-                          fetchReminders();
-                        }}
-                      >
-                        Delete
-                      </ActionButton>
-                    </div>
-                  </Td>
-                </tr>
-              );
-            })}
+                        <ActionButton
+                          color="red"
+                          onClick={async () => {
+                            const ok = window.confirm("Delete this reminder?");
+                            if (!ok) return;
+                            await API.delete(`/reminders/${r._id}`);
+                            fetchReminders();
+                          }}
+                        >
+                          Delete
+                        </ActionButton>
+                      </div>
+                    </Td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -172,19 +188,19 @@ export default function Dashboard() {
   );
 }
 
-/* ===== HELPERS (UNCHANGED) ===== */
+/* ===== Helpers ===== */
 
-function Th({ children }) {
+function Th({ children, className = "" }) {
   return (
-    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
+    <th className={`p-3 text-left font-semibold text-gray-800 dark:text-gray-200 ${className}`}>
       {children}
     </th>
   );
 }
 
-function Td({ children }) {
+function Td({ children, className = "" }) {
   return (
-    <td className="p-3 text-gray-700 dark:text-gray-300">
+    <td className={`p-3 text-gray-700 dark:text-gray-300 ${className}`}>
       {children}
     </td>
   );
@@ -198,12 +214,13 @@ function Badge({ children, color }) {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
+    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
       {children}
     </span>
   );
 }
 
+/* 🔘 ACTION BUTTON */
 function ActionButton({ children, onClick, color }) {
   const colors = {
     blue: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
@@ -214,19 +231,29 @@ function ActionButton({ children, onClick, color }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${colors[color]}`}
+      className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition ${colors[color]}`}
     >
       {children}
     </button>
   );
 }
 
+/* 📞 CALL BUTTON (FIXED UI) */
 function CallButton({ mobile1, mobile2 }) {
+  const [open, setOpen] = useState(false);
+
   if (mobile1 && !mobile2) {
     return (
       <a
         href={`tel:${mobile1}`}
-        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+        className="
+          inline-flex items-center justify-center
+          px-3 py-1.5 rounded-lg
+          text-xs sm:text-sm font-medium
+          bg-green-100 text-green-700
+          hover:bg-green-200 transition
+          dark:bg-green-900/30 dark:text-green-300
+        "
       >
         Call
       </a>
@@ -234,20 +261,40 @@ function CallButton({ mobile1, mobile2 }) {
   }
 
   return (
-    <div className="flex gap-2">
-      <a
-        href={`tel:${mobile1}`}
-        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="
+          inline-flex items-center justify-center
+          px-3 py-1.5 rounded-lg
+          text-xs sm:text-sm font-medium
+          bg-green-100 text-green-700
+          hover:bg-green-200 transition
+          dark:bg-green-900/30 dark:text-green-300
+        "
       >
-        Call 1
-      </a>
-      {mobile2 && (
-        <a
-          href={`tel:${mobile2}`}
-          className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
-        >
-          Call 2
-        </a>
+        Call
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-2 w-40 bg-white dark:bg-[#111827]
+                        border border-gray-300 dark:border-gray-700
+                        rounded-lg shadow-lg">
+          <a
+            href={`tel:${mobile1}`}
+            className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            📞 Mobile 1
+          </a>
+          {mobile2 && (
+            <a
+              href={`tel:${mobile2}`}
+              className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              📞 Mobile 2
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
