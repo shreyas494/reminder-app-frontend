@@ -12,13 +12,12 @@ export default function Dashboard() {
     fetchReminders();
   }, []);
 
-  /* ✅ FIXED: backend now returns { data, page, totalPages } */
   const fetchReminders = async () => {
     const res = await API.get("/reminders");
-    setReminders(res.data.data || []); // 🔑 CRITICAL FIX
+    // ✅ backend may return { data, page, totalPages }
+    setReminders(Array.isArray(res.data) ? res.data : res.data.data || []);
   };
 
-  /* 🔑 SINGLE SOURCE OF TRUTH */
   const getExpiry = (r) => dayjs(r.expiryDate);
 
   const hasBeenRenewed = (r) =>
@@ -38,7 +37,6 @@ export default function Dashboard() {
 
   const getStatusLabel = (r) => {
     const end = getExpiry(r);
-
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
     return { text: "Active", color: "green" };
@@ -46,6 +44,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
+      {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
@@ -56,14 +55,13 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base
-                     bg-blue-600 hover:bg-blue-700
-                     text-white rounded-lg font-semibold"
+          className="px-5 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
         >
           + Add Reminder
         </button>
       </div>
 
+      {/* TABLE */}
       <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
                       border border-gray-200 dark:border-gray-700
                       rounded-2xl shadow-xl overflow-x-auto">
@@ -87,8 +85,8 @@ export default function Dashboard() {
           <tbody>
             {reminders.length === 0 ? (
               <tr>
-                <td colSpan="10" className="text-center py-16 text-gray-500 dark:text-gray-400">
-                  No reminders found.
+                <td colSpan="10" className="text-center py-16 text-gray-500">
+                  No reminders found
                 </td>
               </tr>
             ) : (
@@ -127,10 +125,12 @@ export default function Dashboard() {
                       </div>
                     </Td>
 
-                    <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
+                    <Td className="hidden lg:table-cell">
+                      ₹{r.amount || "-"}
+                    </Td>
 
                     <Td>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {!isExpired && (
                           <>
                             <ActionButton
@@ -187,19 +187,19 @@ export default function Dashboard() {
   );
 }
 
-/* ===== HELPERS ===== */
+/* ================= HELPERS ================= */
 
-function Th({ children }) {
+function Th({ children, className = "" }) {
   return (
-    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
+    <th className={`p-3 text-left font-semibold ${className}`}>
       {children}
     </th>
   );
 }
 
-function Td({ children }) {
+function Td({ children, className = "" }) {
   return (
-    <td className="p-3 text-gray-700 dark:text-gray-300">
+    <td className={`p-3 ${className}`}>
       {children}
     </td>
   );
@@ -207,13 +207,13 @@ function Td({ children }) {
 
 function Badge({ children, color }) {
   const colors = {
-    green: "bg-green-100 text-green-700",
-    red: "bg-red-100 text-red-700",
-    blue: "bg-blue-100 text-blue-700",
+    green: "bg-green-600 text-white",
+    red: "bg-red-600 text-white",
+    blue: "bg-blue-600 text-white",
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colors[color]}`}>
       {children}
     </span>
   );
@@ -221,15 +221,15 @@ function Badge({ children, color }) {
 
 function ActionButton({ children, onClick, color }) {
   const colors = {
-    blue: "bg-blue-100 text-blue-700",
-    amber: "bg-amber-100 text-amber-700",
-    red: "bg-red-100 text-red-700",
+    blue: "bg-blue-600 hover:bg-blue-700",
+    amber: "bg-yellow-500 hover:bg-yellow-600",
+    red: "bg-red-600 hover:bg-red-700",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${colors[color]}`}
+      className={`px-4 py-1.5 rounded-full text-xs font-semibold text-white transition ${colors[color]}`}
     >
       {children}
     </button>
@@ -241,7 +241,7 @@ function CallButton({ mobile1, mobile2 }) {
     return (
       <a
         href={`tel:${mobile1}`}
-        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+        className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
       >
         Call
       </a>
@@ -252,14 +252,14 @@ function CallButton({ mobile1, mobile2 }) {
     <div className="flex gap-2">
       <a
         href={`tel:${mobile1}`}
-        className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+        className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
       >
         Call 1
       </a>
       {mobile2 && (
         <a
           href={`tel:${mobile2}`}
-          className="px-3 py-1.5 rounded-lg text-xs bg-green-100 text-green-700"
+          className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
         >
           Call 2
         </a>
