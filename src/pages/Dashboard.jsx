@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import dayjs from "dayjs";
 import AddReminderModal from "../components/AddReminderModal";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Dashboard() {
   const [reminders, setReminders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editReminder, setEditReminder] = useState(null);
 
-  // ✅ PAGINATION STATE
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -18,11 +18,10 @@ export default function Dashboard() {
 
   const fetchReminders = async (pageNo = 1) => {
     const res = await API.get(`/reminders?page=${pageNo}`);
-    setReminders(res.data.data);       // 🔑 FIX for e.map error
+    setReminders(res.data.data);        // ✅ REQUIRED (fixes e.map error)
     setTotalPages(res.data.totalPages);
   };
 
-  /* 🔑 SINGLE SOURCE OF TRUTH */
   const getExpiry = (r) => dayjs(r.expiryDate);
 
   const hasBeenRenewed = (r) =>
@@ -31,29 +30,26 @@ export default function Dashboard() {
   const remainingTime = (r) => {
     const now = dayjs();
     const end = getExpiry(r);
-
     if (end.isBefore(now)) return "Expired";
 
     const months = end.diff(now, "month");
     if (months >= 1) return `${months} month(s)`;
-
     return `${end.diff(now, "day")} day(s)`;
   };
 
   const getStatusLabel = (r) => {
     const end = getExpiry(r);
-
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
     return { text: "Active", color: "green" };
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
+    <div className="min-h-[calc(100vh-64px)] px-4 py-8 bg-gray-100 dark:bg-[#0b1120]">
 
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
         </h1>
 
@@ -62,7 +58,7 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
         >
           + Add Reminder
         </button>
@@ -167,14 +163,14 @@ export default function Dashboard() {
         </table>
       </div>
 
-      {/* ✅ PAGINATION CONTROLS */}
-      <div className="flex justify-center items-center gap-4 mt-6">
+      {/* PAGINATION (ARROWS ONLY) */}
+      <div className="flex justify-center items-center gap-6 mt-6">
         <button
           disabled={page === 1}
           onClick={() => setPage(p => Math.max(1, p - 1))}
-          className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 disabled:opacity-40"
+          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 disabled:opacity-40"
         >
-          Previous
+          <ChevronLeft />
         </button>
 
         <span className="text-gray-600 dark:text-gray-300">
@@ -184,9 +180,9 @@ export default function Dashboard() {
         <button
           disabled={page === totalPages}
           onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-          className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 disabled:opacity-40"
+          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 disabled:opacity-40"
         >
-          Next
+          <ChevronRight />
         </button>
       </div>
 
@@ -235,25 +231,31 @@ function Badge({ children, color }) {
 
 function ActionButton({ children, onClick, color }) {
   const colors = {
-    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    amber: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    blue: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
+    amber: "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
+    red: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${colors[color]}`}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${colors[color]}`}
     >
       {children}
     </button>
   );
 }
 
+/* ✅ CALL BUTTON – RESTORED OLD UI */
 function CallButton({ mobile1, mobile2 }) {
   if (!mobile2) {
     return (
-      <a href={`tel:${mobile1}`} className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs">
+      <a
+        href={`tel:${mobile1}`}
+        className="px-4 py-2 rounded-xl text-sm font-medium
+                   bg-green-100 text-green-700
+                   hover:bg-green-200 transition"
+      >
         Call
       </a>
     );
@@ -261,10 +263,18 @@ function CallButton({ mobile1, mobile2 }) {
 
   return (
     <div className="flex gap-2">
-      <a href={`tel:${mobile1}`} className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs">
+      <a
+        href={`tel:${mobile1}`}
+        className="px-4 py-2 rounded-xl text-sm font-medium
+                   bg-green-100 text-green-700 hover:bg-green-200"
+      >
         Call 1
       </a>
-      <a href={`tel:${mobile2}`} className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs">
+      <a
+        href={`tel:${mobile2}`}
+        className="px-4 py-2 rounded-xl text-sm font-medium
+                   bg-green-100 text-green-700 hover:bg-green-200"
+      >
         Call 2
       </a>
     </div>
