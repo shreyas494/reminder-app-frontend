@@ -14,8 +14,8 @@ export default function Dashboard() {
 
   const fetchReminders = async () => {
     const res = await API.get("/reminders");
-    // ✅ backend may return { data, page, totalPages }
-    setReminders(Array.isArray(res.data) ? res.data : res.data.data || []);
+    // BACKEND RETURNS ARRAY OR { data }
+    setReminders(Array.isArray(res.data) ? res.data : res.data.data);
   };
 
   const getExpiry = (r) => dayjs(r.expiryDate);
@@ -37,6 +37,7 @@ export default function Dashboard() {
 
   const getStatusLabel = (r) => {
     const end = getExpiry(r);
+
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
     return { text: "Active", color: "green" };
@@ -44,7 +45,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
-      {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subscriptions
@@ -55,13 +55,13 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="px-5 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+          className="px-4 py-2 rounded-lg font-semibold
+                     bg-blue-600 hover:bg-blue-700 text-white"
         >
           + Add Reminder
         </button>
       </div>
 
-      {/* TABLE */}
       <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
                       border border-gray-200 dark:border-gray-700
                       rounded-2xl shadow-xl overflow-x-auto">
@@ -86,7 +86,7 @@ export default function Dashboard() {
             {reminders.length === 0 ? (
               <tr>
                 <td colSpan="10" className="text-center py-16 text-gray-500">
-                  No reminders found
+                  No reminders found.
                 </td>
               </tr>
             ) : (
@@ -119,7 +119,7 @@ export default function Dashboard() {
                     <Td>
                       <div className="flex flex-col gap-1">
                         <Badge color={status.color}>{status.text}</Badge>
-                        <span className="text-xs text-gray-400 lg:hidden">
+                        <span className="text-xs text-gray-400">
                           {remainingTime(r)}
                         </span>
                       </div>
@@ -129,8 +129,9 @@ export default function Dashboard() {
                       ₹{r.amount || "-"}
                     </Td>
 
+                    {/* 🔥 ORIGINAL BUTTON STYLE RESTORED */}
                     <Td>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-row gap-2">
                         {!isExpired && (
                           <>
                             <ActionButton
@@ -207,9 +208,9 @@ function Td({ children, className = "" }) {
 
 function Badge({ children, color }) {
   const colors = {
-    green: "bg-green-600 text-white",
-    red: "bg-red-600 text-white",
-    blue: "bg-blue-600 text-white",
+    green: "bg-green-500/10 text-green-400",
+    red: "bg-red-500/10 text-red-400",
+    blue: "bg-blue-500/10 text-blue-400",
   };
 
   return (
@@ -219,17 +220,18 @@ function Badge({ children, color }) {
   );
 }
 
+/* 🔥 EXACT OLD BUTTON STYLE */
 function ActionButton({ children, onClick, color }) {
   const colors = {
-    blue: "bg-blue-600 hover:bg-blue-700",
-    amber: "bg-yellow-500 hover:bg-yellow-600",
-    red: "bg-red-600 hover:bg-red-700",
+    blue: "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20",
+    amber: "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20",
+    red: "bg-red-500/10 text-red-400 hover:bg-red-500/20",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-xs font-semibold text-white transition ${colors[color]}`}
+      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${colors[color]}`}
     >
       {children}
     </button>
@@ -241,7 +243,8 @@ function CallButton({ mobile1, mobile2 }) {
     return (
       <a
         href={`tel:${mobile1}`}
-        className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
+        className="px-3 py-1.5 rounded-full text-xs
+                   bg-green-500/10 text-green-400"
       >
         Call
       </a>
@@ -252,14 +255,16 @@ function CallButton({ mobile1, mobile2 }) {
     <div className="flex gap-2">
       <a
         href={`tel:${mobile1}`}
-        className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
+        className="px-3 py-1.5 rounded-full text-xs
+                   bg-green-500/10 text-green-400"
       >
         Call 1
       </a>
       {mobile2 && (
         <a
           href={`tel:${mobile2}`}
-          className="px-4 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
+          className="px-3 py-1.5 rounded-full text-xs
+                     bg-green-500/10 text-green-400"
         >
           Call 2
         </a>
