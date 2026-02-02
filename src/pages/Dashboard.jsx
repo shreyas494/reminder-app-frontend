@@ -106,9 +106,11 @@ export default function Dashboard() {
                     <Td>{i + 1}</Td>
                     <Td>{r.clientName}</Td>
                     <Td className="hidden md:table-cell">{r.contactPerson}</Td>
+
                     <Td>
                       <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
                     </Td>
+
                     <Td>{r.projectName}</Td>
                     <Td>{expiry.format("DD MMM YYYY")}</Td>
 
@@ -127,7 +129,7 @@ export default function Dashboard() {
 
                     <Td className="hidden lg:table-cell">₹{r.amount || "-"}</Td>
 
-                    {/* 🔑 ACTION BUTTONS */}
+                    {/* ✅ ACTION BUTTONS */}
                     <Td>
                       <div className="flex flex-col sm:flex-row gap-2">
                         {!isExpired && (
@@ -236,13 +238,23 @@ function ActionButton({ children, onClick, color }) {
   );
 }
 
-/* 📞 CALL BUTTON (UNCHANGED BEHAVIOR) */
+/* 📞 CALL BUTTON (FIXED UI) */
 function CallButton({ mobile1, mobile2 }) {
   const [open, setOpen] = useState(false);
 
   if (mobile1 && !mobile2) {
     return (
-      <a href={`tel:${mobile1}`} className="text-green-600 dark:text-green-400 underline">
+      <a
+        href={`tel:${mobile1}`}
+        className="
+          inline-flex items-center justify-center
+          px-3 py-1.5 rounded-lg
+          text-xs sm:text-sm font-medium
+          bg-green-100 text-green-700
+          hover:bg-green-200 transition
+          dark:bg-green-900/30 dark:text-green-300
+        "
+      >
         Call
       </a>
     );
@@ -252,22 +264,33 @@ function CallButton({ mobile1, mobile2 }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm
-                   bg-green-100 text-green-700 hover:bg-green-200
-                   dark:bg-green-900/30 dark:text-green-300"
+        className="
+          inline-flex items-center justify-center
+          px-3 py-1.5 rounded-lg
+          text-xs sm:text-sm font-medium
+          bg-green-100 text-green-700
+          hover:bg-green-200 transition
+          dark:bg-green-900/30 dark:text-green-300
+        "
       >
         Call
       </button>
 
       {open && (
-        <div className="absolute z-10 mt-2 w-40 bg-white dark:bg-[#111827]
+        <div className="absolute z-20 mt-2 w-40 bg-white dark:bg-[#111827]
                         border border-gray-300 dark:border-gray-700
                         rounded-lg shadow-lg">
-          <a href={`tel:${mobile1}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <a
+            href={`tel:${mobile1}`}
+            className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
             📞 Mobile 1
           </a>
           {mobile2 && (
-            <a href={`tel:${mobile2}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <a
+              href={`tel:${mobile2}`}
+              className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
               📞 Mobile 2
             </a>
           )}
