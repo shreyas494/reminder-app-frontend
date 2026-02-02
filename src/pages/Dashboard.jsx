@@ -17,7 +17,7 @@ export default function Dashboard() {
 
   const fetchReminders = async (pageNo = 1) => {
     const res = await API.get(`/reminders?page=${pageNo}`);
-    setReminders(res.data.data);        // ✅ IMPORTANT
+    setReminders(res.data.data);
     setTotalPages(res.data.totalPages);
   };
 
@@ -48,8 +48,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-6 py-8 bg-[#0b1120]">
-      {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+
+      {/* HEADER — ONLY MOBILE FIX */}
+      <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-3xl font-bold text-white">Subscriptions</h1>
 
         <button
@@ -57,7 +58,12 @@ export default function Dashboard() {
             setEditReminder(null);
             setShowModal(true);
           }}
-          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+          className="
+            w-full sm:w-auto
+            px-5 py-2
+            bg-blue-600 hover:bg-blue-700
+            text-white rounded-lg font-semibold
+          "
         >
           + Add Reminder
         </button>
@@ -103,13 +109,10 @@ export default function Dashboard() {
                     <Td>{r.clientName}</Td>
                     <Td>{r.contactPerson}</Td>
 
-                    {/* ✅ SINGLE CALL BUTTON (MATCHES SCREENSHOT) */}
                     <Td>
                       <a
                         href={`tel:${r.mobile1}`}
-                        className="px-4 py-1.5 rounded-full
-                                   bg-green-900/40 text-green-300
-                                   hover:bg-green-900/60 transition"
+                        className="px-4 py-1.5 rounded-full bg-green-900/40 text-green-300 hover:bg-green-900/60 transition"
                       >
                         Call
                       </a>
@@ -125,7 +128,6 @@ export default function Dashboard() {
 
                     <Td>₹{r.amount || "-"}</Td>
 
-                    {/* ACTIONS */}
                     <Td>
                       <div className="flex gap-2">
                         {!isExpired && (
@@ -172,7 +174,7 @@ export default function Dashboard() {
         </table>
       </div>
 
-      {/* PAGINATION */}
+      {/* PAGINATION — UNCHANGED */}
       <div className="flex justify-center items-center gap-6 mt-6 text-gray-300">
         <button
           disabled={page === 1}
@@ -206,14 +208,10 @@ export default function Dashboard() {
   );
 }
 
-/* ===== HELPERS ===== */
+/* ===== HELPERS (UNCHANGED) ===== */
 
 function Th({ children }) {
-  return (
-    <th className="p-4 text-left font-semibold text-gray-300">
-      {children}
-    </th>
-  );
+  return <th className="p-4 text-left font-semibold text-gray-300">{children}</th>;
 }
 
 function Td({ children }) {
