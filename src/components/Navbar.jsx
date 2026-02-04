@@ -48,7 +48,7 @@ export default function Navbar() {
               {user.role === "superadmin" && (
                 <Link
                   to="/admin/users"
-                  className="px-4 py-2 rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 
+                  className="px-5 py-2.5 rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 
                              font-semibold text-sm ring-1 ring-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all whitespace-nowrap"
                 >
                   Admin Panel
