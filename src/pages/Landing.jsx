@@ -12,19 +12,19 @@ export default function Landing() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-violet-400/20 to-purple-400/20 blur-[120px] animate-pulse delay-700 dark:from-violet-600/10 dark:to-purple-600/10"></div>
 
       {/* HERO SECTION */}
-      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-32 pb-20">
+      <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-24 pb-16 sm:pt-32 sm:pb-20">
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6 sm:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
           </span>
-          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+          <span className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
             Smart Reminder System
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 sm:mb-8 tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <span className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
             Never Miss a
           </span>
@@ -34,30 +34,30 @@ export default function Landing() {
           </span>
         </h1>
 
-        <p className="max-w-2xl text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <p className="max-w-2xl text-base sm:text-xl text-slate-600 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
           Track your pending payments, subscriptions, and renewals in one centralized dashboard.
           Get timely reminders and stay stress-free.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-5 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+        <div className="flex flex-col w-full sm:w-auto sm:flex-row gap-4 sm:gap-5 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
           {user ? (
             <Link
               to="/dashboard"
-              className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
-                         text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 
+              className="group relative w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
+                         text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40
                          transition-all duration-300 hover:-translate-y-1 overflow-hidden"
             >
-              <span className="relative z-10">Go to Dashboard</span>
+              <span className="relative z-10 block text-center">Go to Dashboard</span>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </Link>
           ) : (
             <Link
               to="/login"
-              className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
-                         text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 
+              className="group relative w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
+                         text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40
                          transition-all duration-300 hover:-translate-y-1 overflow-hidden"
             >
-              <span className="relative z-10">Get Started Free</span>
+              <span className="relative z-10 block text-center">Get Started Free</span>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </Link>
           )}

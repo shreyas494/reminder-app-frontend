@@ -78,10 +78,10 @@ export default function Dashboard() {
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
               Subscriptions
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
               Manage your client reminders and renewals
             </p>
           </div>
@@ -91,11 +91,11 @@ export default function Dashboard() {
               setEditReminder(null);
               setShowModal(true);
             }}
-            className="group relative px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
+            className="group relative w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
                        text-white font-semibold text-sm shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 
                        transition-all duration-300 hover:-translate-y-0.5"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <span className="text-lg leading-none">+</span> New Reminder
             </span>
           </button>
@@ -244,7 +244,7 @@ export default function Dashboard() {
 
 function Th({ children, className = "" }) {
   return (
-    <th className={`px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ${className}`}>
+    <th className={`px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ${className}`}>
       {children}
     </th>
   );
@@ -252,7 +252,7 @@ function Th({ children, className = "" }) {
 
 function Td({ children, className = "" }) {
   return (
-    <td className={`px-6 py-5 whitespace-nowrap text-sm ${className}`}>
+    <td className={`px-4 sm:px-6 py-3 sm:py-5 whitespace-nowrap text-sm ${className}`}>
       {children}
     </td>
   );
