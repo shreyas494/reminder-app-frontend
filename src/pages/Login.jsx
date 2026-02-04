@@ -177,9 +177,9 @@ export default function Login() {
                 onError={() => setMessage("❌ Google authentication failed")}
                 theme={isDark ? "filled_black" : "outline"}
                 shape="pill"
-                size="medium" // Made smaller (was large)
-                width="280"   // Slightly explicit width control if needed, but 'medium' size helps
-                text="continue_with"
+                size="large" // Restored height
+                width="240"  // Explicit smaller width
+                text="signin_with" // Shorter text to fit smaller width
                 logo_alignment="center"
               />
             </div>
