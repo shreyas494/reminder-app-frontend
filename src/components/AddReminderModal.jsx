@@ -152,8 +152,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#111827] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
 
         {/* HEADER */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md">
+          <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
             {isRenewMode
               ? "Renew Subscription"
               : isEdit
@@ -168,7 +168,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           </button>
         </div>
 
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-8">
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-400">
               {error}
@@ -302,8 +302,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
               <button
                 type="submit"
                 className={`px-6 py-2.5 rounded-xl text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 ${isRenewMode
-                    ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
-                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                   }`}>
                 {isRenewMode ? "Confirm Renewal" : isEdit ? "Update Reminder" : "Save Reminder"}
               </button>
