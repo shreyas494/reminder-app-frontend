@@ -42,19 +42,24 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-gray-100 dark:bg-[#0b1120]">
+    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-slate-50 dark:bg-[#0b1120] transition-colors">
+
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-          User Management
-        </h1>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+            User Management
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Manage system access and permissions
+          </p>
+        </div>
 
         <Link
           to="/admin/users/create"
-          className="w-full sm:w-auto text-center
-                     px-4 py-2 rounded-lg
-                     bg-blue-600 hover:bg-blue-700
-                     text-white font-semibold"
+          className="group px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 
+                     text-white font-semibold text-sm shadow-lg shadow-indigo-500/30 
+                     transition-all duration-300 hover:-translate-y-0.5"
         >
           + Create User
         </Link>
@@ -62,120 +67,122 @@ export default function AdminUsers() {
 
       {/* TABLE */}
       <div className="max-w-7xl mx-auto bg-white dark:bg-[#111827]
-                      border border-gray-200 dark:border-gray-700
-                      rounded-2xl shadow-xl overflow-x-auto">
-        <table className="min-w-[900px] w-full text-sm">
-          <thead className="bg-gray-200 dark:bg-gray-800">
-            <tr>
-              <Th>Name</Th>
-              <Th>Email</Th>
-              <Th>Role</Th>
-              <Th>Status</Th>
-              <Th>Google Login</Th>
-              <Th>Actions</Th>
-            </tr>
-          </thead>
+                      border border-slate-200 dark:border-slate-800
+                      rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
 
-          <tbody>
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-[900px] w-full text-sm text-left">
+            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <td colSpan="6" className="text-center py-16 text-gray-500">
-                  Loading users…
-                </td>
+                <Th>Name</Th>
+                <Th>Email</Th>
+                <Th>Role</Th>
+                <Th>Status</Th>
+                <Th>Google Login</Th>
+                <Th>Actions</Th>
               </tr>
-            ) : users.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-16 text-gray-500">
-                  No users found.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => {
-                const isSuperAdmin = user.role === "superadmin";
+            </thead>
 
-                return (
-                  <tr
-                    key={user._id}
-                    className="border-t border-gray-200 dark:border-gray-700
-                               hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                  >
-                    <Td>{user.name}</Td>
-                    <Td className="break-all">{user.email}</Td>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-20 text-slate-500">
+                    Loading users…
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-20 text-slate-500">
+                    No users found.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => {
+                  const isSuperAdmin = user.role === "superadmin";
 
-                    <Td>
-                      <Badge color={isSuperAdmin ? "blue" : "gray"}>
-                        {isSuperAdmin ? "Super Admin" : "User"}
-                      </Badge>
-                    </Td>
+                  return (
+                    <tr
+                      key={user._id}
+                      className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors"
+                    >
+                      <Td className="font-semibold text-slate-900 dark:text-slate-200">{user.name}</Td>
+                      <Td className="text-slate-600 dark:text-slate-400">{user.email}</Td>
 
-                    <Td>
-                      {isSuperAdmin ? (
-                        <Badge color="blue">Protected</Badge>
-                      ) : user.isActive ? (
-                        <Badge color="green">Active</Badge>
-                      ) : (
-                        <Badge color="red">Disabled</Badge>
-                      )}
-                    </Td>
+                      <Td>
+                        <Badge color={isSuperAdmin ? "purple" : "gray"}>
+                          {isSuperAdmin ? "Super Admin" : "User"}
+                        </Badge>
+                      </Td>
 
-                    <Td>
-                      {isSuperAdmin ? (
-                        <Badge color="blue">Always Enabled</Badge>
-                      ) : user.googleEnabled ? (
-                        <Badge color="green">Enabled</Badge>
-                      ) : (
-                        <Badge color="red">Disabled</Badge>
-                      )}
-                    </Td>
+                      <Td>
+                        {isSuperAdmin ? (
+                          <Badge color="purple">Protected</Badge>
+                        ) : user.isActive ? (
+                          <Badge color="green">Active</Badge>
+                        ) : (
+                          <Badge color="red">Disabled</Badge>
+                        )}
+                      </Td>
 
-                    {/* ✅ ACTION BUTTONS */}
-                    <Td>
-                      {isSuperAdmin ? (
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                          Protected
-                        </span>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          {user.isActive ? (
-                            <ActionButton
-                              color="red"
-                              onClick={() => disableUser(user._id)}
-                            >
-                              Disable
-                            </ActionButton>
-                          ) : (
-                            <ActionButton
-                              color="green"
-                              onClick={() => enableUser(user._id)}
-                            >
-                              Enable
-                            </ActionButton>
-                          )}
+                      <Td>
+                        {isSuperAdmin ? (
+                          <Badge color="purple">Always Enabled</Badge>
+                        ) : user.googleEnabled ? (
+                          <Badge color="green">Enabled</Badge>
+                        ) : (
+                          <Badge color="red">Disabled</Badge>
+                        )}
+                      </Td>
 
-                          {user.googleEnabled ? (
-                            <ActionButton
-                              color="amber"
-                              onClick={() => disableGoogle(user._id)}
-                            >
-                              Disable Google
-                            </ActionButton>
-                          ) : (
-                            <ActionButton
-                              color="blue"
-                              onClick={() => enableGoogle(user._id)}
-                            >
-                              Enable Google
-                            </ActionButton>
-                          )}
-                        </div>
-                      )}
-                    </Td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      {/* ✅ ACTION BUTTONS */}
+                      <Td>
+                        {isSuperAdmin ? (
+                          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            System
+                          </span>
+                        ) : (
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            {user.isActive ? (
+                              <ActionButton
+                                color="red"
+                                onClick={() => disableUser(user._id)}
+                              >
+                                Disable
+                              </ActionButton>
+                            ) : (
+                              <ActionButton
+                                color="green"
+                                onClick={() => enableUser(user._id)}
+                              >
+                                Enable
+                              </ActionButton>
+                            )}
+
+                            {user.googleEnabled ? (
+                              <ActionButton
+                                color="amber"
+                                onClick={() => disableGoogle(user._id)}
+                              >
+                                Disable Google
+                              </ActionButton>
+                            ) : (
+                              <ActionButton
+                                color="blue"
+                                onClick={() => enableGoogle(user._id)}
+                              >
+                                Enable Google
+                              </ActionButton>
+                            )}
+                          </div>
+                        )}
+                      </Td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -185,7 +192,7 @@ export default function AdminUsers() {
 
 function Th({ children }) {
   return (
-    <th className="p-3 text-left font-semibold text-gray-800 dark:text-gray-200">
+    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
       {children}
     </th>
   );
@@ -193,40 +200,40 @@ function Th({ children }) {
 
 function Td({ children, className = "" }) {
   return (
-    <td className={`p-3 text-gray-700 dark:text-gray-300 ${className}`}>
+    <td className={`px-6 py-4 whitespace-nowrap ${className}`}>
       {children}
     </td>
   );
 }
 
 function Badge({ children, color }) {
-  const colors = {
-    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    gray: "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200",
+  const map = {
+    green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 ring-1 ring-emerald-600/10",
+    red: "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 ring-1 ring-rose-600/10",
+    blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 ring-1 ring-blue-600/10",
+    purple: "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 ring-1 ring-violet-600/10",
+    gray: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 ring-1 ring-slate-600/10",
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[color]}`}>
+    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${map[color]}`}>
       {children}
     </span>
   );
 }
 
-/* 🔘 SAME ACTION BUTTON AS DASHBOARD */
 function ActionButton({ children, onClick, color }) {
-  const colors = {
-    blue: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
-    green: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300",
-    red: "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300",
-    amber: "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
+  const map = {
+    blue: "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+    green: "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+    red: "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20",
+    amber: "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition ${colors[color]}`}
+      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors border border-transparent hover:border-current ${map[color]}`}
     >
       {children}
     </button>

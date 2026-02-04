@@ -33,33 +33,33 @@ export default function AdminCreateUser() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-6 py-10
-                    bg-gray-100 dark:bg-[#0b1120]">
+    <div className="min-h-[calc(100vh-64px)] px-6 py-10 flex items-center justify-center bg-slate-50 dark:bg-[#0b1120] transition-colors">
 
-      <div className="max-w-xl mx-auto
-                      bg-white dark:bg-[#111827]
-                      border border-gray-200 dark:border-gray-700
-                      rounded-2xl shadow-xl
-                      p-6">
+      <div className="w-full max-w-lg bg-white dark:bg-[#111827]
+                      border border-slate-200 dark:border-slate-800
+                      rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none
+                      p-8">
 
-        <h2 className="text-2xl font-bold mb-6
-                       text-gray-900 dark:text-gray-100">
-          Create User
+        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+          Create New User
         </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
+          Add a new member to the organization
+        </p>
 
         {message && (
-          <div className="mb-4 text-sm text-green-700 dark:text-green-400">
+          <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 flex items-center gap-2">
             {message}
           </div>
         )}
 
         {error && (
-          <div className="mb-4 text-sm text-red-600 dark:text-red-400">
+          <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-400 flex items-center gap-2">
             {error}
           </div>
         )}
 
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-6">
           <Field label="Full Name" required>
             <input
               required
@@ -68,10 +68,11 @@ export default function AdminCreateUser() {
               onChange={(e) =>
                 setForm({ ...form, name: e.target.value })
               }
+              placeholder="e.g. John Doe"
             />
           </Field>
 
-          <Field label="Email" required>
+          <Field label="Email Address" required>
             <input
               type="email"
               required
@@ -80,10 +81,11 @@ export default function AdminCreateUser() {
               onChange={(e) =>
                 setForm({ ...form, email: e.target.value })
               }
+              placeholder="john@example.com"
             />
           </Field>
 
-          <Field label="Password (optional)">
+          <Field label="Password">
             <input
               type="password"
               className={inputClass}
@@ -91,19 +93,22 @@ export default function AdminCreateUser() {
               onChange={(e) =>
                 setForm({ ...form, password: e.target.value })
               }
+              placeholder="••••••••"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Leave blank if user will login using Google
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Leave blank if user will login using Google authentication
             </p>
           </Field>
 
-          <div className="flex justify-end pt-6">
+          <div className="pt-4">
             <button
               type="submit"
-              className="px-6 py-2 rounded-lg
-                         bg-blue-600 hover:bg-blue-700
-                         text-white font-semibold">
-              Create User
+              className="w-full px-6 py-3 rounded-xl
+                         bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
+                         text-white font-semibold shadow-lg shadow-indigo-500/25
+                         transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              Create Account
             </button>
           </div>
         </form>
@@ -116,10 +121,9 @@ export default function AdminCreateUser() {
 
 function Field({ label, required, children }) {
   return (
-    <div>
-      <label className="block mb-1 text-sm font-medium
-                        text-gray-700 dark:text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+        {label} {required && <span className="text-rose-500">*</span>}
       </label>
       {children}
     </div>
@@ -127,8 +131,10 @@ function Field({ label, required, children }) {
 }
 
 const inputClass =
-  "w-full px-3 py-2 rounded-lg " +
-  "bg-white dark:bg-[#020617] " +
-  "border border-gray-300 dark:border-gray-600 " +
-  "text-gray-900 dark:text-gray-100 " +
-  "focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-4 py-3 rounded-xl " +
+  "bg-slate-50 dark:bg-slate-900/50 " +
+  "border border-slate-200 dark:border-slate-700 " +
+  "text-slate-900 dark:text-white " +
+  "placeholder:text-slate-400 " +
+  "focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 " +
+  "transition-all duration-200";
