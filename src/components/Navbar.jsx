@@ -13,63 +13,58 @@ export default function Navbar() {
   };
 
   return (
-    <nav
-      className="h-16 px-4 sm:px-6
-                 flex items-center justify-between
-                 bg-white dark:bg-[#020617]
-                 border-b border-gray-200 dark:border-gray-700"
-    >
-      {/* LEFT */}
-      <Link
-        to={user ? "/" : "/landing"}
-        className="text-lg sm:text-xl font-bold
-                   text-blue-600 dark:text-blue-400
-                   whitespace-nowrap"
-      >
-        Reminder App
-      </Link>
+    <nav className="sticky top-0 z-50 h-18 px-4 sm:px-8 border-b border-slate-200/50 dark:border-slate-800/50 bg-white/70 dark:bg-[#0b1120]/80 backdrop-blur-xl transition-all">
+      <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
 
-      {/* RIGHT */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Theme toggle */}
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="text-xl"
-          title="Toggle theme"
+        {/* LEFT */}
+        <Link
+          to={user ? "/" : "/landing"}
+          className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 tracking-tight hover:opacity-80 transition-opacity"
         >
-          {theme === "dark" ? "☀️" : "🌙"}
-        </button>
+          Reminder App
+        </Link>
 
-        {!user ? (
-          <Link to="/login">Login</Link>
-        ) : (
-          <>
-            {/* 🔴 SUPERADMIN ONLY */}
-            {user.role === "superadmin" && (
-              <Link
-                to="/admin/users"
-                className="px-3 py-1
-                           rounded-lg border border-red-500
-                           text-red-600 dark:text-red-400
-                           hover:bg-red-50 dark:hover:bg-red-900/30
-                           font-semibold
-                           whitespace-nowrap"
-              >
-                Admin Panel
-              </Link>
-            )}
+        {/* RIGHT */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-lg"
+            title="Toggle theme"
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
 
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1
-                         bg-red-500 text-white
-                         rounded-lg
-                         whitespace-nowrap"
+          {!user ? (
+            <Link
+              to="/login"
+              className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm transition-transform hover:-translate-y-0.5"
             >
-              Logout
-            </button>
-          </>
-        )}
+              Login
+            </Link>
+          ) : (
+            <>
+              {/* 🔴 SUPERADMIN ONLY */}
+              {user.role === "superadmin" && (
+                <Link
+                  to="/admin/users"
+                  className="hidden sm:inline-flex px-4 py-2 rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 
+                             font-semibold text-sm ring-1 ring-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all"
+                >
+                  Admin Panel
+                </Link>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700
+                           text-white font-semibold text-sm shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5"
+              >
+                Logout
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
