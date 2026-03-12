@@ -160,7 +160,14 @@ export default function Dashboard() {
                           <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
                         </Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[150px]">{r.projectName}</Td>
-                        <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">{getExpiry(r).format("DD MMM YYYY")}</Td>
+                        <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
+                          <div className="flex flex-col">
+                            <span>{getExpiry(r).format("DD MMM YYYY")}</span>
+                            <span className="mt-1 text-xs font-normal text-slate-500 dark:text-slate-400 lg:hidden">
+                              {remainingTime(r)} remaining
+                            </span>
+                          </div>
+                        </Td>
                         <Td className="hidden lg:table-cell tabular-nums text-slate-500">{remainingTime(r)}</Td>
                         <Td>
                           <Badge color={status.color}>{status.text}</Badge>
