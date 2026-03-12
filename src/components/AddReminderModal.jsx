@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import { useMediaQuery } from "@mui/material";
 import {
   DesktopDateTimePicker,
-  MobileDateTimePicker,
 } from "@mui/x-date-pickers";
 import CustomPickerLayout from "./CustomPickerLayout";
 
@@ -16,7 +15,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isRenewMode = mode === "renew";
 
   const isMobile = useMediaQuery("(max-width:768px)");
-  const Picker = isMobile ? MobileDateTimePicker : DesktopDateTimePicker;
+  const Picker = DesktopDateTimePicker;
 
   const [form, setForm] = useState({
     clientName: "",
@@ -39,7 +38,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   });
 
   const [error, setError] = useState("");
-  const [activePicker, setActivePicker] = useState(null); // "activation" | "expiry" | null
 
   const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
   const minExpiryDate = form.activationDate
@@ -94,9 +92,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const handleActivationDateChange = (value) => {
     const activationDate = normalizePickerValue(value);
-    if (isMobile && activationDate) {
-      setActivePicker("expiry");
-    }
 
     setForm((current) => {
       const nextState = {
@@ -539,7 +534,11 @@ function getPickerProps({ required = false, helperText = "" } = {}) {
         }
       }
     },
-    popper: { disablePortal: false, sx: { zIndex: 20000 } },
+    popper: {
+      disablePortal: true,
+      placement: "bottom-start",
+      sx: { zIndex: 20000 }
+    },
     dialog: { sx: { zIndex: 20000 } },
     layout: {
       sx: {
