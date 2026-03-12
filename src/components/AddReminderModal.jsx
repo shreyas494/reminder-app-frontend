@@ -289,60 +289,50 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, domainName: v })} />
 
                 {/* 🔒 dates locked in edit */}
-                {!isMobile || !form.activationDate ? (
-                  <Picker
-                    label="Activation Date *"
-                    value={form.activationDate}
-                    onChange={handleActivationDateChange}
-                    disabled={isEdit}
-                    ampm
-                    format="DD/MM/YYYY hh:mm A"
-                    views={["year", "month", "day", "hours", "minutes"]}
-                    timeSteps={{ minutes: 5 }}
-                    closeOnSelect={false}
-                    slotProps={getPickerProps({
-                      required: true,
-                      helperText: isEdit
-                        ? "Activation date is locked after reminder creation"
-                        : isMobile
-                        ? "Select activation date & time"
-                        : "You can type the date/time or pick it from the dialog",
-                    })}
-                  />
-                ) : (
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                    ✓ Activation: {form.activationDate?.format("DD/MM/YYYY hh:mm A")}
-                  </div>
-                )}
+                <Picker
+                  label="Activation Date *"
+                  value={form.activationDate}
+                  onChange={handleActivationDateChange}
+                  disabled={isEdit}
+                  ampm
+                  format="DD/MM/YYYY hh:mm A"
+                  views={["year", "month", "day", "hours", "minutes"]}
+                  timeSteps={{ minutes: 5 }}
+                  closeOnSelect={false}
+                  slotProps={getPickerProps({
+                    required: true,
+                    helperText: isEdit
+                      ? "Activation date is locked after reminder creation"
+                      : isMobile
+                      ? "Select or update activation date & time"
+                      : "You can type the date/time or pick it from the dialog",
+                    isMobile,
+                  })}
+                />
 
-                {!isMobile || form.activationDate ? (
-                  <Picker
-                    label="Expiry Date *"
-                    value={form.expiryDate}
-                    onChange={handleExpiryDateChange}
-                    disabled={isEdit}
-                    ampm
-                    format="DD/MM/YYYY hh:mm A"
-                    views={["year", "month", "day", "hours", "minutes"]}
-                    timeSteps={{ minutes: 5 }}
-                    closeOnSelect={false}
-                    minDateTime={minExpiryDate}
-                    slotProps={getPickerProps({
-                      required: true,
-                      helperText: isEdit
-                        ? "Expiry updates are handled via Renew"
-                        : isMobile
-                        ? "Select expiry date & time"
-                        : "Expiry must be at least 5 minutes after activation",
-                    })}
-                  />
-                ) : (
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                    {form.expiryDate
-                      ? `✓ Expiry: ${form.expiryDate.format("DD/MM/YYYY hh:mm A")}`
-                      : "← Select activation date first"}
-                  </div>
-                )}
+                <Picker
+                  label="Expiry Date *"
+                  value={form.expiryDate}
+                  onChange={handleExpiryDateChange}
+                  disabled={isEdit || !form.activationDate}
+                  ampm
+                  format="DD/MM/YYYY hh:mm A"
+                  views={["year", "month", "day", "hours", "minutes"]}
+                  timeSteps={{ minutes: 5 }}
+                  closeOnSelect={false}
+                  minDateTime={minExpiryDate}
+                  slotProps={getPickerProps({
+                    required: true,
+                    helperText: isEdit
+                      ? "Expiry updates are handled via Renew"
+                      : !form.activationDate
+                      ? "Select activation date first"
+                      : isMobile
+                      ? "Select or update expiry date & time"
+                      : "Expiry must be at least 5 minutes after activation",
+                    isMobile,
+                  })}
+                />
 
                 <div className="md:col-span-2">
                   <Input label="Amount (₹)" type="number" value={form.amount}
@@ -403,6 +393,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   slotProps={getPickerProps({
                     required: true,
                     helperText: "Renewal expiry must be later than the current expiry",
+                    isMobile,
                   })}
                 />
               </div>
@@ -510,7 +501,7 @@ function Radio({ label, checked, onChange }) {
   );
 }
 
-function getPickerProps({ required = false, helperText = "" } = {}) {
+function getPickerProps({ required = false, helperText = "", isMobile = false } = {}) {
   return {
     textField: {
       fullWidth: true,
@@ -531,15 +522,31 @@ function getPickerProps({ required = false, helperText = "" } = {}) {
       }
     },
     popper: {
-      disablePortal: true,
+      disablePortal: false,
       placement: "bottom-start",
-      sx: { zIndex: 20000 }
+      sx: {
+        zIndex: 20000,
+        '& .MuiPaper-root': {
+          borderRadius: '16px',
+          overflow: 'hidden',
+          width: isMobile ? 'min(92vw, 360px)' : 'auto',
+          maxWidth: isMobile ? 'calc(100vw - 16px)' : 'none',
+          maxHeight: isMobile ? 'calc(100vh - 24px)' : 'none',
+        },
+        '& .MuiPickersLayout-root': {
+          minWidth: isMobile ? 'unset' : '320px',
+        },
+        '& .MuiMultiSectionDigitalClock-root': {
+          maxHeight: isMobile ? '180px' : '200px',
+        }
+      }
     },
     dialog: { sx: { zIndex: 20000 } },
     layout: {
       sx: {
+        width: isMobile ? '100%' : 'auto',
         '& .MuiMultiSectionDigitalClock-root': {
-          maxHeight: '200px'
+          maxHeight: isMobile ? '180px' : '200px'
         }
       }
     }
