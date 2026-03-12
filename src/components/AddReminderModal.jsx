@@ -39,6 +39,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   });
 
   const [error, setError] = useState("");
+  const [activePicker, setActivePicker] = useState(null); // "activation" | "expiry" | null
 
   const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
   const minExpiryDate = form.activationDate
@@ -93,6 +94,9 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const handleActivationDateChange = (value) => {
     const activationDate = normalizePickerValue(value);
+    if (isMobile && activationDate) {
+      setActivePicker("expiry");
+    }
 
     setForm((current) => {
       const nextState = {
@@ -291,44 +295,62 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, domainName: v })} />
 
                 {/* 🔒 dates locked in edit */}
-                <Picker
-                  label="Activation Date *"
-                  value={form.activationDate}
-                  onChange={handleActivationDateChange}
-                  disabled={isEdit}
-                  ampm
-                  format="DD/MM/YYYY hh:mm A"
-                  views={["year", "month", "day", "hours", "minutes"]}
-                  timeSteps={{ minutes: 5 }}
-                  closeOnSelect={false}
-                  slots={{ layout: CustomPickerLayout }}
-                  slotProps={getPickerProps({
-                    required: true,
-                    helperText: isEdit
-                      ? "Activation date is locked after reminder creation"
-                      : "You can type the date/time or pick it from the dialog",
-                  })}
-                />
+                {!isMobile || activePicker === "activation" || activePicker === null ? (
+                  <Picker
+                    label="Activation Date *"
+                    value={form.activationDate}
+                    onChange={handleActivationDateChange}
+                    disabled={isEdit}
+                    ampm
+                    format="DD/MM/YYYY hh:mm A"
+                    views={["year", "month", "day", "hours", "minutes"]}
+                    timeSteps={{ minutes: 5 }}
+                    closeOnSelect={false}
+                    slots={{ layout: CustomPickerLayout }}
+                    slotProps={getPickerProps({
+                      required: true,
+                      helperText: isEdit
+                        ? "Activation date is locked after reminder creation"
+                        : isMobile
+                        ? "Select activation date & time"
+                        : "You can type the date/time or pick it from the dialog",
+                    })}
+                  />
+                ) : (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                    ✓ Activation: {form.activationDate?.format("DD/MM/YYYY hh:mm A")}
+                  </div>
+                )}
 
-                <Picker
-                  label="Expiry Date *"
-                  value={form.expiryDate}
-                  onChange={handleExpiryDateChange}
-                  disabled={isEdit}
-                  ampm
-                  format="DD/MM/YYYY hh:mm A"
-                  views={["year", "month", "day", "hours", "minutes"]}
-                  timeSteps={{ minutes: 5 }}
-                  closeOnSelect={false}
-                  minDateTime={minExpiryDate}
-                  slots={{ layout: CustomPickerLayout }}
-                  slotProps={getPickerProps({
-                    required: true,
-                    helperText: isEdit
-                      ? "Expiry updates are handled via Renew"
-                      : "Expiry must be at least 5 minutes after activation",
-                  })}
-                />
+                {!isMobile || activePicker === "expiry" ? (
+                  <Picker
+                    label="Expiry Date *"
+                    value={form.expiryDate}
+                    onChange={handleExpiryDateChange}
+                    disabled={isEdit}
+                    ampm
+                    format="DD/MM/YYYY hh:mm A"
+                    views={["year", "month", "day", "hours", "minutes"]}
+                    timeSteps={{ minutes: 5 }}
+                    closeOnSelect={false}
+                    minDateTime={minExpiryDate}
+                    slots={{ layout: CustomPickerLayout }}
+                    slotProps={getPickerProps({
+                      required: true,
+                      helperText: isEdit
+                        ? "Expiry updates are handled via Renew"
+                        : isMobile
+                        ? "Select expiry date & time"
+                        : "Expiry must be at least 5 minutes after activation",
+                    })}
+                  />
+                ) : (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                    {form.expiryDate
+                      ? `✓ Expiry: ${form.expiryDate.format("DD/MM/YYYY hh:mm A")}`
+                      : "← Select activation date first"}
+                  </div>
+                )}
 
                 <div className="md:col-span-2">
                   <Input label="Amount (₹)" type="number" value={form.amount}
