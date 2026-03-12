@@ -133,6 +133,7 @@ export default function AddReminder() {
             setForm({ ...form, activationDate: v })
           }
           ampm
+          disableOpenPickerOnInput
           slotProps={{
             textField: muiTextFieldProps,
             popper: {
@@ -149,6 +150,7 @@ export default function AddReminder() {
             setForm({ ...form, expiryDate: v })
           }
           ampm
+          disableOpenPickerOnInput
           slotProps={{
             textField: muiTextFieldProps,
             popper: {

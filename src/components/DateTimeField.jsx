@@ -13,6 +13,7 @@ export default function DateTimeField({
       onChange={onChange}
       ampm
       minutesStep={5}
+      disableOpenPickerOnInput
       slotProps={{
         textField: {
           fullWidth: true,

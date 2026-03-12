@@ -219,6 +219,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, activationDate: v })}
                   disabled={isEdit}
                   ampm
+                  disableOpenPickerOnInput
                   slotProps={pickerProps}
                 />
 
@@ -228,6 +229,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, expiryDate: v })}
                   disabled={isEdit}
                   ampm
+                  disableOpenPickerOnInput
                   slotProps={pickerProps}
                 />
 
@@ -284,6 +286,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     setForm({ ...form, renewedExpiryDate: v })
                   }
                   ampm
+                  disableOpenPickerOnInput
                   slotProps={pickerProps}
                 />
               </div>
