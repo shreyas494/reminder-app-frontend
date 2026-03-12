@@ -6,7 +6,6 @@ import { useMediaQuery } from "@mui/material";
 import {
   DesktopDateTimePicker,
 } from "@mui/x-date-pickers";
-import CustomPickerLayout from "./CustomPickerLayout";
 
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
@@ -301,7 +300,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     views={["year", "month", "day", "hours", "minutes"]}
                     timeSteps={{ minutes: 5 }}
                     closeOnSelect={false}
-                    slots={{ layout: CustomPickerLayout }}
                     slotProps={getPickerProps({
                       required: true,
                       helperText: isEdit
@@ -329,7 +327,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     timeSteps={{ minutes: 5 }}
                     closeOnSelect={false}
                     minDateTime={minExpiryDate}
-                    slots={{ layout: CustomPickerLayout }}
                     slotProps={getPickerProps({
                       required: true,
                       helperText: isEdit
@@ -403,7 +400,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   timeSteps={{ minutes: 5 }}
                   closeOnSelect={false}
                   minDateTime={minRenewalDate}
-                  slots={{ layout: CustomPickerLayout }}
                   slotProps={getPickerProps({
                     required: true,
                     helperText: "Renewal expiry must be later than the current expiry",
