@@ -40,6 +40,14 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const [error, setError] = useState("");
 
+  const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
+  const minExpiryDate = form.activationDate
+    ? roundToFiveMinuteStep(form.activationDate.add(5, "minute"), "up")
+    : null;
+  const minRenewalDate = originalExpiryDate
+    ? roundToFiveMinuteStep(originalExpiryDate.add(5, "minute"), "up")
+    : null;
+
   /* ================= PREFILL ================= */
   useEffect(() => {
     if (!existing) return;
@@ -70,14 +78,70 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     });
   }, [existing]);
 
+  useEffect(() => {
+    if (!form.activationDate || !form.expiryDate || isEdit) {
+      return;
+    }
+
+    if (form.expiryDate.isSame(form.activationDate) || form.expiryDate.isBefore(form.activationDate)) {
+      setForm((current) => ({
+        ...current,
+        expiryDate: roundToFiveMinuteStep(current.activationDate.add(5, "minute"), "up"),
+      }));
+    }
+  }, [form.activationDate, form.expiryDate, isEdit]);
+
+  const handleActivationDateChange = (value) => {
+    const activationDate = normalizePickerValue(value);
+
+    setForm((current) => {
+      const nextState = {
+        ...current,
+        activationDate,
+      };
+
+      if (
+        activationDate &&
+        current.expiryDate &&
+        (current.expiryDate.isSame(activationDate) || current.expiryDate.isBefore(activationDate))
+      ) {
+        nextState.expiryDate = roundToFiveMinuteStep(activationDate.add(5, "minute"), "up");
+      }
+
+      return nextState;
+    });
+  };
+
+  const handleExpiryDateChange = (value) => {
+    setForm((current) => ({
+      ...current,
+      expiryDate: normalizePickerValue(value),
+    }));
+  };
+
+  const handleRenewedExpiryDateChange = (value) => {
+    setForm((current) => ({
+      ...current,
+      renewedExpiryDate: normalizePickerValue(value),
+    }));
+  };
+
   /* ================= SUBMIT ================= */
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (isRenewMode) {
-      if (!form.renewedExpiryDate) {
+      if (!isValidDayjsValue(form.renewedExpiryDate)) {
         setError("Please select new expiry date");
+        return;
+      }
+
+      if (
+        minRenewalDate &&
+        (form.renewedExpiryDate.isSame(minRenewalDate) || form.renewedExpiryDate.isAfter(minRenewalDate)) === false
+      ) {
+        setError("New expiry must be at least 5 minutes after the current expiry");
         return;
       }
     } else {
@@ -86,7 +150,9 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         !form.contactPerson ||
         !form.mobile1 ||
         !form.email ||
-        !form.projectName
+        !form.projectName ||
+        !isValidDayjsValue(form.activationDate) ||
+        !isValidDayjsValue(form.expiryDate)
       ) {
         setError("Missing required fields");
         return;
@@ -99,6 +165,16 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
       if (form.mobile2 && !/^\d{10}$/.test(form.mobile2)) {
         setError("Mobile No 2 must be 10 digits");
+        return;
+      }
+
+      if (form.expiryDate.isSame(form.activationDate) || form.expiryDate.isBefore(form.activationDate)) {
+        setError("Expiry date must be at least 5 minutes after activation date");
+        return;
+      }
+
+      if (minExpiryDate && form.expiryDate.isBefore(minExpiryDate)) {
+        setError("Expiry date must be at least 5 minutes after activation date");
         return;
       }
     }
@@ -218,23 +294,40 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 <Picker
                   label="Activation Date *"
                   value={form.activationDate}
-                  onChange={(v) => setForm({ ...form, activationDate: v })}
+                  onChange={handleActivationDateChange}
                   disabled={isEdit}
                   ampm
-                  disableOpenPickerOnInput
+                  format="DD/MM/YYYY hh:mm A"
+                  views={["year", "month", "day", "hours", "minutes"]}
+                  timeSteps={{ minutes: 5 }}
+                  closeOnSelect={false}
                   slots={{ layout: CustomPickerLayout }}
-                  slotProps={pickerProps}
+                  slotProps={getPickerProps({
+                    required: true,
+                    helperText: isEdit
+                      ? "Activation date is locked after reminder creation"
+                      : "You can type the date/time or pick it from the dialog",
+                  })}
                 />
 
                 <Picker
                   label="Expiry Date *"
                   value={form.expiryDate}
-                  onChange={(v) => setForm({ ...form, expiryDate: v })}
+                  onChange={handleExpiryDateChange}
                   disabled={isEdit}
                   ampm
-                  disableOpenPickerOnInput
+                  format="DD/MM/YYYY hh:mm A"
+                  views={["year", "month", "day", "hours", "minutes"]}
+                  timeSteps={{ minutes: 5 }}
+                  closeOnSelect={false}
+                  minDateTime={minExpiryDate}
                   slots={{ layout: CustomPickerLayout }}
-                  slotProps={pickerProps}
+                  slotProps={getPickerProps({
+                    required: true,
+                    helperText: isEdit
+                      ? "Expiry updates are handled via Renew"
+                      : "Expiry must be at least 5 minutes after activation",
+                  })}
                 />
 
                 <div className="md:col-span-2">
@@ -286,13 +379,18 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 <Picker
                   label="New Expiry Date & Time *"
                   value={form.renewedExpiryDate}
-                  onChange={(v) =>
-                    setForm({ ...form, renewedExpiryDate: v })
-                  }
+                  onChange={handleRenewedExpiryDateChange}
                   ampm
-                  disableOpenPickerOnInput
+                  format="DD/MM/YYYY hh:mm A"
+                  views={["year", "month", "day", "hours", "minutes"]}
+                  timeSteps={{ minutes: 5 }}
+                  closeOnSelect={false}
+                  minDateTime={minRenewalDate}
                   slots={{ layout: CustomPickerLayout }}
-                  slotProps={pickerProps}
+                  slotProps={getPickerProps({
+                    required: true,
+                    helperText: "Renewal expiry must be later than the current expiry",
+                  })}
                 />
               </div>
             )}
@@ -322,6 +420,44 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       </div>
     </div>
   );
+}
+
+function isValidDayjsValue(value) {
+  return dayjs.isDayjs(value) && value.isValid();
+}
+
+function roundToFiveMinuteStep(value, direction = "nearest") {
+  if (!isValidDayjsValue(value)) {
+    return null;
+  }
+
+  const baseValue = value.second(0).millisecond(0);
+  const minute = baseValue.minute();
+  const remainder = minute % 5;
+
+  if (remainder === 0) {
+    return baseValue;
+  }
+
+  if (direction === "up") {
+    return baseValue.add(5 - remainder, "minute");
+  }
+
+  if (direction === "down") {
+    return baseValue.subtract(remainder, "minute");
+  }
+
+  return remainder >= 3
+    ? baseValue.add(5 - remainder, "minute")
+    : baseValue.subtract(remainder, "minute");
+}
+
+function normalizePickerValue(value) {
+  if (!isValidDayjsValue(value)) {
+    return null;
+  }
+
+  return roundToFiveMinuteStep(value, "nearest");
 }
 
 /* ================= INPUT ================= */
@@ -361,30 +497,34 @@ function Radio({ label, checked, onChange }) {
   );
 }
 
-const pickerProps = {
-  textField: {
-    fullWidth: true,
-    size: "small",
-    sx: {
-      '& .MuiOutlinedInput-root': {
-        borderRadius: '12px',
-        backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.5)' : '#F8FAFC',
-        '& fieldset': { borderColor: (theme) => theme.palette.mode === 'dark' ? '#334155' : '#E2E8F0' },
-        '&:hover fieldset': { borderColor: '#6366F1' },
-        '&.Mui-focused fieldset': { borderColor: '#6366F1' }
-      },
-      '& .MuiInputBase-input': {
-        padding: '10px 14px',
+function getPickerProps({ required = false, helperText = "" } = {}) {
+  return {
+    textField: {
+      fullWidth: true,
+      size: "small",
+      required,
+      helperText,
+      sx: {
+        '& .MuiOutlinedInput-root': {
+          borderRadius: '12px',
+          backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.5)' : '#F8FAFC',
+          '& fieldset': { borderColor: (theme) => theme.palette.mode === 'dark' ? '#334155' : '#E2E8F0' },
+          '&:hover fieldset': { borderColor: '#6366F1' },
+          '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+        },
+        '& .MuiInputBase-input': {
+          padding: '10px 14px',
+        }
+      }
+    },
+    popper: { disablePortal: false, sx: { zIndex: 20000 } },
+    dialog: { sx: { zIndex: 20000 } },
+    layout: {
+      sx: {
+        '& .MuiMultiSectionDigitalClock-root': {
+          maxHeight: '200px'
+        }
       }
     }
-  },
-  popper: { disablePortal: false, sx: { zIndex: 20000 } },
-  dialog: { sx: { zIndex: 20000 } },
-  layout: {
-    sx: {
-      '& .MuiMultiSectionDigitalClock-root': {
-        maxHeight: '200px'
-      }
-    }
-  }
-};
+  };
+}

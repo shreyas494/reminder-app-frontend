@@ -16,8 +16,10 @@ export default function CustomPickerLayout(props) {
           </p>
           <TimeField
             value={props.value}
-            onChange={(newValue) => props.onSelectShortcut(newValue, "finish")}
+            onChange={(newValue) => props.onChange?.(newValue)}
             ampm
+            minutesStep={5}
+            format="hh:mm A"
             fullWidth
             size="small"
             slotProps={{
