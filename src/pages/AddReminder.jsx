@@ -3,6 +3,7 @@ import API from "../services/api";
 import dayjs from "dayjs";
 
 import { DesktopDateTimePicker } from "@mui/x-date-pickers/DesktopDateTimePicker";
+import CustomPickerLayout from "../components/CustomPickerLayout";
 
 export default function AddReminder() {
   const [form, setForm] = useState({
@@ -134,6 +135,7 @@ export default function AddReminder() {
           }
           ampm
           disableOpenPickerOnInput
+          slots={{ layout: CustomPickerLayout }}
           slotProps={{
             textField: muiTextFieldProps,
             popper: {
@@ -151,6 +153,7 @@ export default function AddReminder() {
           }
           ampm
           disableOpenPickerOnInput
+          slots={{ layout: CustomPickerLayout }}
           slotProps={{
             textField: muiTextFieldProps,
             popper: {

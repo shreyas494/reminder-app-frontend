@@ -7,6 +7,8 @@ import {
   DesktopDateTimePicker,
   MobileDateTimePicker,
 } from "@mui/x-date-pickers";
+import CustomPickerLayout from "./CustomPickerLayout";
+
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
@@ -220,6 +222,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   disabled={isEdit}
                   ampm
                   disableOpenPickerOnInput
+                  slots={{ layout: CustomPickerLayout }}
                   slotProps={pickerProps}
                 />
 
@@ -230,6 +233,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   disabled={isEdit}
                   ampm
                   disableOpenPickerOnInput
+                  slots={{ layout: CustomPickerLayout }}
                   slotProps={pickerProps}
                 />
 
@@ -287,6 +291,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   }
                   ampm
                   disableOpenPickerOnInput
+                  slots={{ layout: CustomPickerLayout }}
                   slotProps={pickerProps}
                 />
               </div>
@@ -375,4 +380,11 @@ const pickerProps = {
   },
   popper: { disablePortal: false, sx: { zIndex: 20000 } },
   dialog: { sx: { zIndex: 20000 } },
+  layout: {
+    sx: {
+      '& .MuiMultiSectionDigitalClock-root': {
+        maxHeight: '200px'
+      }
+    }
+  }
 };
