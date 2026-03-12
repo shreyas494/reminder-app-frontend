@@ -295,7 +295,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, domainName: v })} />
 
                 {/* 🔒 dates locked in edit */}
-                {!isMobile || activePicker === "activation" || activePicker === null ? (
+                {!isMobile || !form.activationDate ? (
                   <Picker
                     label="Activation Date *"
                     value={form.activationDate}
@@ -322,7 +322,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   </div>
                 )}
 
-                {!isMobile || activePicker === "expiry" ? (
+                {!isMobile || form.activationDate ? (
                   <Picker
                     label="Expiry Date *"
                     value={form.expiryDate}
