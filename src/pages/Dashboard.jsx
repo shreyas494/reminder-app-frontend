@@ -91,13 +91,11 @@ export default function Dashboard() {
               setEditReminder(null);
               setShowModal(true);
             }}
-            className="group relative w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 
-                       text-white font-semibold text-sm shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 
-                       transition-all duration-300 hover:-translate-y-0.5"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700
+                       text-white font-semibold text-sm shadow-sm
+                       transition-all duration-200"
           >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg leading-none">+</span> New Reminder
-            </span>
+            New Reminder
           </button>
         </div>
 
@@ -136,11 +134,15 @@ export default function Dashboard() {
                   <tr>
                     <td colSpan="10" className="text-center py-24">
                       <div className="flex flex-col items-center gap-4">
-                        <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 text-4xl">📭</div>
-                        <p className="text-slate-500 font-medium">No reminders found.</p>
+                        <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                            <path fillRule="evenodd" d="M5.25 2.25a3 3 0 00-3 3v4.318a3 3 0 00.879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 005.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 00-2.121-.879H5.25zM6.375 7.5a1.125 1.125 0 100-2.25 1.125 1.125 0 000 2.25z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">No reminders found.</p>
                         <button
                           onClick={() => setShowModal(true)}
-                          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                          className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
                         >
                           Create your first reminder
                         </button>
@@ -180,7 +182,6 @@ export default function Dashboard() {
                             <ActionButton
                               color="blue"
                               label="Edit"
-                              icon="✏️"
                               onClick={() => {
                                 setEditReminder({ ...r, _mode: "edit" });
                                 setShowModal(true);
@@ -189,7 +190,6 @@ export default function Dashboard() {
                             <ActionButton
                               color="amber"
                               label="Renew"
-                              icon="🔄"
                               onClick={() => {
                                 setEditReminder({ ...r, _mode: "renew" });
                                 setShowModal(true);
@@ -198,7 +198,6 @@ export default function Dashboard() {
                             <ActionButton
                               color="red"
                               label="Delete"
-                              icon="🗑️"
                               onClick={async () => {
                                 if (!window.confirm("Delete this reminder?")) return;
                                 await API.delete(`/reminders/${r._id}`);
@@ -221,7 +220,7 @@ export default function Dashboard() {
           <PaginationButton
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            label="← Previous"
+            label="Previous"
           />
 
           <span className="text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 backdrop-blur px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -231,7 +230,7 @@ export default function Dashboard() {
           <PaginationButton
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
-            label="Next →"
+            label="Next"
           />
         </div>
 
@@ -279,20 +278,19 @@ function Badge({ children, color }) {
   );
 }
 
-function ActionButton({ onClick, color, icon, label }) {
+function ActionButton({ onClick, color, label }) {
   const map = {
-    blue: "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20",
-    amber: "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20",
-    red: "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20",
+    blue: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 ring-1 ring-blue-200/70 dark:ring-blue-800/50",
+    amber: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 ring-1 ring-amber-200/70 dark:ring-amber-800/50",
+    red: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 ring-1 ring-rose-200/70 dark:ring-rose-800/50",
   };
 
   return (
     <button
       onClick={onClick}
-      title={label}
-      className={`p-2 rounded-lg transition-colors ${map[color]}`}
+      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${map[color]}`}
     >
-      <span className="text-lg">{icon}</span>
+      {label}
     </button>
   );
 }

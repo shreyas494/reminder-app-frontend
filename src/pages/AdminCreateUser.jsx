@@ -23,7 +23,7 @@ export default function AdminCreateUser() {
         password: form.password || undefined,
       });
 
-      setMessage("✅ User created successfully");
+      setMessage("User created successfully.");
       setForm({ name: "", email: "", password: "" });
     } catch (err) {
       setError(
@@ -103,10 +103,10 @@ export default function AdminCreateUser() {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full px-6 py-3 rounded-xl
-                         bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
-                         text-white font-semibold shadow-lg shadow-indigo-500/25
-                         transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full px-6 py-2.5 rounded-xl
+                         bg-indigo-600 hover:bg-indigo-700
+                         text-white font-semibold text-sm shadow-sm
+                         transition-colors duration-200"
             >
               Create Account
             </button>

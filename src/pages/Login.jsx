@@ -54,13 +54,13 @@ export default function Login() {
       const res = await API.post("/auth/login", { email, password });
       login(res.data);
       setIsSuccess(true);
-      setMessage("✅ Login successful. Redirecting...");
+      setMessage("Login successful. Redirecting...");
       redirect();
     } catch (err) {
       setIsSuccess(false);
       setMessage(
         err.response?.data?.message ||
-        "❌ Access denied. Contact administrator."
+        "Access denied. Contact administrator."
       );
       setIsLoading(false);
     }
@@ -78,13 +78,13 @@ export default function Login() {
 
       login(res.data);
       setIsSuccess(true);
-      setMessage("✅ Login successful. Redirecting...");
+      setMessage("Login successful. Redirecting...");
       redirect();
     } catch (err) {
       setIsSuccess(false);
       setMessage(
         err.response?.data?.message ||
-        "❌ Access denied. Contact administrator."
+        "Access denied. Contact administrator."
       );
       setIsLoading(false);
     }
@@ -142,11 +142,11 @@ export default function Login() {
 
             <button
               disabled={isLoading}
-              className={`w-full h-12 rounded-xl text-white font-semibold text-sm shadow-lg shadow-indigo-500/30
-                         transition-all duration-300 flex items-center justify-center gap-2
+              className={`w-full h-11 rounded-xl text-white font-semibold text-sm shadow-sm
+                         transition-colors duration-200 flex items-center justify-center gap-2
                          ${isLoading
                   ? "bg-slate-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-indigo-500/40 hover:-translate-y-0.5"
+                  : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
             >
               {isLoading ? (
@@ -174,7 +174,7 @@ export default function Login() {
               <GoogleLogin
                 key={isDark ? "dark" : "light"}
                 onSuccess={handleGoogleLogin}
-                onError={() => setMessage("❌ Google authentication failed")}
+                onError={() => setMessage("Google authentication failed. Please try again.")}
                 theme={isDark ? "filled_black" : "outline"}
                 shape="pill"
                 size="large" // Restored height
