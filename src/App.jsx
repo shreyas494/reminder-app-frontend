@@ -7,50 +7,28 @@ import Dashboard from "./pages/Dashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminCreateUser from "./pages/AdminCreateUser";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 
 function App() {
   return (
-    <>
-      <Navbar />
+    <Routes>
+      <Route path="/landing" element={<><Navbar /><Landing /></>} />
+      <Route path="/login" element={<><Navbar /><Login /></>} />
 
-      <Routes>
-        {/* Public */}
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/users/create" element={<AdminCreateUser />} />
+      </Route>
 
-        {/* Dashboard */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Admin */}
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute>
-              <AdminUsers />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/users/create"
-          element={
-            <ProtectedRoute>
-              <AdminCreateUser />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/landing" />} />
-      </Routes>
-    </>
+      <Route path="*" element={<Navigate to="/landing" />} />
+    </Routes>
   );
 }
 

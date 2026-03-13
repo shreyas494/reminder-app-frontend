@@ -3,14 +3,9 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
 
   return (
     <nav className="sticky top-0 z-50 h-18 px-4 sm:px-8 border-b border-slate-200/50 dark:border-slate-800/50 bg-white/70 dark:bg-[#0b1120]/80 backdrop-blur-xl transition-all">
@@ -24,7 +19,6 @@ export default function Navbar() {
           Reminder App
         </Link>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-4 sm:gap-6">
           {/* Theme toggle */}
           <button
@@ -51,26 +45,12 @@ export default function Navbar() {
               Login
             </Link>
           ) : (
-            <>
-              {/* 🔴 SUPERADMIN ONLY */}
-              {user.role === "superadmin" && (
-                <Link
-                  to="/admin/users"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400 
-                             font-semibold text-sm ring-1 ring-violet-500/20 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all whitespace-nowrap"
-                >
-                  Admin Panel
-                </Link>
-              )}
-
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300
-                           font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all hover:-translate-y-0.5"
-              >
-                Logout
-              </button>
-            </>
+            <button
+              onClick={() => navigate("/")}
+              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              Open App
+            </button>
           )}
         </div>
       </div>
