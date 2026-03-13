@@ -14,7 +14,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
 
 function MuiWrapper({ children }) {
@@ -34,18 +33,18 @@ function MuiWrapper({ children }) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <MuiWrapper>
-        <AuthProvider>
-          <BrowserRouter>
-            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <ThemeProvider>
+        <MuiWrapper>
+          <AuthProvider>
+            <BrowserRouter>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <App />
               </LocalizationProvider>
-            </GoogleOAuthProvider>
-          </BrowserRouter>
-        </AuthProvider>
-      </MuiWrapper>
-    </ThemeProvider>
+            </BrowserRouter>
+          </AuthProvider>
+        </MuiWrapper>
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
