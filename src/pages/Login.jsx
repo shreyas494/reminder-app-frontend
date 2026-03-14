@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -40,6 +40,10 @@ export default function Login() {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    googleLogout();
   }, []);
 
   const redirect = () => setTimeout(() => navigate("/"), 700);
