@@ -175,6 +175,11 @@ export default function Login() {
                 key={isDark ? "dark" : "light"}
                 onSuccess={handleGoogleLogin}
                 onError={() => setMessage("Google authentication failed. Please try again.")}
+                useOneTap={false}
+                auto_select={false}
+                use_fedcm_for_button={false}
+                use_fedcm_for_prompt={false}
+                type="standard"
                 theme={isDark ? "filled_black" : "outline"}
                 shape="pill"
                 size="large" // Restored height
