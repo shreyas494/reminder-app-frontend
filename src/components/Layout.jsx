@@ -83,6 +83,16 @@ export default function Layout() {
                   <span className="inline-flex mt-3 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
                     {user?.role || "member"}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false);
+                      handleLogout();
+                    }}
+                    className="mt-4 w-full px-3 py-2 rounded-lg text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
