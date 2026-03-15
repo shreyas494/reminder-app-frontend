@@ -12,7 +12,10 @@ export default function Layout() {
   const { theme, setTheme } = useTheme();
 
   const navItems = useMemo(() => {
-    const baseItems = [{ label: "Dashboard", to: "/" }];
+    const baseItems = [
+      { label: "Dashboard", to: "/" },
+      { label: "Quotations", to: "/quotations" },
+    ];
     if (user?.role === "superadmin") {
       baseItems.push({ label: "Admin Users", to: "/admin/users" });
       baseItems.push({ label: "Create User", to: "/admin/users/create" });

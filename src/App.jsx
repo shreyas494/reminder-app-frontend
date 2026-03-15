@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Quotations from "./pages/Quotations";
 import AdminUsers from "./pages/AdminUsers";
 import AdminCreateUser from "./pages/AdminCreateUser";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -23,6 +24,7 @@ function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
+        <Route path="/quotations" element={<Quotations />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/users/create" element={<AdminCreateUser />} />
       </Route>
