@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import API from "../services/api";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
+const FIXED_LOGO_URL = "/company-logo.png";
 
 function formatCurrency(value) {
   const amount = Math.round(Number(value || 0));
@@ -89,7 +90,7 @@ export default function Quotations() {
     try {
       const res = await API.get(`/quotations/${id}`);
       setSelectedId(id);
-      const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "";
+      const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || FIXED_LOGO_URL;
       setForm({
         ...res.data,
         companyLogoUrl: res.data.companyLogoUrl || fixedLogo,
@@ -130,7 +131,10 @@ export default function Quotations() {
         companyRegistration: form.companyRegistration,
         companyPhone: form.companyPhone,
         companyTagline: form.companyTagline,
-        companyLogoUrl: form.companyLogoUrl || localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "",
+        companyLogoUrl:
+          form.companyLogoUrl ||
+          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+          FIXED_LOGO_URL,
       };
 
       await API.put(`/quotations/${form._id}`, payload);
@@ -195,7 +199,10 @@ export default function Quotations() {
     let y = 36;
     const pageCenterX = 297;
     const pageRightX = 552;
-    const logoSource = form.companyLogoUrl || localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "";
+    const logoSource =
+      form.companyLogoUrl ||
+      localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+      FIXED_LOGO_URL;
 
     try {
       const logoDataUrl = await toDataUrl(logoSource);
