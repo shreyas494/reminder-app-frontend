@@ -216,7 +216,7 @@ export default function Quotations() {
       const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
         const imageFormat = String(logoDataUrl).includes("image/png") ? "PNG" : "JPEG";
-        doc.addImage(logoDataUrl, imageFormat, 24, 22, 64, 64);
+        doc.addImage(logoDataUrl, imageFormat, 22, 20, 78, 78);
       }
     } catch {}
 
