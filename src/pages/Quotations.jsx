@@ -163,7 +163,11 @@ export default function Quotations() {
     setMessage("");
 
     try {
-      await API.post(`/quotations/${form._id}/send`);
+      const pdfDoc = await buildPdfDocument();
+      const pdfDataUri = pdfDoc.output("datauristring");
+      const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
+
+      await API.post(`/quotations/${form._id}/send`, { pdfBase64 });
       await openQuotation(form._id);
       await fetchQuotations(quotationPage);
       setMessage("Quotation email sent successfully.");
@@ -196,6 +200,15 @@ export default function Quotations() {
 
   async function downloadPdf() {
     if (!form) return;
+
+    const doc = await buildPdfDocument();
+    doc.save(`${form.quotationNumber || "quotation"}.pdf`);
+  }
+
+  async function buildPdfDocument() {
+    if (!form) {
+      throw new Error("No quotation selected");
+    }
 
     const doc = new jsPDF("p", "pt", "a4");
     const line = (text, x, y, opts = {}) => {
@@ -303,7 +316,7 @@ export default function Quotations() {
     y += 14;
     line(form.senderPhone, 40, y, { bold: true });
 
-    doc.save(`${form.quotationNumber || "quotation"}.pdf`);
+    return doc;
   }
 
   return (
