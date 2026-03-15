@@ -3,13 +3,11 @@ import { jsPDF } from "jspdf";
 import dayjs from "dayjs";
 import API from "../services/api";
 
+const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
+
 function formatCurrency(value) {
-  const amount = Number(value || 0);
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2,
-  }).format(amount);
+  const amount = Math.round(Number(value || 0));
+  return `Rs. ${amount}/-`;
 }
 
 export default function Quotations() {
@@ -91,7 +89,11 @@ export default function Quotations() {
     try {
       const res = await API.get(`/quotations/${id}`);
       setSelectedId(id);
-      setForm(res.data);
+      const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "";
+      setForm({
+        ...res.data,
+        companyLogoUrl: res.data.companyLogoUrl || fixedLogo,
+      });
       setPreviewHtml(res.data.previewHtml || "");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load quotation");
@@ -128,7 +130,7 @@ export default function Quotations() {
         companyRegistration: form.companyRegistration,
         companyPhone: form.companyPhone,
         companyTagline: form.companyTagline,
-        companyLogoUrl: form.companyLogoUrl,
+        companyLogoUrl: form.companyLogoUrl || localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "",
       };
 
       await API.put(`/quotations/${form._id}`, payload);
@@ -187,36 +189,35 @@ export default function Quotations() {
     const line = (text, x, y, opts = {}) => {
       doc.setFont("helvetica", opts.bold ? "bold" : "normal");
       doc.setFontSize(opts.size || 11);
-      doc.text(String(text || ""), x, y);
+      doc.text(String(text || ""), x, y, opts.align ? { align: opts.align } : undefined);
     };
 
     let y = 36;
-    let headerX = 40;
+    const pageCenterX = 297;
+    const pageRightX = 552;
+    const logoSource = form.companyLogoUrl || localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || "";
 
     try {
-      const logoDataUrl = await toDataUrl(form.companyLogoUrl);
+      const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
         const imageFormat = String(logoDataUrl).includes("image/png") ? "PNG" : "JPEG";
         doc.addImage(logoDataUrl, imageFormat, 40, 24, 72, 72);
-        headerX = 124;
       }
-    } catch {
-      headerX = 40;
-    }
+    } catch {}
 
-    line(form.companyName, headerX, y, { bold: true, size: 14 });
+    line(form.companyName, pageCenterX, y, { bold: true, size: 14, align: "center" });
     y += 16;
-    line(form.companyAddress, headerX, y, { size: 10 });
+    line(form.companyAddress, pageCenterX, y, { size: 10, align: "center" });
     y += 14;
     if (form.companyTagline) {
-      line(form.companyTagline, headerX, y, { size: 10 });
+      line(form.companyTagline, pageCenterX, y, { size: 10, align: "center" });
       y += 16;
     }
 
-    line(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, 420, 36, { size: 10 });
+    line(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageRightX, 36, { size: 10, align: "right" });
 
     y += 16;
-    line(form.subject, 40, y, { bold: true, size: 13 });
+    line(form.subject, pageCenterX, y, { bold: true, size: 13, align: "center" });
 
     y += 24;
     line("To,", 40, y, { bold: true });
@@ -235,23 +236,23 @@ export default function Quotations() {
     y += introLines.length * 14 + 12;
 
     line("Description", 40, y, { bold: true });
-    line("Charges", 430, y, { bold: true });
+    line("Charges", pageRightX, y, { bold: true, align: "right" });
     y += 12;
     doc.line(40, y, 550, y);
 
     y += 16;
     line(form.serviceDescription, 40, y);
-    line(formatCurrency(form.amount), 430, y);
+    line(formatCurrency(form.amount), pageRightX, y, { align: "right" });
 
     if (form.quotationType === "with-gst") {
       y += 16;
       line(`GST (${form.gstPercent}%)`, 40, y);
-      line(formatCurrency(totals.gstAmount), 430, y);
+      line(formatCurrency(totals.gstAmount), pageRightX, y, { align: "right" });
     }
 
     y += 16;
     line("Total", 40, y, { bold: true });
-    line(formatCurrency(totals.totalAmount), 430, y, { bold: true });
+    line(formatCurrency(totals.totalAmount), pageRightX, y, { bold: true, align: "right" });
 
     y += 28;
     line(`Payment: ${form.paymentTerms}`, 40, y, { size: 11 });
@@ -385,6 +386,7 @@ export default function Quotations() {
                             const reader = new FileReader();
                             reader.onloadend = () => {
                               const result = String(reader.result || "");
+                              localStorage.setItem(FIXED_LOGO_STORAGE_KEY, result);
                               setForm((current) => ({ ...current, companyLogoUrl: result }));
                             };
                             reader.readAsDataURL(file);
