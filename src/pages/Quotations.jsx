@@ -271,10 +271,10 @@ export default function Quotations() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 bg-slate-50 dark:bg-[#0b1120]">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-[calc(100vh-64px)] px-3 sm:px-6 py-4 sm:py-8 bg-slate-50 dark:bg-[#0b1120]">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Quotations</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Quotations</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Create quotation from reminder, manually edit, review, then download PDF or send email.
           </p>
@@ -284,26 +284,26 @@ export default function Quotations() {
         {message && <div className="rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{message}</div>}
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <section className="xl:col-span-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
+          <section className="xl:col-span-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Reminders</h2>
-            <div className="space-y-3 max-h-[340px] overflow-y-auto">
+            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
               {reminders.map((r) => (
                 <div key={r._id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
                   <p className="font-semibold text-slate-800 dark:text-slate-100">{r.clientName}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{r.projectName}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 break-all">{r.email || "No email"}</p>
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button
                       disabled={busy}
                       onClick={() => createQuotation(r._id, "with-gst")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
                     >
                       Create GST
                     </button>
                     <button
                       disabled={busy}
                       onClick={() => createQuotation(r._id, "without-gst")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-60"
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-60"
                     >
                       Create Non-GST
                     </button>
@@ -317,17 +317,17 @@ export default function Quotations() {
             <Pager page={reminderPage} totalPages={reminderTotalPages} onPrev={() => setReminderPage((p) => Math.max(1, p - 1))} onNext={() => setReminderPage((p) => Math.min(reminderTotalPages, p + 1))} />
           </section>
 
-          <section className="xl:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
+          <section className="xl:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Drafts</h2>
-              <div className="flex gap-2">
-                <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
-                <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
+                <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
+                <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-              <div className="lg:col-span-1 space-y-2 max-h-[240px] overflow-y-auto">
+              <div className="lg:col-span-1 space-y-2 max-h-[280px] sm:max-h-[240px] overflow-y-auto pr-1">
                 {quotations.map((q) => (
                   <button
                     key={q._id}
@@ -404,14 +404,16 @@ export default function Quotations() {
                     <button
                       disabled={busy}
                       onClick={saveQuotation}
-                      className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
                     >
                       Save Manual Edits (Required)
                     </button>
 
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
                       <h3 className="text-sm font-bold text-slate-600 mb-3">Review Preview</h3>
-                      <div className="max-h-[520px] overflow-auto bg-white" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                      <div className="max-h-[520px] overflow-auto bg-white rounded-lg border border-slate-200">
+                        <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                      </div>
                     </div>
                   </div>
                 )}
