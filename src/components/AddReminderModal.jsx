@@ -203,9 +203,15 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         payload.expiryDate = form.renewedExpiryDate.toISOString();
       }
 
-      // ✏️ EDIT
+      // ✏️ EDIT / 🔄 RENEW
       if (isEdit) {
-        await API.put(`/reminders/${existing._id}`, payload);
+        if (isRenewMode) {
+          await API.patch(`/reminders/${existing._id}`, {
+            expiryDate: form.renewedExpiryDate.toISOString(),
+          });
+        } else {
+          await API.put(`/reminders/${existing._id}`, payload);
+        }
       }
       // ➕ ADD
       else {
