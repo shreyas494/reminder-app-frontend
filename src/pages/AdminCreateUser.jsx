@@ -96,7 +96,7 @@ export default function AdminCreateUser() {
               placeholder="••••••••"
             />
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              Leave blank if user will login using Google authentication
+              
             </p>
           </Field>
 
