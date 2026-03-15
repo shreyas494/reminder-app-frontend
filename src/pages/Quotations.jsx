@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import API from "../services/api";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
-const FIXED_LOGO_URL = "/company-logo.png";
+const FIXED_LOGO_URL = "https://reminder-app-backend-aaac.onrender.com/assets/company-logo.png";
 
 function resolveLogoUrl(value) {
   const raw = String(value || "").trim();
