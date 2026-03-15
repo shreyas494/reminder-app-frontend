@@ -205,7 +205,7 @@ export default function Quotations() {
     };
 
     let y = 36;
-    const pageCenterX = 297;
+    const headerCenterX = 332;
     const pageRightX = 552;
     const logoSource =
       resolveLogoUrl(form.companyLogoUrl) ||
@@ -216,23 +216,23 @@ export default function Quotations() {
       const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
         const imageFormat = String(logoDataUrl).includes("image/png") ? "PNG" : "JPEG";
-        doc.addImage(logoDataUrl, imageFormat, 40, 24, 72, 72);
+        doc.addImage(logoDataUrl, imageFormat, 24, 22, 64, 64);
       }
     } catch {}
 
-    line(form.companyName, pageCenterX, y, { bold: true, size: 14, align: "center" });
+    line(form.companyName, headerCenterX, y, { bold: true, size: 14, align: "center" });
     y += 16;
-    line(form.companyAddress, pageCenterX, y, { size: 10, align: "center" });
+    line(form.companyAddress, headerCenterX, y, { size: 10, align: "center" });
     y += 14;
     if (form.companyTagline) {
-      line(form.companyTagline, pageCenterX, y, { size: 10, align: "center" });
+      line(form.companyTagline, headerCenterX, y, { size: 10, align: "center" });
       y += 16;
     }
 
     line(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageRightX, 36, { size: 10, align: "right" });
 
     y += 16;
-    line(form.subject, pageCenterX, y, { bold: true, size: 13, align: "center" });
+    line(form.subject, headerCenterX, y, { bold: true, size: 13, align: "center" });
 
     y += 24;
     line("To,", 40, y, { bold: true });
