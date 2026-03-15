@@ -6,6 +6,13 @@ import API from "../services/api";
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
 const FIXED_LOGO_URL = "/company-logo.png";
 
+function resolveLogoUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.includes("yourdomain.com")) return "";
+  return raw;
+}
+
 function formatCurrency(value) {
   const amount = Math.round(Number(value || 0));
   return `Rs. ${amount}/-`;
@@ -91,9 +98,10 @@ export default function Quotations() {
       const res = await API.get(`/quotations/${id}`);
       setSelectedId(id);
       const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || FIXED_LOGO_URL;
+      const resolvedLogo = resolveLogoUrl(res.data.companyLogoUrl) || fixedLogo;
       setForm({
         ...res.data,
-        companyLogoUrl: res.data.companyLogoUrl || fixedLogo,
+        companyLogoUrl: resolvedLogo,
       });
       setPreviewHtml(res.data.previewHtml || "");
     } catch (err) {
@@ -132,7 +140,7 @@ export default function Quotations() {
         companyPhone: form.companyPhone,
         companyTagline: form.companyTagline,
         companyLogoUrl:
-          form.companyLogoUrl ||
+          resolveLogoUrl(form.companyLogoUrl) ||
           localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
           FIXED_LOGO_URL,
       };
@@ -200,7 +208,7 @@ export default function Quotations() {
     const pageCenterX = 297;
     const pageRightX = 552;
     const logoSource =
-      form.companyLogoUrl ||
+      resolveLogoUrl(form.companyLogoUrl) ||
       localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
       FIXED_LOGO_URL;
 
@@ -242,24 +250,44 @@ export default function Quotations() {
     doc.text(introLines, 40, y);
     y += introLines.length * 14 + 12;
 
-    line("Description", 40, y, { bold: true });
-    line("Charges", pageRightX, y, { bold: true, align: "right" });
-    y += 12;
-    doc.line(40, y, 550, y);
+    const tableX = 40;
+    const tableW = 510;
+    const srW = 60;
+    const descW = 320;
+    const chargeW = tableW - srW - descW;
+    const rowH = 22;
 
-    y += 16;
-    line(form.serviceDescription, 40, y);
-    line(formatCurrency(form.amount), pageRightX, y, { align: "right" });
+    const drawCell = (x, top, width, height) => {
+      doc.rect(x, top, width, height);
+    };
+
+    const drawRow = (top, srText, descText, chargeText, bold = false) => {
+      drawCell(tableX, top, srW, rowH);
+      drawCell(tableX + srW, top, descW, rowH);
+      drawCell(tableX + srW + descW, top, chargeW, rowH);
+
+      line(srText, tableX + 8, top + 15, { bold, size: 10 });
+      line(descText, tableX + srW + 8, top + 15, { bold, size: 10 });
+      line(chargeText, tableX + srW + descW + chargeW - 8, top + 15, {
+        bold,
+        size: 10,
+        align: "right",
+      });
+    };
+
+    drawRow(y, "Sr.", "Description", "Charges", true);
+    y += rowH;
+
+    drawRow(y, "1", String(form.serviceDescription || ""), formatCurrency(form.amount), false);
+    y += rowH;
 
     if (form.quotationType === "with-gst") {
-      y += 16;
-      line(`GST (${form.gstPercent}%)`, 40, y);
-      line(formatCurrency(totals.gstAmount), pageRightX, y, { align: "right" });
+      drawRow(y, "", `GST (${form.gstPercent}%)`, formatCurrency(totals.gstAmount), false);
+      y += rowH;
     }
 
-    y += 16;
-    line("Total", 40, y, { bold: true });
-    line(formatCurrency(totals.totalAmount), pageRightX, y, { bold: true, align: "right" });
+    drawRow(y, "", "Total", formatCurrency(totals.totalAmount), true);
+    y += rowH + 10;
 
     y += 28;
     line(`Payment: ${form.paymentTerms}`, 40, y, { size: 11 });
