@@ -319,76 +319,124 @@ export default function Quotations() {
         {error && <div className="rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-600 text-sm">{error}</div>}
         {message && <div className="rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{message}</div>}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <section className="xl:col-span-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Reminders</h2>
-            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-              {reminders.map((r) => (
-                <div key={r._id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                  <p className="font-semibold text-slate-800 dark:text-slate-100">{r.clientName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{r.projectName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 break-all">{r.email || "No email"}</p>
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button
-                      disabled={busy}
-                      onClick={() => createQuotation(r._id, "with-gst")}
-                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
-                    >
-                      Create GST
-                    </button>
-                    <button
-                      disabled={busy}
-                      onClick={() => createQuotation(r._id, "without-gst")}
-                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-60"
-                    >
-                      Create Non-GST
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {reminders.length === 0 && (
-                <p className="text-sm text-slate-500">No reminders found on this page.</p>
-              )}
-            </div>
-            <Pager page={reminderPage} totalPages={reminderTotalPages} onPrev={() => setReminderPage((p) => Math.max(1, p - 1))} onNext={() => setReminderPage((p) => Math.min(reminderTotalPages, p + 1))} />
-          </section>
-
-          <section className="xl:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Drafts</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
-                <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
-                <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-              <div className="lg:col-span-1 space-y-2 max-h-[280px] sm:max-h-[240px] overflow-y-auto pr-1">
-                {quotations.map((q) => (
-                  <button
-                    key={q._id}
-                    onClick={() => openQuotation(q._id)}
-                    className={`w-full text-left rounded-xl border p-3 transition-colors ${selectedId === q._id ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20" : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                  >
-                    <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{q.quotationNumber}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{q.recipientOrganization || "-"}</div>
-                    <div className="text-xs mt-1">
-                      <span className={`px-2 py-0.5 rounded-full ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                        {q.reviewed ? "Reviewed" : "Needs edit"}
-                      </span>
-                    </div>
-                  </button>
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Reminders (Create Quotation)</h2>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+            <table className="min-w-[760px] w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800/70">
+                <tr>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Project</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reminders.map((r) => (
+                  <tr key={r._id} className="border-t border-slate-200 dark:border-slate-700">
+                    <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{r.clientName}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{r.projectName}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{r.email || "No email"}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2">
+                        <button
+                          disabled={busy}
+                          onClick={() => createQuotation(r._id, "with-gst")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                        >
+                          Create GST
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={() => createQuotation(r._id, "without-gst")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-60"
+                        >
+                          Create Non-GST
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-                {quotations.length === 0 && <p className="text-sm text-slate-500">No quotations created yet.</p>}
-              </div>
+                {reminders.length === 0 && (
+                  <tr>
+                    <td className="px-3 py-4 text-slate-500" colSpan={4}>No reminders found on this page.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pager page={reminderPage} totalPages={reminderTotalPages} onPrev={() => setReminderPage((p) => Math.max(1, p - 1))} onNext={() => setReminderPage((p) => Math.min(reminderTotalPages, p + 1))} />
+        </section>
 
-              <div className="lg:col-span-2">
-                {!form ? (
-                  <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-sm text-slate-500">
-                    Select a quotation draft to edit and review.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
+              <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
+              <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+            <table className="min-w-[880px] w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800/70">
+                <tr>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Reviewed</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Sent</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quotations.map((q) => (
+                  <tr
+                    key={q._id}
+                    className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === q._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
+                  >
+                    <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientOrganization || "-"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        {q.reviewed ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.sent ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-700"}`}>
+                        {q.sent ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <button
+                        onClick={() => openQuotation(q._id)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {quotations.length === 0 && (
+                  <tr>
+                    <td className="px-3 py-4 text-slate-500" colSpan={6}>No quotation records found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pager page={quotationPage} totalPages={quotationTotalPages} onPrev={() => setQuotationPage((p) => Math.max(1, p - 1))} onNext={() => setQuotationPage((p) => Math.min(quotationTotalPages, p + 1))} />
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Selected Quotation Record</h2>
+          {!form ? (
+            <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-sm text-slate-500">
+              Select a quotation record from the table above to edit and review.
+            </div>
+          ) : (
+            <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
                       <Input label="Quotation Date" type="date" value={dayjs(form.quotationDate).format("YYYY-MM-DD")} onChange={(v) => setForm({ ...form, quotationDate: dayjs(v).toISOString() })} />
@@ -409,26 +457,7 @@ export default function Quotations() {
                       <Input label="Company Registration" value={form.companyRegistration || ""} onChange={(v) => setForm({ ...form, companyRegistration: v })} />
                       <Input label="Company Phone" value={form.companyPhone || ""} onChange={(v) => setForm({ ...form, companyPhone: v })} />
                       <Input label="Company Tagline" value={form.companyTagline || ""} onChange={(v) => setForm({ ...form, companyTagline: v })} />
-                      <Input label="Company Logo URL" value={form.companyLogoUrl || ""} onChange={(v) => setForm({ ...form, companyLogoUrl: v })} />
-                      <label className="space-y-1 block">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Upload Company Logo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              const result = String(reader.result || "");
-                              localStorage.setItem(FIXED_LOGO_STORAGE_KEY, result);
-                              setForm((current) => ({ ...current, companyLogoUrl: result }));
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                          className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
-                        />
-                      </label>
+                      <Input label="Company Logo URL" value={form.companyLogoUrl || ""} readOnly />
                     </div>
 
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
@@ -452,13 +481,9 @@ export default function Quotations() {
                         <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
             </div>
-            <Pager page={quotationPage} totalPages={quotationTotalPages} onPrev={() => setQuotationPage((p) => Math.max(1, p - 1))} onNext={() => setQuotationPage((p) => Math.min(quotationTotalPages, p + 1))} />
-          </section>
-        </div>
+          )}
+        </section>
       </div>
     </div>
   );
