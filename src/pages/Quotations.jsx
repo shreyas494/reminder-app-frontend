@@ -320,7 +320,7 @@ export default function Quotations() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-3 sm:px-6 py-4 sm:py-8 bg-slate-50 dark:bg-[#0b1120]">
+    <div className="min-h-[calc(100vh-64px)] px-3 sm:px-6 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Quotations</h1>
@@ -332,11 +332,11 @@ export default function Quotations() {
         {error && <div className="rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-600 text-sm">{error}</div>}
         {message && <div className="rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{message}</div>}
 
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Reminders (Create Quotation)</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
             <table className="min-w-[760px] w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/70">
+              <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Project</th>
@@ -381,7 +381,7 @@ export default function Quotations() {
           <Pager page={reminderPage} totalPages={reminderTotalPages} onPrev={() => setReminderPage((p) => Math.max(1, p - 1))} onNext={() => setReminderPage((p) => Math.min(reminderTotalPages, p + 1))} />
         </section>
 
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
@@ -390,9 +390,9 @@ export default function Quotations() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
             <table className="min-w-[880px] w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/70">
+              <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
@@ -442,7 +442,7 @@ export default function Quotations() {
           <Pager page={quotationPage} totalPages={quotationTotalPages} onPrev={() => setQuotationPage((p) => Math.max(1, p - 1))} onNext={() => setQuotationPage((p) => Math.min(quotationTotalPages, p + 1))} />
         </section>
 
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Selected Quotation Record</h2>
           {!form ? (
             <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-sm text-slate-500">

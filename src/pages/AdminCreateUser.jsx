@@ -33,10 +33,10 @@ export default function AdminCreateUser() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-6 py-10 flex items-center justify-center bg-slate-50 dark:bg-[#0b1120] transition-colors">
+    <div className="min-h-[calc(100vh-64px)] px-6 py-10 flex items-center justify-center transition-colors">
 
-      <div className="w-full max-w-lg bg-white dark:bg-[#111827]
-                      border border-slate-200 dark:border-slate-800
+      <div className="w-full max-w-lg bg-white/85 dark:bg-[#111827]/75 backdrop-blur-sm
+              border border-indigo-100 dark:border-indigo-900/40
                       rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none
                       p-8">
 
@@ -104,7 +104,7 @@ export default function AdminCreateUser() {
             <button
               type="submit"
               className="w-full px-6 py-2.5 rounded-xl
-                         bg-indigo-600 hover:bg-indigo-700
+                         bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700
                          text-white font-semibold text-sm shadow-sm
                          transition-colors duration-200"
             >

@@ -5,8 +5,53 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ui-light-bg: #f5f7ff;
+  --ui-light-surface: #ffffff;
+  --ui-light-tint-1: rgba(99, 102, 241, 0.12);
+  --ui-light-tint-2: rgba(16, 185, 129, 0.1);
+
+  --ui-dark-bg: #070b16;
+  --ui-dark-surface: #0f172a;
+  --ui-dark-tint-1: rgba(99, 102, 241, 0.18);
+  --ui-dark-tint-2: rgba(20, 184, 166, 0.14);
+}
+
 @layer base {
   body {
-    @apply font-sans bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white;
+    @apply font-sans text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white;
+    background:
+      radial-gradient(circle at 12% 8%, var(--ui-light-tint-1), transparent 32%),
+      radial-gradient(circle at 88% 92%, var(--ui-light-tint-2), transparent 30%),
+      var(--ui-light-bg);
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(circle at 12% 8%, var(--ui-dark-tint-1), transparent 35%),
+      radial-gradient(circle at 88% 92%, var(--ui-dark-tint-2), transparent 30%),
+      var(--ui-dark-bg);
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.35);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: rgba(129, 140, 248, 0.45);
+    background-clip: content-box;
   }
 }

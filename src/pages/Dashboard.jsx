@@ -67,11 +67,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 overflow-hidden bg-slate-50 dark:bg-[#0b1120] transition-colors">
+    <div className="relative min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 overflow-hidden transition-colors">
 
       {/* 🎨 ANIMATED BACKGROUND */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-400/10 to-indigo-400/10 blur-[100px] animate-pulse dark:from-blue-600/5 dark:to-indigo-600/5 pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-violet-400/10 to-purple-400/10 blur-[100px] animate-pulse delay-1000 dark:from-violet-600/5 dark:to-purple-600/5 pointer-events-none"></div>
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-cyan-400/12 to-indigo-400/12 blur-[100px] animate-pulse dark:from-cyan-500/10 dark:to-indigo-600/10 pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-fuchsia-400/12 to-purple-400/12 blur-[100px] animate-pulse delay-1000 dark:from-fuchsia-600/10 dark:to-purple-600/10 pointer-events-none"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
 
@@ -91,7 +91,7 @@ export default function Dashboard() {
               setEditReminder(null);
               setShowModal(true);
             }}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700
                        text-white font-semibold text-sm shadow-sm
                        transition-all duration-200"
           >

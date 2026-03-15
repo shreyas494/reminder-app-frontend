@@ -95,16 +95,16 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-[#0b1120] transition-colors">
+    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden transition-colors">
 
       {/* 🎨 ANIMATED BACKGROUND DECORATION */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-400/30 to-indigo-400/30 blur-[100px] animate-pulse dark:from-blue-600/20 dark:to-indigo-600/20"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-violet-400/30 to-purple-400/30 blur-[100px] animate-pulse delay-1000 dark:from-violet-600/20 dark:to-purple-600/20"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-cyan-400/25 to-indigo-400/25 blur-[100px] animate-pulse dark:from-cyan-500/20 dark:to-indigo-600/20"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-fuchsia-400/25 to-purple-400/25 blur-[100px] animate-pulse delay-1000 dark:from-fuchsia-600/20 dark:to-purple-600/20"></div>
 
       <div className="relative w-full max-w-md p-8 z-10">
 
         {/* 🌟 GLASS CARD */}
-        <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 shadow-2xl rounded-3xl p-8 transition-all duration-300 hover:shadow-indigo-500/10">
+        <div className="backdrop-blur-xl bg-white/75 dark:bg-[#111827]/65 border border-indigo-100/70 dark:border-indigo-900/40 shadow-2xl rounded-3xl p-8 transition-all duration-300 hover:shadow-indigo-500/20">
 
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
@@ -150,7 +150,7 @@ export default function Login() {
                          transition-colors duration-200 flex items-center justify-center gap-2
                          ${isLoading
                   ? "bg-slate-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
+                  : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
                 }`}
             >
               {isLoading ? (

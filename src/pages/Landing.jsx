@@ -5,11 +5,11 @@ export default function Landing() {
   const { user } = useAuth();
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0b1120] transition-colors">
+    <div className="relative min-h-screen flex flex-col overflow-hidden transition-colors">
 
       {/* 🎨 ANIMATED BACKGROUND */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-400/20 to-indigo-400/20 blur-[120px] animate-pulse dark:from-blue-600/10 dark:to-indigo-600/10"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-violet-400/20 to-purple-400/20 blur-[120px] animate-pulse delay-700 dark:from-violet-600/10 dark:to-purple-600/10"></div>
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-cyan-400/20 to-indigo-400/20 blur-[120px] animate-pulse dark:from-cyan-500/15 dark:to-indigo-600/15"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-r from-fuchsia-400/20 to-purple-400/20 blur-[120px] animate-pulse delay-700 dark:from-fuchsia-600/15 dark:to-purple-600/15"></div>
 
       {/* HERO SECTION */}
       <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-24 pb-16 sm:pt-32 sm:pb-20">
@@ -43,7 +43,7 @@ export default function Landing() {
           {user ? (
             <Link
               to="/dashboard"
-              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700
+              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700
                          text-white font-bold text-sm shadow-sm
                          transition-colors duration-200 text-center"
             >
@@ -52,7 +52,7 @@ export default function Landing() {
           ) : (
             <Link
               to="/login"
-              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700
+              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700
                          text-white font-bold text-sm shadow-sm
                          transition-colors duration-200 text-center"
             >
