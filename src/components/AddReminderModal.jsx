@@ -291,50 +291,75 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   onChange={(v) => setForm({ ...form, domainName: v })} />
 
                 {/* 🔒 dates locked in edit */}
-                <Picker
-                  label="Activation Date *"
-                  value={form.activationDate}
-                  onChange={handleActivationDateChange}
-                  disabled={isEdit}
-                  ampm
-                  format="DD/MM/YYYY hh:mm A"
-                  views={["year", "month", "day", "hours", "minutes"]}
-                  timeSteps={{ minutes: 5 }}
-                  closeOnSelect={false}
-                  slotProps={getPickerProps({
-                    required: true,
-                    helperText: isEdit
+                {isMobile ? (
+                  <MobileDateTimeInput
+                    label="Activation Date *"
+                    value={form.activationDate}
+                    onChange={handleActivationDateChange}
+                    disabled={isEdit}
+                    required
+                    helperText={isEdit
                       ? "Activation date is locked after reminder creation"
-                      : isMobile
-                      ? "Select or update activation date & time"
-                      : "You can type the date/time or pick it from the dialog",
-                    isMobile,
-                  })}
-                />
+                      : "Select or update activation date and time"}
+                  />
+                ) : (
+                  <Picker
+                    label="Activation Date *"
+                    value={form.activationDate}
+                    onChange={handleActivationDateChange}
+                    disabled={isEdit}
+                    ampm
+                    format="DD/MM/YYYY hh:mm A"
+                    views={["year", "month", "day", "hours", "minutes"]}
+                    timeSteps={{ minutes: 5 }}
+                    closeOnSelect={false}
+                    slotProps={getPickerProps({
+                      required: true,
+                      helperText: isEdit
+                        ? "Activation date is locked after reminder creation"
+                        : "You can type the date/time or pick it from the dialog",
+                      isMobile,
+                    })}
+                  />
+                )}
 
-                <Picker
-                  label="Expiry Date *"
-                  value={form.expiryDate}
-                  onChange={handleExpiryDateChange}
-                  disabled={isEdit || !form.activationDate}
-                  ampm
-                  format="DD/MM/YYYY hh:mm A"
-                  views={["year", "month", "day", "hours", "minutes"]}
-                  timeSteps={{ minutes: 5 }}
-                  closeOnSelect={false}
-                  minDateTime={minExpiryDate}
-                  slotProps={getPickerProps({
-                    required: true,
-                    helperText: isEdit
+                {isMobile ? (
+                  <MobileDateTimeInput
+                    label="Expiry Date *"
+                    value={form.expiryDate}
+                    onChange={handleExpiryDateChange}
+                    disabled={isEdit || !form.activationDate}
+                    required
+                    minValue={minExpiryDate}
+                    helperText={isEdit
                       ? "Expiry updates are handled via Renew"
                       : !form.activationDate
                       ? "Select activation date first"
-                      : isMobile
-                      ? "Select or update expiry date & time"
-                      : "Expiry must be at least 5 minutes after activation",
-                    isMobile,
-                  })}
-                />
+                      : "Select or update expiry date and time"}
+                  />
+                ) : (
+                  <Picker
+                    label="Expiry Date *"
+                    value={form.expiryDate}
+                    onChange={handleExpiryDateChange}
+                    disabled={isEdit || !form.activationDate}
+                    ampm
+                    format="DD/MM/YYYY hh:mm A"
+                    views={["year", "month", "day", "hours", "minutes"]}
+                    timeSteps={{ minutes: 5 }}
+                    closeOnSelect={false}
+                    minDateTime={minExpiryDate}
+                    slotProps={getPickerProps({
+                      required: true,
+                      helperText: isEdit
+                        ? "Expiry updates are handled via Renew"
+                        : !form.activationDate
+                        ? "Select activation date first"
+                        : "Expiry must be at least 5 minutes after activation",
+                      isMobile,
+                    })}
+                  />
+                )}
 
                 <div className="md:col-span-2">
                   <Input label="Amount (₹)" type="number" value={form.amount}
@@ -382,22 +407,33 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   <p className="font-medium">Renewing {existing.projectName} for {existing.clientName}</p>
                 </div>
 
-                <Picker
-                  label="New Expiry Date & Time *"
-                  value={form.renewedExpiryDate}
-                  onChange={handleRenewedExpiryDateChange}
-                  ampm
-                  format="DD/MM/YYYY hh:mm A"
-                  views={["year", "month", "day", "hours", "minutes"]}
-                  timeSteps={{ minutes: 5 }}
-                  closeOnSelect={false}
-                  minDateTime={minRenewalDate}
-                  slotProps={getPickerProps({
-                    required: true,
-                    helperText: "Renewal expiry must be later than the current expiry",
-                    isMobile,
-                  })}
-                />
+                {isMobile ? (
+                  <MobileDateTimeInput
+                    label="New Expiry Date & Time *"
+                    value={form.renewedExpiryDate}
+                    onChange={handleRenewedExpiryDateChange}
+                    required
+                    minValue={minRenewalDate}
+                    helperText="Renewal expiry must be later than the current expiry"
+                  />
+                ) : (
+                  <Picker
+                    label="New Expiry Date & Time *"
+                    value={form.renewedExpiryDate}
+                    onChange={handleRenewedExpiryDateChange}
+                    ampm
+                    format="DD/MM/YYYY hh:mm A"
+                    views={["year", "month", "day", "hours", "minutes"]}
+                    timeSteps={{ minutes: 5 }}
+                    closeOnSelect={false}
+                    minDateTime={minRenewalDate}
+                    slotProps={getPickerProps({
+                      required: true,
+                      helperText: "Renewal expiry must be later than the current expiry",
+                      isMobile,
+                    })}
+                  />
+                )}
               </div>
             )}
 
@@ -466,6 +502,55 @@ function normalizePickerValue(value) {
 
   return roundToFiveMinuteStep(value, "nearest");
 }
+
+function MobileDateTimeInput({
+  label,
+  value,
+  onChange,
+  disabled = false,
+  required = false,
+  helperText = "",
+  minValue = null,
+}) {
+  const inputValue = isValidDayjsValue(value)
+    ? value.format("YYYY-MM-DDTHH:mm")
+    : "";
+
+  const minInputValue = isValidDayjsValue(minValue)
+    ? minValue.format("YYYY-MM-DDTHH:mm")
+    : undefined;
+
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
+
+      <input
+        type="datetime-local"
+        value={inputValue}
+        min={minInputValue}
+        step={300}
+        required={required}
+        disabled={disabled}
+        onChange={(e) => {
+          const nextValue = e.target.value ? dayjs(e.target.value) : null;
+          onChange(nextValue);
+        }}
+        className="w-full px-4 py-3 rounded-xl
+                   bg-slate-50 dark:bg-slate-900/50
+                   border border-slate-200 dark:border-slate-700
+                   text-slate-900 dark:text-white
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
+                   transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+      />
+
+      {helperText ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400 px-1">{helperText}</p>
+      ) : null}
+    </div>
+  );
+ }
 
 /* ================= INPUT ================= */
 function Input({ label, required, type = "text", value, onChange }) {
