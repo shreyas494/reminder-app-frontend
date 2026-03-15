@@ -26,17 +26,16 @@ export default function Landing() {
 
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 sm:mb-8 tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <span className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-            Never Miss a
+            Keep Track of
           </span>
           <br />
           <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Payment Again
+            Your Subscriptions
           </span>
         </h1>
 
         <p className="max-w-2xl text-base sm:text-xl text-slate-600 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-          Track your pending payments, subscriptions, and renewals in one centralized dashboard.
-          Get timely reminders and stay stress-free.
+          Security with Google and JWT auth. Send automatic reminders. Send quotation.
         </p>
 
         <div className="flex flex-col w-full sm:w-auto sm:flex-row gap-4 sm:gap-5 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
@@ -71,8 +70,8 @@ export default function Landing() {
                 <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
               </svg>
             }
-            title="Smart Reminders"
-            text="Set it and forget it. We'll notify you before your due dates via email and SMS."
+            title="Automatic Reminders"
+            text="Send reminders automatically for your subscriptions."
             delay="0"
           />
           <Feature
@@ -81,8 +80,8 @@ export default function Landing() {
                 <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
               </svg>
             }
-            title="Subscription Tracking"
-            text="Manage recurring subscriptions and auto-renewal cycles effortlessly in one view."
+            title="Send Quotation"
+            text="Create, review, download, and email quotation PDF for each subscription."
             delay="200"
           />
           <Feature
@@ -91,8 +90,8 @@ export default function Landing() {
                 <path fillRule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm3.094 8.016a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
               </svg>
             }
-            title="Secure & Reliable"
-            text="Bank-grade security with Google Login and JWT authentication for peace of mind."
+            title="Google + JWT Security"
+            text="Secure access with Google sign-in and JWT-based authentication."
             delay="400"
           />
         </div>
