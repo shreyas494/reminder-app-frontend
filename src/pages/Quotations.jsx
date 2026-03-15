@@ -160,7 +160,27 @@ export default function Quotations() {
     }
   }
 
-  function downloadPdf() {
+  async function toDataUrl(imageUrl) {
+    if (!imageUrl) return null;
+    if (String(imageUrl).startsWith("data:image")) {
+      return imageUrl;
+    }
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return null;
+    }
+
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function downloadPdf() {
     if (!form) return;
 
     const doc = new jsPDF("p", "pt", "a4");
@@ -171,12 +191,25 @@ export default function Quotations() {
     };
 
     let y = 36;
-    line(form.companyName, 40, y, { bold: true, size: 14 });
+    let headerX = 40;
+
+    try {
+      const logoDataUrl = await toDataUrl(form.companyLogoUrl);
+      if (logoDataUrl) {
+        const imageFormat = String(logoDataUrl).includes("image/png") ? "PNG" : "JPEG";
+        doc.addImage(logoDataUrl, imageFormat, 40, 24, 72, 72);
+        headerX = 124;
+      }
+    } catch {
+      headerX = 40;
+    }
+
+    line(form.companyName, headerX, y, { bold: true, size: 14 });
     y += 16;
-    line(form.companyAddress, 40, y, { size: 10 });
+    line(form.companyAddress, headerX, y, { size: 10 });
     y += 14;
     if (form.companyTagline) {
-      line(form.companyTagline, 40, y, { size: 10 });
+      line(form.companyTagline, headerX, y, { size: 10 });
       y += 16;
     }
 
@@ -341,6 +374,24 @@ export default function Quotations() {
                       <Input label="Company Phone" value={form.companyPhone || ""} onChange={(v) => setForm({ ...form, companyPhone: v })} />
                       <Input label="Company Tagline" value={form.companyTagline || ""} onChange={(v) => setForm({ ...form, companyTagline: v })} />
                       <Input label="Company Logo URL" value={form.companyLogoUrl || ""} onChange={(v) => setForm({ ...form, companyLogoUrl: v })} />
+                      <label className="space-y-1 block">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Upload Company Logo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const result = String(reader.result || "");
+                              setForm((current) => ({ ...current, companyLogoUrl: result }));
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+                        />
+                      </label>
                     </div>
 
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
