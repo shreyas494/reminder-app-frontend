@@ -123,7 +123,6 @@ export default function Quotations() {
         quotationDate: form.quotationDate,
         clientEmail: form.clientEmail,
         recipientName: form.recipientName,
-        recipientOrganization: form.recipientOrganization,
         recipientAddress: form.recipientAddress,
         subject: form.subject,
         introText: form.introText,
@@ -248,7 +247,7 @@ export default function Quotations() {
     line(form.subject, headerCenterX, y, { bold: true, size: 13, align: "center" });
 
     y += 24;
-    const recipientLine = form.recipientOrganization || form.recipientName || "";
+    const recipientLine = form.recipientName || "";
     line("To,", 40, y, { bold: true });
     y += 14;
     line(recipientLine, 40, y, { bold: true });
@@ -408,7 +407,7 @@ export default function Quotations() {
                     className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === q._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
                   >
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientOrganization || "-"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientName || "-"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
                     <td className="px-3 py-2">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
@@ -455,7 +454,6 @@ export default function Quotations() {
                       <Select label="Quotation Type" value={form.quotationType} onChange={(v) => setForm({ ...form, quotationType: v })} options={[{ value: "with-gst", label: "With GST" }, { value: "without-gst", label: "Without GST" }]} />
                       <Input label="Client Email" value={form.clientEmail || ""} onChange={(v) => setForm({ ...form, clientEmail: v })} />
                       <Input label="Recipient Name" value={form.recipientName || ""} onChange={(v) => setForm({ ...form, recipientName: v })} />
-                      <Input label="Recipient Organization" value={form.recipientOrganization || ""} onChange={(v) => setForm({ ...form, recipientOrganization: v })} />
                       <Input label="Recipient Address" value={form.recipientAddress || ""} onChange={(v) => setForm({ ...form, recipientAddress: v })} />
                       <Input label="Subject" value={form.subject || ""} onChange={(v) => setForm({ ...form, subject: v })} />
                       <Input label="Service Description" value={form.serviceDescription || ""} onChange={(v) => setForm({ ...form, serviceDescription: v })} />
