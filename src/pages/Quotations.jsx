@@ -248,11 +248,10 @@ export default function Quotations() {
     line(form.subject, headerCenterX, y, { bold: true, size: 13, align: "center" });
 
     y += 24;
+    const recipientLine = form.recipientOrganization || form.recipientName || "";
     line("To,", 40, y, { bold: true });
     y += 14;
-    line(form.recipientName, 40, y, { bold: true });
-    y += 14;
-    line(form.recipientOrganization, 40, y, { bold: true });
+    line(recipientLine, 40, y, { bold: true });
     y += 14;
     line(form.recipientAddress, 40, y, { bold: true });
 
