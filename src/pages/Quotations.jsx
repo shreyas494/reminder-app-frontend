@@ -205,114 +205,170 @@ export default function Quotations() {
   }
 
   async function buildPdfDocument() {
-    if (!form) {
-      throw new Error("No quotation selected");
-    }
+    if (!form) throw new Error("No quotation selected");
 
     const doc = new jsPDF("p", "pt", "a4");
-    const line = (text, x, y, opts = {}) => {
+    const pageW = 595;
+    const margin = 28;
+    const contentW = pageW - margin * 2;
+    const showGst = form.quotationType === "with-gst";
+
+    const txt = (text, x, y, opts = {}) => {
       doc.setFont("helvetica", opts.bold ? "bold" : "normal");
-      doc.setFontSize(opts.size || 11);
+      doc.setFontSize(opts.size || 10);
+      doc.setTextColor(...(opts.color || [26, 26, 26]));
       doc.text(String(text || ""), x, y, opts.align ? { align: opts.align } : undefined);
     };
 
-    let y = 36;
-    const headerCenterX = 332;
-    const pageRightX = 552;
+    // ── HEADER (dark brown bar) ──────────────────────────────────────────
+    const headerH = 76;
+    doc.setFillColor(61, 30, 3);
+    doc.rect(0, 0, pageW, headerH, "F");
+
     const logoSource =
       resolveLogoUrl(form.companyLogoUrl) ||
       localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
       FIXED_LOGO_URL;
-
     try {
       const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
-        const imageFormat = String(logoDataUrl).includes("image/png") ? "PNG" : "JPEG";
-        doc.addImage(logoDataUrl, imageFormat, 22, 20, 78, 78);
+        const fmt = logoDataUrl.includes("image/png") ? "PNG" : "JPEG";
+        doc.addImage(logoDataUrl, fmt, 16, 6, 62, 62);
       }
     } catch {}
 
-    line(form.companyName, headerCenterX, y, { bold: true, size: 14, align: "center" });
-    y += 16;
-    line(form.companyAddress, headerCenterX, y, { size: 10, align: "center" });
-    y += 14;
+    // Company name + tagline in header
+    txt(form.companyName || "", 90, 24, { bold: true, size: 13, color: [255, 255, 255] });
+    if (form.companyRegistration) {
+      txt(`Reg. No: ${form.companyRegistration}  ·  Mobile: ${form.companyPhone || ""}`, 90, 37, { size: 8, color: [200, 200, 200] });
+    }
     if (form.companyTagline) {
-      line(form.companyTagline, headerCenterX, y, { size: 10, align: "center" });
-      y += 16;
+      txt(form.companyTagline, 90, 50, { bold: true, size: 8, color: [212, 160, 23] });
     }
 
-    line(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageRightX, 36, { size: 10, align: "right" });
+    // "Quotation" + date on right
+    txt("Quotation", pageW - margin, 24, { bold: true, size: 14, align: "right", color: [212, 160, 23] });
+    txt(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageW - margin, 38, { size: 9, align: "right", color: [255, 255, 255] });
 
-    y += 16;
-    line(form.subject, headerCenterX, y, { bold: true, size: 13, align: "center" });
+    let y = headerH + 12;
 
-    y += 24;
-    const recipientLine = form.recipientName || "";
-    line("To,", 40, y, { bold: true });
-    y += 14;
-    line(recipientLine, 40, y, { bold: true });
-    y += 14;
-    line(form.recipientAddress, 40, y, { bold: true });
+    // ── CONTACT BOX ─────────────────────────────────────────────────────
+    const contactH = 48;
+    doc.setFillColor(254, 252, 232);
+    doc.setDrawColor(200, 185, 154);
+    doc.rect(margin, y, contentW, contactH, "FD");
+    txt("Contact", margin + 10, y + 13, { bold: true, size: 10, color: [26, 26, 26] });
+    txt(form.companyAddress || "", margin + 10, y + 25, { size: 9, color: [60, 60, 60] });
+    const contactLine2 = [form.senderName, form.companyPhone].filter(Boolean).join("  ·  ");
+    if (contactLine2) txt(contactLine2, margin + 10, y + 37, { size: 9, color: [60, 60, 60] });
+    y += contactH + 14;
 
-    y += 20;
-    const introLines = doc.splitTextToSize(form.introText || "", 510);
+    // ── TO SECTION ──────────────────────────────────────────────────────
+    doc.setDrawColor(0, 0, 0);
+    txt("To,", margin, y, { bold: true, size: 11 });
+    y += 13;
+    txt(form.recipientName || "", margin, y, { bold: true, size: 11 });
+    y += 13;
+    if (form.recipientAddress) {
+      txt(form.recipientAddress, margin, y, { size: 9, color: [80, 80, 80] });
+      y += 13;
+    }
+    y += 6;
+
+    // ── SUBJECT + GOLD UNDERLINE ─────────────────────────────────────────
+    txt(form.subject || "", margin, y, { bold: true, size: 12 });
+    y += 7;
+    doc.setDrawColor(212, 160, 23);
+    doc.setLineWidth(2.5);
+    doc.line(margin, y, margin + 44, y);
+    doc.setLineWidth(1);
+    doc.setDrawColor(0, 0, 0);
+    y += 11;
+
+    // ── INTRO TEXT ──────────────────────────────────────────────────────
+    txt("", margin, y); // reset
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(introLines, 40, y);
-    y += introLines.length * 14 + 12;
+    doc.setFontSize(9.5);
+    doc.setTextColor(50, 50, 50);
+    const introLines = doc.splitTextToSize(form.introText || "", contentW);
+    doc.text(introLines, margin, y);
+    y += introLines.length * 12 + 12;
 
-    const tableX = 40;
-    const tableW = 510;
-    const srW = 60;
-    const descW = 320;
-    const chargeW = tableW - srW - descW;
+    // ── TABLE ────────────────────────────────────────────────────────────
+    const srW = 48, descW = 330, chargeW = contentW - srW - descW;
     const rowH = 22;
 
-    const drawCell = (x, top, width, height) => {
-      doc.rect(x, top, width, height);
+    const drawRow = (top, sr, desc, charge, bold = false, shade = false) => {
+      if (shade) { doc.setFillColor(245, 240, 232); doc.rect(margin, top, contentW, rowH, "F"); }
+      doc.setDrawColor(200, 185, 154);
+      doc.rect(margin, top, srW, rowH);
+      doc.rect(margin + srW, top, descW, rowH);
+      doc.rect(margin + srW + descW, top, chargeW, rowH);
+      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(26, 26, 26);
+      doc.text(String(sr), margin + 5, top + 15);
+      doc.text(String(desc), margin + srW + 5, top + 15);
+      doc.text(String(charge), margin + srW + descW + chargeW - 5, top + 15, { align: "right" });
     };
 
-    const drawRow = (top, srText, descText, chargeText, bold = false) => {
-      drawCell(tableX, top, srW, rowH);
-      drawCell(tableX + srW, top, descW, rowH);
-      drawCell(tableX + srW + descW, top, chargeW, rowH);
+    drawRow(y, "Sr. No.", "Description", "Charges", true, true); y += rowH;
+    drawRow(y, "1", String(form.serviceDescription || ""), formatCurrency(form.amount)); y += rowH;
+    if (showGst) {
+      drawRow(y, "", `GST (${form.gstPercent}%)`, formatCurrency(totals.gstAmount)); y += rowH;
+    }
+    drawRow(y, "", "Total", formatCurrency(totals.totalAmount), true, true); y += rowH + 10;
 
-      line(srText, tableX + 8, top + 15, { bold, size: 10 });
-      line(descText, tableX + srW + 8, top + 15, { bold, size: 10 });
-      line(chargeText, tableX + srW + descW + chargeW - 8, top + 15, {
-        bold,
-        size: 10,
-        align: "right",
-      });
-    };
+    // ── COST HIGHLIGHT BOX ───────────────────────────────────────────────
+    const boxH = 26;
+    doc.setFillColor(254, 252, 232);
+    doc.setDrawColor(200, 185, 154);
+    doc.rect(margin, y, contentW, boxH, "FD");
+    doc.setFillColor(212, 160, 23);
+    doc.rect(margin, y, 4, boxH, "F");
+    txt(`Total: ${formatCurrency(totals.totalAmount)}`, margin + 12, y + 18, { bold: true, size: 11 });
+    y += boxH + 10;
 
-    drawRow(y, "Sr.", "Description", "Charges", true);
-    y += rowH;
-
-    drawRow(y, "1", String(form.serviceDescription || ""), formatCurrency(form.amount), false);
-    y += rowH;
-
-    if (form.quotationType === "with-gst") {
-      drawRow(y, "", `GST (${form.gstPercent}%)`, formatCurrency(totals.gstAmount), false);
-      y += rowH;
+    // ── GST NOTE ─────────────────────────────────────────────────────────
+    if (showGst) {
+      const noteH = 22;
+      doc.setFillColor(254, 252, 232);
+      doc.setDrawColor(200, 185, 154);
+      doc.rect(margin, y, contentW, noteH, "FD");
+      txt(`Note: GST @ ${form.gstPercent}% is included in the above total.`, margin + 8, y + 15, { size: 9, color: [80, 80, 80] });
+      y += noteH + 10;
     }
 
-    drawRow(y, "", "Total", formatCurrency(totals.totalAmount), true);
-    y += rowH + 10;
+    // ── CONFIRMATION + PAYMENT ───────────────────────────────────────────
+    doc.setDrawColor(0, 0, 0);
+    txt("Please give us your confirmation for the renewal as soon as possible.", margin, y, { size: 10, color: [50, 50, 50] });
+    y += 14;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(26, 26, 26);
+    doc.text("Payment: ", margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(form.paymentTerms || "", margin + 54, y);
+    y += 20;
 
-    y += 28;
-    line(`Payment: ${form.paymentTerms}`, 40, y, { size: 11 });
+    // ── THANKS ───────────────────────────────────────────────────────────
+    ["Thanks & Regards,", "For,", form.companyName || "", form.senderName || "", form.senderPhone || ""].forEach(line => {
+      txt(line, margin, y, { bold: true, size: 10 });
+      y += 13;
+    });
 
-    y += 30;
-    line("Thanks & Regards,", 40, y, { bold: true });
-    y += 14;
-    line("For,", 40, y, { bold: true });
-    y += 14;
-    line(form.companyName, 40, y, { bold: true });
-    y += 14;
-    line(form.senderName, 40, y, { bold: true });
-    y += 14;
-    line(form.senderPhone, 40, y, { bold: true });
+    // ── FOOTER ROW ────────────────────────────────────────────────────────
+    const footerY = 806;
+    doc.setDrawColor(200, 185, 154);
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY, pageW - margin, footerY);
+    doc.setFillColor(252, 250, 246);
+    doc.rect(margin, footerY, contentW, 18, "F");
+    txt(showGst ? `GST: Add ${form.gstPercent}%` : "No GST", margin + 6, footerY + 13, { size: 9, color: [80, 80, 80] });
+    txt("Validity: 15 Days", pageW - margin - 6, footerY + 13, { size: 9, align: "right", color: [80, 80, 80] });
+
+    // ── BOTTOM COMPANY LINE ───────────────────────────────────────────────
+    doc.setFillColor(245, 240, 232);
+    doc.rect(margin, footerY + 18, contentW, 16, "F");
+    txt(`${form.companyName || ""} — Professional Web Solutions`, pageW / 2, footerY + 30, { size: 9, align: "center", color: [100, 100, 100] });
 
     return doc;
   }
