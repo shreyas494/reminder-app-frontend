@@ -209,6 +209,7 @@ export default function Quotations() {
 
     const doc = new jsPDF("p", "pt", "a4");
     const pageW = 595;
+    const pageH = 842;
     const margin = 28;
     const contentW = pageW - margin * 2;
     const showGst = form.quotationType === "with-gst";
@@ -220,10 +221,12 @@ export default function Quotations() {
       doc.text(String(text || ""), x, y, opts.align ? { align: opts.align } : undefined);
     };
 
-    // ── HEADER (dark brown bar) ──────────────────────────────────────────
-    const headerH = 76;
-    doc.setFillColor(61, 30, 3);
+    const headerH = 84;
+    doc.setFillColor(15, 44, 92);
     doc.rect(0, 0, pageW, headerH, "F");
+    doc.setFillColor(29, 79, 145);
+    doc.triangle(pageW - 170, 0, pageW, 0, pageW, headerH, "F");
+    doc.triangle(pageW - 230, 0, pageW - 160, 0, pageW, headerH, "F");
 
     const logoSource =
       resolveLogoUrl(form.companyLogoUrl) ||
@@ -233,142 +236,172 @@ export default function Quotations() {
       const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
         const fmt = logoDataUrl.includes("image/png") ? "PNG" : "JPEG";
-        doc.addImage(logoDataUrl, fmt, 16, 6, 62, 62);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(16, 12, 78, 58, "F");
+        doc.addImage(logoDataUrl, fmt, 20, 16, 70, 50);
       }
     } catch {}
 
-    // Company name + tagline in header
-    txt(form.companyName || "", 90, 24, { bold: true, size: 13, color: [255, 255, 255] });
+    txt(form.companyName || "", 104, 28, { bold: true, size: 14, color: [255, 255, 255] });
+    txt(form.companyAddress || "", 104, 42, { size: 8, color: [208, 221, 242] });
     if (form.companyRegistration) {
-      txt(`Reg. No: ${form.companyRegistration}  ·  Mobile: ${form.companyPhone || ""}`, 90, 37, { size: 8, color: [200, 200, 200] });
+      txt(`Reg. No: ${form.companyRegistration}  ·  Mobile: ${form.companyPhone || ""}`, 104, 53, {
+        size: 8,
+        color: [208, 221, 242],
+      });
     }
     if (form.companyTagline) {
-      txt(form.companyTagline, 90, 50, { bold: true, size: 8, color: [212, 160, 23] });
+      txt(form.companyTagline, 104, 64, { bold: true, size: 8, color: [234, 241, 255] });
     }
 
-    // "Quotation" + date on right
-    txt("Quotation", pageW - margin, 24, { bold: true, size: 14, align: "right", color: [212, 160, 23] });
-    txt(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageW - margin, 38, { size: 9, align: "right", color: [255, 255, 255] });
+    txt("INVOICE", pageW - margin, 30, { bold: true, size: 20, align: "right", color: [255, 255, 255] });
+    txt(`Ref No: ${form.quotationNumber || "-"}`, pageW - margin, 47, {
+      size: 8,
+      align: "right",
+      color: [208, 221, 242],
+    });
+    txt(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageW - margin, 58, {
+      size: 8,
+      align: "right",
+      color: [208, 221, 242],
+    });
 
-    let y = headerH + 12;
+    let y = headerH + 14;
 
-    // ── CONTACT BOX ─────────────────────────────────────────────────────
-    const contactH = 48;
-    doc.setFillColor(254, 252, 232);
-    doc.setDrawColor(200, 185, 154);
-    doc.rect(margin, y, contentW, contactH, "FD");
-    txt("Contact", margin + 10, y + 13, { bold: true, size: 10, color: [26, 26, 26] });
-    txt(form.companyAddress || "", margin + 10, y + 25, { size: 9, color: [60, 60, 60] });
-    const contactLine2 = [form.senderName, form.companyPhone].filter(Boolean).join("  ·  ");
-    if (contactLine2) txt(contactLine2, margin + 10, y + 37, { size: 9, color: [60, 60, 60] });
-    y += contactH + 14;
-
-    // ── TO SECTION ──────────────────────────────────────────────────────
-    doc.setDrawColor(0, 0, 0);
-    txt("To,", margin, y, { bold: true, size: 11 });
-    y += 13;
-    txt(form.recipientName || "", margin, y, { bold: true, size: 11 });
-    y += 13;
+    const blockGap = 16;
+    const blockW = (contentW - blockGap) / 2;
+    const blockH = 78;
+    doc.setDrawColor(212, 222, 238);
+    doc.rect(margin, y, blockW, blockH);
+    doc.rect(margin + blockW + blockGap, y, blockW, blockH);
+    txt("Bill To", margin + 8, y + 14, { bold: true, size: 9, color: [55, 91, 145] });
+    txt(form.recipientName || "", margin + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
     if (form.recipientAddress) {
-      txt(form.recipientAddress, margin, y, { size: 9, color: [80, 80, 80] });
-      y += 13;
+      const billAddress = doc.splitTextToSize(form.recipientAddress, blockW - 16);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(75, 85, 99);
+      doc.text(billAddress, margin + 8, y + 42);
     }
-    y += 6;
 
-    // ── SUBJECT + GOLD UNDERLINE ─────────────────────────────────────────
-    txt(form.subject || "", margin, y, { bold: true, size: 12 });
-    y += 7;
-    doc.setDrawColor(212, 160, 23);
-    doc.setLineWidth(2.5);
-    doc.line(margin, y, margin + 44, y);
-    doc.setLineWidth(1);
-    doc.setDrawColor(0, 0, 0);
-    y += 11;
-
-    // ── INTRO TEXT ──────────────────────────────────────────────────────
-    txt("", margin, y); // reset
+    txt("From", margin + blockW + blockGap + 8, y + 14, { bold: true, size: 9, color: [55, 91, 145] });
+    txt(form.companyName || "", margin + blockW + blockGap + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
+    const fromLines = doc.splitTextToSize(form.companyAddress || "", blockW - 16);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(8.5);
+    doc.setTextColor(75, 85, 99);
+    doc.text(fromLines, margin + blockW + blockGap + 8, y + 41);
+    const signerLine = [form.senderName, form.senderPhone].filter(Boolean).join(" · ");
+    if (signerLine) {
+      txt(signerLine, margin + blockW + blockGap + 8, y + 67, { size: 8.5, color: [75, 85, 99] });
+    }
+    y += blockH + 14;
+
+    txt(form.subject || "", margin, y, { bold: true, size: 13, color: [15, 44, 92] });
+    y += 14;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(75, 85, 99);
     const introLines = doc.splitTextToSize(form.introText || "", contentW);
     doc.text(introLines, margin, y);
-    y += introLines.length * 12 + 12;
+    y += introLines.length * 11 + 14;
 
-    // ── TABLE ────────────────────────────────────────────────────────────
-    const srW = 48, descW = 330, chargeW = contentW - srW - descW;
-    const rowH = 22;
+    const srW = 52;
+    const descW = 330;
+    const chargeW = contentW - srW - descW;
+    const rowH = 24;
 
     const drawRow = (top, sr, desc, charge, bold = false, shade = false) => {
-      if (shade) { doc.setFillColor(245, 240, 232); doc.rect(margin, top, contentW, rowH, "F"); }
-      doc.setDrawColor(200, 185, 154);
+      if (shade) {
+        doc.setFillColor(241, 246, 255);
+        doc.rect(margin, top, contentW, rowH, "F");
+      }
+      doc.setDrawColor(201, 215, 238);
       doc.rect(margin, top, srW, rowH);
       doc.rect(margin + srW, top, descW, rowH);
       doc.rect(margin + srW + descW, top, chargeW, rowH);
       doc.setFont("helvetica", bold ? "bold" : "normal");
-      doc.setFontSize(9.5);
+      doc.setFontSize(9);
       doc.setTextColor(26, 26, 26);
-      doc.text(String(sr), margin + 5, top + 15);
-      doc.text(String(desc), margin + srW + 5, top + 15);
-      doc.text(String(charge), margin + srW + descW + chargeW - 5, top + 15, { align: "right" });
+      doc.text(String(sr), margin + 6, top + 15);
+      doc.text(String(desc), margin + srW + 6, top + 15);
+      doc.text(String(charge), margin + srW + descW + chargeW - 6, top + 15, { align: "right" });
     };
 
-    drawRow(y, "Sr. No.", "Description", "Charges", true, true); y += rowH;
+    doc.setFillColor(23, 58, 115);
+    doc.rect(margin, y, contentW, rowH, "F");
+    doc.setDrawColor(201, 215, 238);
+    doc.rect(margin, y, srW, rowH);
+    doc.rect(margin + srW, y, descW, rowH);
+    doc.rect(margin + srW + descW, y, chargeW, rowH);
+    txt("No.", margin + 6, y + 15, { bold: true, size: 9, color: [255, 255, 255] });
+    txt("Description", margin + srW + 6, y + 15, { bold: true, size: 9, color: [255, 255, 255] });
+    txt("Amount", margin + srW + descW + chargeW - 6, y + 15, { bold: true, size: 9, align: "right", color: [255, 255, 255] });
+    y += rowH;
+
     drawRow(y, "1", String(form.serviceDescription || ""), formatCurrency(form.amount)); y += rowH;
     if (showGst) {
       drawRow(y, "", `GST (${form.gstPercent}%)`, formatCurrency(totals.gstAmount)); y += rowH;
     }
     drawRow(y, "", "Total", formatCurrency(totals.totalAmount), true, true); y += rowH + 10;
 
-    // ── COST HIGHLIGHT BOX ───────────────────────────────────────────────
-    const boxH = 26;
-    doc.setFillColor(254, 252, 232);
-    doc.setDrawColor(200, 185, 154);
-    doc.rect(margin, y, contentW, boxH, "FD");
-    doc.setFillColor(212, 160, 23);
-    doc.rect(margin, y, 4, boxH, "F");
-    txt(`Total: ${formatCurrency(totals.totalAmount)}`, margin + 12, y + 18, { bold: true, size: 11 });
-    y += boxH + 10;
+    const amountBoxW = 220;
+    const amountBoxH = 30;
+    doc.setFillColor(29, 79, 145);
+    doc.rect(pageW - margin - amountBoxW, y, amountBoxW, amountBoxH, "F");
+    txt(`Amount Due: ${formatCurrency(totals.totalAmount)}`, pageW - margin - 10, y + 19, {
+      bold: true,
+      size: 10,
+      align: "right",
+      color: [255, 255, 255],
+    });
+    y += amountBoxH + 12;
 
-    // ── GST NOTE ─────────────────────────────────────────────────────────
     if (showGst) {
-      const noteH = 22;
-      doc.setFillColor(254, 252, 232);
-      doc.setDrawColor(200, 185, 154);
+      const noteH = 20;
+      doc.setFillColor(243, 247, 255);
+      doc.setDrawColor(201, 215, 238);
       doc.rect(margin, y, contentW, noteH, "FD");
-      txt(`Note: GST @ ${form.gstPercent}% is included in the above total.`, margin + 8, y + 15, { size: 9, color: [80, 80, 80] });
+      txt(`Note: GST @ ${form.gstPercent}% is included in the above total.`, margin + 8, y + 14, {
+        size: 8.5,
+        color: [75, 85, 99],
+      });
       y += noteH + 10;
     }
 
-    // ── CONFIRMATION + PAYMENT ───────────────────────────────────────────
-    doc.setDrawColor(0, 0, 0);
-    txt("Please give us your confirmation for the renewal as soon as possible.", margin, y, { size: 10, color: [50, 50, 50] });
-    y += 14;
-    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(26, 26, 26);
-    doc.text("Payment: ", margin, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(form.paymentTerms || "", margin + 54, y);
-    y += 20;
+    txt("Payment Info", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
+    y += 12;
+    txt(form.paymentTerms || "", margin, y, { size: 8.5, color: [75, 85, 99] });
 
-    // ── THANKS ───────────────────────────────────────────────────────────
-    ["Thanks & Regards,", "For,", form.companyName || "", form.senderName || "", form.senderPhone || ""].forEach(line => {
-      txt(line, margin, y, { bold: true, size: 10 });
-      y += 13;
+    const noteY = y + 20;
+    txt("Notes", margin, noteY, { bold: true, size: 9, color: [55, 91, 145] });
+    txt("Please give us your confirmation for the renewal as soon as possible.", margin, noteY + 12, {
+      size: 8.5,
+      color: [75, 85, 99],
     });
 
-    // ── FOOTER ROW ────────────────────────────────────────────────────────
-    const footerY = 806;
-    doc.setDrawColor(200, 185, 154);
-    doc.setLineWidth(0.5);
-    doc.line(margin, footerY, pageW - margin, footerY);
-    doc.setFillColor(252, 250, 246);
-    doc.rect(margin, footerY, contentW, 18, "F");
-    txt(showGst ? `GST: Add ${form.gstPercent}%` : "No GST", margin + 6, footerY + 13, { size: 9, color: [80, 80, 80] });
-    txt("Validity: 15 Days", pageW - margin - 6, footerY + 13, { size: 9, align: "right", color: [80, 80, 80] });
+    const signBaseY = pageH - 86;
+    txt("Authorized Signatory", pageW - margin, signBaseY, { size: 8.5, align: "right", color: [107, 114, 128] });
+    txt(form.senderName || form.companyName || "", pageW - margin, signBaseY + 14, {
+      bold: true,
+      size: 10,
+      align: "right",
+      color: [17, 24, 39],
+    });
 
-    // ── BOTTOM COMPANY LINE ───────────────────────────────────────────────
-    doc.setFillColor(245, 240, 232);
-    doc.rect(margin, footerY + 18, contentW, 16, "F");
-    txt(`${form.companyName || ""} — Professional Web Solutions`, pageW / 2, footerY + 30, { size: 9, align: "center", color: [100, 100, 100] });
+    const footerY = pageH - 30;
+    doc.setDrawColor(201, 215, 238);
+    doc.line(margin, footerY, pageW - margin, footerY);
+    txt(showGst ? `GST: Add ${form.gstPercent}%` : "No GST", margin, footerY + 12, {
+      size: 8,
+      color: [107, 114, 128],
+    });
+    txt("Validity: 15 Days", pageW - margin, footerY + 12, {
+      size: 8,
+      align: "right",
+      color: [107, 114, 128],
+    });
 
     return doc;
   }
