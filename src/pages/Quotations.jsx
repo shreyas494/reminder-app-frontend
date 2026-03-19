@@ -393,10 +393,6 @@ export default function Quotations() {
     const footerY = pageH - 30;
     doc.setDrawColor(201, 215, 238);
     doc.line(margin, footerY, pageW - margin, footerY);
-    txt(showGst ? `GST: Add ${form.gstPercent}%` : "No GST", margin, footerY + 12, {
-      size: 8,
-      color: [107, 114, 128],
-    });
     txt("Validity: 15 Days", pageW - margin, footerY + 12, {
       size: 8,
       align: "right",
