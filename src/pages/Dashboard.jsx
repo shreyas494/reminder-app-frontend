@@ -166,7 +166,7 @@ export default function Dashboard() {
                           <div className="flex flex-col">
                             <span>{getExpiry(r).format("DD MMM YYYY")}</span>
                             <span className="mt-1 text-xs font-normal text-slate-500 dark:text-slate-400 lg:hidden">
-                              {remainingTime(r)} remaining
+                              {remainingTime(r) === "Expired" ? "Expired" : `${remainingTime(r)} remaining`}
                             </span>
                           </div>
                         </Td>
