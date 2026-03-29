@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import API from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function NearExpiry() {
+  const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -47,6 +49,40 @@ export default function NearExpiry() {
     return { text: "Active", color: "green" };
   };
 
+  const normalizePhone = (phone) => {
+    const raw = String(phone || "").replace(/\D/g, "");
+    if (!raw) return "";
+    if (raw.length === 10) return `91${raw}`;
+    return raw;
+  };
+
+  const buildReminderMessage = (r) => {
+    const expiryIST = new Date(r.expiryDate).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    return `📢 Subscription Reminder\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\nPlease renew on time.`;
+  };
+
+  const smsLink = (r) => {
+    const phone = normalizePhone(r.mobile1 || r.mobile2);
+    if (!phone) return "#";
+    return `sms:+${phone}?body=${encodeURIComponent(buildReminderMessage(r))}`;
+  };
+
+  const whatsappLink = (r) => {
+    const phone = normalizePhone(r.mobile1 || r.mobile2);
+    if (!phone) return "#";
+    return `https://wa.me/${phone}?text=${encodeURIComponent(buildReminderMessage(r))}`;
+  };
+
+  const mailLink = (r) => {
+    if (!r.email) return "#";
+    return `mailto:${r.email}?subject=${encodeURIComponent("Subscription Expiry Reminder")}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+  };
+
   return (
     <div className="relative min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 overflow-hidden transition-colors">
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
@@ -73,20 +109,23 @@ export default function NearExpiry() {
                   <Th>Expiry</Th>
                   <Th>Remaining</Th>
                   <Th>Status</Th>
+                  <Th>Actions</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-12 text-slate-500">Loading...</td>
+                    <td colSpan="8" className="text-center py-12 text-slate-500">Loading...</td>
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-12 text-slate-500">No near-expiry reminders found.</td>
+                    <td colSpan="8" className="text-center py-12 text-slate-500">No near-expiry reminders found.</td>
                   </tr>
                 ) : (
                   reminders.map((r, i) => {
                     const status = getStatusLabel(r);
+                    const hasPhone = Boolean(r.mobile1 || r.mobile2);
+                    const hasEmail = Boolean(r.email);
                     return (
                       <tr key={r._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-200">
                         <Td className="font-mono text-slate-400 opacity-60">{(page - 1) * 10 + i + 1}</Td>
@@ -97,6 +136,48 @@ export default function NearExpiry() {
                         <Td className="tabular-nums text-slate-500">{remainingTime(r)}</Td>
                         <Td>
                           <Badge color={status.color}>{status.text}</Badge>
+                        </Td>
+                        <Td>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={smsLink(r)}
+                              target="_self"
+                              rel="noreferrer"
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                              title="Send SMS"
+                            >
+                              💬
+                            </a>
+
+                            <a
+                              href={whatsappLink(r)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                              title="Send WhatsApp"
+                            >
+                              🟢
+                            </a>
+
+                            <a
+                              href={mailLink(r)}
+                              target="_self"
+                              rel="noreferrer"
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasEmail ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 hover:bg-rose-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                              title="Send Email"
+                            >
+                              ✉️
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() => navigate("/quotations")}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200"
+                              title="Open Quotations"
+                            >
+                              📄
+                            </button>
+                          </div>
                         </Td>
                       </tr>
                     );
