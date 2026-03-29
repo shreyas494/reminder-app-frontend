@@ -32,6 +32,7 @@ export default function Quotations() {
 
   const [selectedId, setSelectedId] = useState("");
   const [form, setForm] = useState(null);
+  const [editorView, setEditorView] = useState("edit");
   const [previewHtml, setPreviewHtml] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -116,6 +117,7 @@ export default function Quotations() {
     try {
       const res = await API.get(`/quotations/${id}`);
       setSelectedId(id);
+      setEditorView("edit");
       const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || FIXED_LOGO_URL;
       const resolvedLogo = resolveLogoUrl(res.data.companyLogoUrl) || fixedLogo;
       setForm({
@@ -548,36 +550,63 @@ export default function Quotations() {
           ) : (
             <div className="space-y-3">
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-3">
-                <h3 className="text-sm font-bold text-slate-600">Static Info</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
-                  <Input label="Quotation Date" value={dayjs(form.quotationDate).format("DD MMM YYYY")} readOnly />
-                  <Input label="Quotation Type" value={form.quotationType === "with-gst" ? "With GST" : "Without GST"} readOnly />
-                  <Input label="Client Email" value={form.clientEmail || ""} readOnly />
-                  <Input label="Recipient Name" value={form.recipientName || ""} readOnly />
-                  <Input label="Recipient Address" value={form.recipientAddress || ""} readOnly />
-                  <Input label="Subject" value={form.subject || ""} readOnly />
-                  <Input label="Service Description" value={form.serviceDescription || ""} readOnly />
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-bold text-slate-600">Quotation Details</h3>
+                  <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setEditorView("static")}
+                      className={`px-3 py-1.5 text-xs font-semibold ${editorView === "static" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                    >
+                      Static Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditorView("edit")}
+                      className={`px-3 py-1.5 text-xs font-semibold ${editorView === "edit" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
+
+                {editorView === "static" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
+                    <Input label="Quotation Date" value={dayjs(form.quotationDate).format("DD MMM YYYY")} readOnly />
+                    <Input label="Quotation Type" value={form.quotationType === "with-gst" ? "With GST" : "Without GST"} readOnly />
+                    <Input label="Client Email" value={form.clientEmail || ""} readOnly />
+                    <Input label="Recipient Name" value={form.recipientName || ""} readOnly />
+                    <Input label="Recipient Address" value={form.recipientAddress || ""} readOnly />
+                    <Input label="Subject" value={form.subject || ""} readOnly />
+                    <Input label="Service Description" value={form.serviceDescription || ""} readOnly />
+                  </div>
+                ) : (
+                  <>
+                    <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
+                    <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
+
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
+                      <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
+                      <p><strong>Calculated Total:</strong> {formatCurrency(totals.totalAmount)}</p>
+                    </div>
+
+                    <button
+                      disabled={busy}
+                      onClick={saveQuotation}
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      Save Manual Edits (Required)
+                    </button>
+                  </>
+                )}
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-3">
-                <h3 className="text-sm font-bold text-slate-600">Editable Details</h3>
-                <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
-                <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
-
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
-                  <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
-                  <p><strong>Calculated Total:</strong> {formatCurrency(totals.totalAmount)}</p>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                <h3 className="text-sm font-bold text-slate-600 mb-3">Review Preview</h3>
+                <div className="max-h-[520px] overflow-auto bg-white rounded-lg border border-slate-200">
+                  <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
                 </div>
-
-                <button
-                  disabled={busy}
-                  onClick={saveQuotation}
-                  className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  Save Manual Edits (Required)
-                </button>
               </div>
             </div>
           )}
