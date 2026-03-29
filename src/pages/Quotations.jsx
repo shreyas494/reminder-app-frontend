@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import dayjs from "dayjs";
 import API from "../services/api";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
 const FIXED_LOGO_URL = "https://reminder-app-backend-u8wb.onrender.com/assets/company-logo.png";
@@ -19,6 +20,8 @@ function formatCurrency(value) {
 }
 
 export default function Quotations() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
   const [reminderPage, setReminderPage] = useState(1);
   const [reminderTotalPages, setReminderTotalPages] = useState(1);
@@ -43,6 +46,22 @@ export default function Quotations() {
   useEffect(() => {
     fetchQuotations(quotationPage);
   }, [quotationPage]);
+
+  useEffect(() => {
+    const openQuotationId = location.state?.openQuotationId;
+    if (!openQuotationId) return;
+
+    const openFromRedirect = async () => {
+      await fetchQuotations(1);
+      await openQuotation(openQuotationId);
+      if (location.state?.notice) {
+        setMessage(location.state.notice);
+      }
+      navigate(location.pathname, { replace: true, state: null });
+    };
+
+    openFromRedirect();
+  }, [location.state, location.pathname, navigate]);
 
   const totals = useMemo(() => {
     if (!form) return { gstAmount: 0, totalAmount: 0 };

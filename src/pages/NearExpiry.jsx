@@ -12,6 +12,7 @@ export default function NearExpiry() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [creatingQuotationId, setCreatingQuotationId] = useState("");
 
   useEffect(() => {
     fetchNearExpiry(page);
@@ -84,6 +85,26 @@ export default function NearExpiry() {
   const mailLink = (r) => {
     if (!r.email) return "#";
     return `mailto:${r.email}?subject=${encodeURIComponent("Subscription Expiry Reminder")}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+  };
+
+  const createGstQuotationAndOpen = async (r) => {
+    setCreatingQuotationId(r._id);
+    try {
+      const res = await API.post(`/quotations/from-reminder/${r._id}`, {
+        quotationType: "with-gst",
+      });
+      navigate("/quotations", {
+        state: {
+          openQuotationId: res.data?._id,
+          notice: "GST quotation draft created. You can edit and change type if needed.",
+        },
+      });
+    } catch (err) {
+      console.error("Failed to create GST quotation draft", err);
+      window.alert(err.response?.data?.message || "Failed to create GST quotation draft");
+    } finally {
+      setCreatingQuotationId("");
+    }
   };
 
   return (
@@ -174,11 +195,12 @@ export default function NearExpiry() {
 
                             <button
                               type="button"
-                              onClick={() => navigate("/quotations")}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200"
+                              onClick={() => createGstQuotationAndOpen(r)}
+                              disabled={creatingQuotationId === r._id}
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${creatingQuotationId === r._id ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200"}`}
                               title="Open Quotations"
                             >
-                              📄
+                              {creatingQuotationId === r._id ? "…" : "📄"}
                             </button>
                           </div>
                         </Td>
