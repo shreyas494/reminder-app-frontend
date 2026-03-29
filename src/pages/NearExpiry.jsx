@@ -52,7 +52,7 @@ export default function NearExpiry() {
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               Near Expiry Reminders
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">

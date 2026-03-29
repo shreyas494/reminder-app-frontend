@@ -40,7 +40,7 @@ export default function AdminCreateUser() {
                       rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none
                       p-8">
 
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+        <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
           Create New User
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">

@@ -107,7 +107,7 @@ export default function Login() {
         <div className="backdrop-blur-xl bg-white/75 dark:bg-[#111827]/65 border border-indigo-100/70 dark:border-indigo-900/40 shadow-2xl rounded-3xl p-8 transition-all duration-300 hover:shadow-indigo-500/20">
 
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
               Welcome Back
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">

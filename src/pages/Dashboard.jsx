@@ -78,7 +78,7 @@ export default function Dashboard() {
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               Subscriptions
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">

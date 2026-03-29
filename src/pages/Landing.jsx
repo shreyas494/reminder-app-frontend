@@ -24,12 +24,12 @@ export default function Landing() {
           </span>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 sm:mb-8 tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <span className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 sm:mb-8 tracking-tight text-slate-900 dark:text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <span>
             Keep Track of
           </span>
           <br />
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <span>
             Your Subscriptions
           </span>
         </h1>
