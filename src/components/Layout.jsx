@@ -14,6 +14,7 @@ export default function Layout() {
   const navItems = useMemo(() => {
     const baseItems = [
       { label: "Dashboard", to: "/" },
+      { label: "Near Expiry", to: "/near-expiry" },
       { label: "Quotations", to: "/quotations" },
     ];
     if (user?.role === "superadmin") {
