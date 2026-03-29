@@ -46,6 +46,9 @@ export default function Dashboard() {
   const hasBeenRenewed = (r) =>
     Array.isArray(r.renewals) && r.renewals.length > 0;
 
+  const getDaysToExpiry = (r) =>
+    getExpiry(r).startOf("day").diff(dayjs().startOf("day"), "day");
+
   const remainingTime = (r) => {
     const now = dayjs();
     const end = getExpiry(r);
@@ -63,10 +66,15 @@ export default function Dashboard() {
 
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
-    const daysToExpiry = end.startOf("day").diff(dayjs().startOf("day"), "day");
+    const daysToExpiry = getDaysToExpiry(r);
     if (daysToExpiry >= 0 && daysToExpiry <= 30) return { text: "Near Expiry", color: "amber" };
     return { text: "Active", color: "green" };
   };
+
+  const nearExpiryReminders = reminders.filter((r) => {
+    const daysToExpiry = getDaysToExpiry(r);
+    return daysToExpiry >= 0 && daysToExpiry <= 30;
+  });
 
   return (
     <div className="relative min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 overflow-hidden transition-colors">
@@ -100,6 +108,48 @@ export default function Dashboard() {
             New Reminder
           </button>
         </div>
+
+        {/* NEAR EXPIRY (SEPARATE) */}
+        {!loading && nearExpiryReminders.length > 0 && (
+          <div className="backdrop-blur-xl bg-amber-50/70 dark:bg-amber-900/10 border border-amber-200/80 dark:border-amber-500/20 rounded-3xl shadow-lg overflow-hidden">
+            <div className="px-4 sm:px-6 py-3 border-b border-amber-200/70 dark:border-amber-500/20 flex items-center justify-between">
+              <h2 className="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300">Near Expiry (Next 30 Days)</h2>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                {nearExpiryReminders.length} reminder(s)
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-amber-100/70 dark:bg-amber-900/20 border-b border-amber-200/70 dark:border-amber-500/20">
+                  <tr>
+                    <Th>Client</Th>
+                    <Th>Project</Th>
+                    <Th>Expiry</Th>
+                    <Th>Remaining</Th>
+                    <Th>Status</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100/80 dark:divide-amber-900/20">
+                  {nearExpiryReminders.map((r) => {
+                    const status = getStatusLabel(r);
+                    return (
+                      <tr key={`near-${r._id}`} className="hover:bg-amber-50/60 dark:hover:bg-amber-900/10 transition-colors">
+                        <Td className="font-semibold text-slate-800 dark:text-slate-200">{r.clientName}</Td>
+                        <Td className="text-slate-600 dark:text-slate-300">{r.projectName}</Td>
+                        <Td className="tabular-nums text-slate-700 dark:text-slate-300">{getExpiry(r).format("DD MMM YYYY")}</Td>
+                        <Td className="tabular-nums text-slate-600 dark:text-slate-400">{remainingTime(r)}</Td>
+                        <Td>
+                          <Badge color={status.color}>{status.text}</Badge>
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* 🌟 GLASS TABLE CARD */}
         <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 
@@ -271,6 +321,7 @@ function Badge({ children, color }) {
     green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 ring-1 ring-emerald-600/10",
     red: "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 ring-1 ring-rose-600/10",
     blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 ring-1 ring-blue-600/10",
+    amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 ring-1 ring-amber-600/10",
   };
 
   return (
