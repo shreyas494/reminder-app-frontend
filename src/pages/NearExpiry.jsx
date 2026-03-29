@@ -3,6 +3,9 @@ import dayjs from "dayjs";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
+const WHATSAPP_LOGO_URL = "https://cdn.simpleicons.org/whatsapp/25D366";
+const GMAIL_LOGO_URL = "https://cdn.simpleicons.org/gmail/EA4335";
+
 export default function NearExpiry() {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
@@ -156,7 +159,7 @@ export default function NearExpiry() {
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
                               title="Send WhatsApp"
                             >
-                              🟢
+                              <img src={WHATSAPP_LOGO_URL} alt="WhatsApp" className="w-4 h-4" />
                             </a>
 
                             <a
@@ -166,7 +169,7 @@ export default function NearExpiry() {
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasEmail ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 hover:bg-rose-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
                               title="Send Email"
                             >
-                              ✉️
+                              <img src={GMAIL_LOGO_URL} alt="Gmail" className="w-4 h-4" />
                             </a>
 
                             <button
