@@ -63,6 +63,8 @@ export default function Dashboard() {
 
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
+    const daysToExpiry = end.startOf("day").diff(dayjs().startOf("day"), "day");
+    if (daysToExpiry >= 0 && daysToExpiry <= 30) return { text: "Near Expiry", color: "amber" };
     return { text: "Active", color: "green" };
   };
 
