@@ -547,49 +547,38 @@ export default function Quotations() {
             </div>
           ) : (
             <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
-                      <Input label="Quotation Date" type="date" value={dayjs(form.quotationDate).format("YYYY-MM-DD")} onChange={(v) => setForm({ ...form, quotationDate: dayjs(v).toISOString() })} />
-                      <Select label="Quotation Type" value={form.quotationType} onChange={(v) => setForm({ ...form, quotationType: v })} options={[{ value: "with-gst", label: "With GST" }, { value: "without-gst", label: "Without GST" }]} />
-                      <Input label="Client Email" value={form.clientEmail || ""} onChange={(v) => setForm({ ...form, clientEmail: v })} />
-                      <Input label="Recipient Name" value={form.recipientName || ""} onChange={(v) => setForm({ ...form, recipientName: v })} />
-                      <Input label="Recipient Address" value={form.recipientAddress || ""} onChange={(v) => setForm({ ...form, recipientAddress: v })} />
-                      <Input label="Subject" value={form.subject || ""} onChange={(v) => setForm({ ...form, subject: v })} />
-                      <Input label="Service Description" value={form.serviceDescription || ""} onChange={(v) => setForm({ ...form, serviceDescription: v })} />
-                      <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
-                      <Input label="GST Percent" type="number" value={form.gstPercent ?? 18} onChange={(v) => setForm({ ...form, gstPercent: v })} />
-                      <Input label="Payment Terms" value={form.paymentTerms || ""} onChange={(v) => setForm({ ...form, paymentTerms: v })} />
-                      <Input label="Sender Name" value={form.senderName || ""} onChange={(v) => setForm({ ...form, senderName: v })} />
-                      <Input label="Sender Phone" value={form.senderPhone || ""} onChange={(v) => setForm({ ...form, senderPhone: v })} />
-                      <Input label="Company Name" value={form.companyName || ""} onChange={(v) => setForm({ ...form, companyName: v })} />
-                      <Input label="Company Address" value={form.companyAddress || ""} onChange={(v) => setForm({ ...form, companyAddress: v })} />
-                      <Input label="Company Registration" value={form.companyRegistration || ""} onChange={(v) => setForm({ ...form, companyRegistration: v })} />
-                      <Input label="Company Phone" value={form.companyPhone || ""} onChange={(v) => setForm({ ...form, companyPhone: v })} />
-                      <Input label="Company Tagline" value={form.companyTagline || ""} onChange={(v) => setForm({ ...form, companyTagline: v })} />
-                      <Input label="Company Logo URL" value={form.companyLogoUrl || ""} readOnly />
-                    </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-3">
+                <h3 className="text-sm font-bold text-slate-600">Static Info</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
+                  <Input label="Quotation Date" value={dayjs(form.quotationDate).format("DD MMM YYYY")} readOnly />
+                  <Input label="Quotation Type" value={form.quotationType === "with-gst" ? "With GST" : "Without GST"} readOnly />
+                  <Input label="Client Email" value={form.clientEmail || ""} readOnly />
+                  <Input label="Recipient Name" value={form.recipientName || ""} readOnly />
+                  <Input label="Recipient Address" value={form.recipientAddress || ""} readOnly />
+                  <Input label="Subject" value={form.subject || ""} readOnly />
+                  <Input label="Service Description" value={form.serviceDescription || ""} readOnly />
+                </div>
+              </div>
 
-                    <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-3">
+                <h3 className="text-sm font-bold text-slate-600">Editable Details</h3>
+                <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
+                <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
 
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
-                      <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
-                      <p><strong>Calculated Total:</strong> {formatCurrency(totals.totalAmount)}</p>
-                    </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
+                  <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
+                  <p><strong>Calculated Total:</strong> {formatCurrency(totals.totalAmount)}</p>
+                </div>
 
-                    <button
-                      disabled={busy}
-                      onClick={saveQuotation}
-                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      Save Manual Edits (Required)
-                    </button>
-
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                      <h3 className="text-sm font-bold text-slate-600 mb-3">Review Preview</h3>
-                      <div className="max-h-[520px] overflow-auto bg-white rounded-lg border border-slate-200">
-                        <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
-                      </div>
-                    </div>
+                <button
+                  disabled={busy}
+                  onClick={saveQuotation}
+                  className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  Save Manual Edits (Required)
+                </button>
+              </div>
             </div>
           )}
         </section>
@@ -609,25 +598,6 @@ function Input({ label, value, onChange, readOnly = false, type = "text" }) {
         onChange={(e) => onChange?.(e.target.value)}
         className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
       />
-    </label>
-  );
-}
-
-function Select({ label, value, onChange, options }) {
-  return (
-    <label className="space-y-1 block">
-      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
     </label>
   );
 }
