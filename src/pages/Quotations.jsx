@@ -655,7 +655,9 @@ export default function Quotations() {
                     <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
 
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
-                      <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
+                      {form.quotationType === "with-gst" && (
+                        <p><strong>Calculated GST:</strong> {formatCurrency(totals.gstAmount)}</p>
+                      )}
                       <p><strong>Calculated Total:</strong> {formatCurrency(totals.totalAmount)}</p>
                     </div>
 
