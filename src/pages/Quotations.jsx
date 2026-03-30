@@ -125,6 +125,32 @@ export default function Quotations() {
     });
   };
 
+  const buildSavePayload = (sourceForm) => ({
+    quotationType: sourceForm.quotationType,
+    quotationDate: sourceForm.quotationDate,
+    clientEmail: sourceForm.clientEmail,
+    recipientName: sourceForm.recipientName,
+    recipientAddress: sourceForm.recipientAddress,
+    subject: sourceForm.subject,
+    introText: sourceForm.introText,
+    serviceDescription: sourceForm.serviceDescription,
+    expiryText: sourceForm.expiryText,
+    paymentTerms: sourceForm.paymentTerms,
+    amount: Number(sourceForm.amount || 0),
+    gstPercent: Number(sourceForm.gstPercent || 0),
+    senderName: sourceForm.senderName,
+    senderPhone: sourceForm.senderPhone,
+    companyName: sourceForm.companyName,
+    companyAddress: sourceForm.companyAddress,
+    companyRegistration: sourceForm.companyRegistration,
+    companyPhone: sourceForm.companyPhone,
+    companyTagline: sourceForm.companyTagline,
+    companyLogoUrl:
+      resolveLogoUrl(sourceForm.companyLogoUrl) ||
+      localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+      FIXED_LOGO_URL,
+  });
+
   async function fetchReminders(page) {
     try {
       const res = await API.get(`/reminders?page=${page}`);
@@ -192,36 +218,13 @@ export default function Quotations() {
     setMessage("");
 
     try {
-      const payload = {
-        quotationType: form.quotationType,
-        quotationDate: form.quotationDate,
-        clientEmail: form.clientEmail,
-        recipientName: form.recipientName,
-        recipientAddress: form.recipientAddress,
-        subject: form.subject,
-        introText: form.introText,
-        serviceDescription: form.serviceDescription,
-        expiryText: form.expiryText,
-        paymentTerms: form.paymentTerms,
-        amount: Number(form.amount || 0),
-        gstPercent: Number(form.gstPercent || 0),
-        senderName: form.senderName,
-        senderPhone: form.senderPhone,
-        companyName: form.companyName,
-        companyAddress: form.companyAddress,
-        companyRegistration: form.companyRegistration,
-        companyPhone: form.companyPhone,
-        companyTagline: form.companyTagline,
-        companyLogoUrl:
-          resolveLogoUrl(form.companyLogoUrl) ||
-          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
-          FIXED_LOGO_URL,
-      };
+      const payload = buildSavePayload(form);
+      const saveRes = await API.put(`/quotations/${form._id}`, payload);
+      const activeQuotationId = saveRes?.data?._id || form._id;
 
-      await API.put(`/quotations/${form._id}`, payload);
-      await openQuotation(form._id);
+      await openQuotation(activeQuotationId);
       await fetchQuotations(quotationPage);
-      setMessage("Quotation updated and marked as reviewed.");
+      setMessage("Quotation saved as a new version.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save quotation");
     } finally {
@@ -236,40 +239,17 @@ export default function Quotations() {
     setMessage("");
 
     try {
-      const savePayload = {
-        quotationType: form.quotationType,
-        quotationDate: form.quotationDate,
-        clientEmail: form.clientEmail,
-        recipientName: form.recipientName,
-        recipientAddress: form.recipientAddress,
-        subject: form.subject,
-        introText: form.introText,
-        serviceDescription: form.serviceDescription,
-        expiryText: form.expiryText,
-        paymentTerms: form.paymentTerms,
-        amount: Number(form.amount || 0),
-        gstPercent: Number(form.gstPercent || 0),
-        senderName: form.senderName,
-        senderPhone: form.senderPhone,
-        companyName: form.companyName,
-        companyAddress: form.companyAddress,
-        companyRegistration: form.companyRegistration,
-        companyPhone: form.companyPhone,
-        companyTagline: form.companyTagline,
-        companyLogoUrl:
-          resolveLogoUrl(form.companyLogoUrl) ||
-          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
-          FIXED_LOGO_URL,
-      };
-
-      await API.put(`/quotations/${form._id}`, savePayload);
+      const savePayload = buildSavePayload(form);
+      const saveRes = await API.put(`/quotations/${form._id}`, savePayload);
+      const activeQuotationId = saveRes?.data?._id || form._id;
+      const activeForm = { ...form, ...(saveRes?.data || {}), _id: activeQuotationId };
 
       let paymentRes;
       try {
-        paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
+        paymentRes = await API.post(`/quotations/${activeQuotationId}/payment-link`);
       } catch (linkErr) {
         if (linkErr?.response?.status === 404) {
-          paymentRes = await API.post(`/quotations/payment-link/${form._id}`);
+          paymentRes = await API.post(`/quotations/payment-link/${activeQuotationId}`);
         } else {
           throw linkErr;
         }
@@ -282,12 +262,12 @@ export default function Quotations() {
         throw new Error("Failed to generate fresh payment link. Please try again.");
       }
 
-      const pdfDoc = await buildPdfDocument(paymentLinkUrl);
+      const pdfDoc = await buildPdfDocument(paymentLinkUrl, activeForm);
       const pdfDataUri = pdfDoc.output("datauristring");
       const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
 
-      await API.post(`/quotations/${form._id}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
-      await openQuotation(form._id);
+      await API.post(`/quotations/${activeQuotationId}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
+      await openQuotation(activeQuotationId);
       await fetchQuotations(quotationPage);
       setMessage("Quotation email sent successfully.");
     } catch (err) {
@@ -330,45 +310,22 @@ export default function Quotations() {
     setError("");
     setMessage("");
     try {
-      const savePayload = {
-        quotationType: form.quotationType,
-        quotationDate: form.quotationDate,
-        clientEmail: form.clientEmail,
-        recipientName: form.recipientName,
-        recipientAddress: form.recipientAddress,
-        subject: form.subject,
-        introText: form.introText,
-        serviceDescription: form.serviceDescription,
-        expiryText: form.expiryText,
-        paymentTerms: form.paymentTerms,
-        amount: Number(form.amount || 0),
-        gstPercent: Number(form.gstPercent || 0),
-        senderName: form.senderName,
-        senderPhone: form.senderPhone,
-        companyName: form.companyName,
-        companyAddress: form.companyAddress,
-        companyRegistration: form.companyRegistration,
-        companyPhone: form.companyPhone,
-        companyTagline: form.companyTagline,
-        companyLogoUrl:
-          resolveLogoUrl(form.companyLogoUrl) ||
-          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
-          FIXED_LOGO_URL,
-      };
+      const savePayload = buildSavePayload(form);
+      const saveRes = await API.put(`/quotations/${form._id}`, savePayload);
+      const activeQuotationId = saveRes?.data?._id || form._id;
+      const activeForm = { ...form, ...(saveRes?.data || {}), _id: activeQuotationId };
 
-      await API.put(`/quotations/${form._id}`, savePayload);
-
-      const paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
+      const paymentRes = await API.post(`/quotations/${activeQuotationId}/payment-link`);
       const paymentLinkUrl = paymentRes.data?.paymentLinkUrl || "";
 
       if (!paymentLinkUrl) {
         throw new Error("Failed to generate fresh payment link. Please try again.");
       }
 
-      const doc = await buildPdfDocument(paymentLinkUrl);
-      doc.save(`${form.quotationNumber || "quotation"}.pdf`);
+      const doc = await buildPdfDocument(paymentLinkUrl, activeForm);
+      doc.save(`${activeForm.quotationNumber || "quotation"}.pdf`);
 
-      await openQuotation(form._id);
+      await openQuotation(activeQuotationId);
       await fetchQuotations(quotationPage);
       setMessage("Quotation downloaded successfully.");
     } catch (err) {
@@ -378,15 +335,20 @@ export default function Quotations() {
     }
   }
 
-  async function buildPdfDocument(paymentLinkUrl = "") {
-    if (!form) throw new Error("No quotation selected");
+  async function buildPdfDocument(paymentLinkUrl = "", sourceForm = null) {
+    const q = sourceForm || form;
+    if (!q) throw new Error("No quotation selected");
 
     const doc = new jsPDF("p", "pt", "a4");
     const pageW = 595;
     const pageH = 842;
     const margin = 28;
     const contentW = pageW - margin * 2;
-    const showGst = form.quotationType === "with-gst";
+    const showGst = q.quotationType === "with-gst";
+    const localAmount = Number(q.amount || 0);
+    const localGstPercent = Number(q.gstPercent || 0);
+    const localGstAmount = showGst ? (localAmount * localGstPercent) / 100 : 0;
+    const localTotals = { gstAmount: localGstAmount, totalAmount: localAmount + localGstAmount };
 
     const txt = (text, x, y, opts = {}) => {
       doc.setFont("helvetica", opts.bold ? "bold" : "normal");
@@ -403,7 +365,7 @@ export default function Quotations() {
     doc.triangle(pageW - 230, 0, pageW - 160, 0, pageW, headerH, "F");
 
     const logoSource =
-      resolveLogoUrl(form.companyLogoUrl) ||
+      resolveLogoUrl(q.companyLogoUrl) ||
       localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
       FIXED_LOGO_URL;
     try {
@@ -418,25 +380,25 @@ export default function Quotations() {
       console.warn("[QUOTATION_PDF] Failed to load logo:", logoError);
     }
 
-    txt(form.companyName || "", 104, 28, { bold: true, size: 14, color: [255, 255, 255] });
-    txt(form.companyAddress || "", 104, 42, { size: 8, color: [208, 221, 242] });
-    if (form.companyRegistration) {
-      txt(`Reg. No: ${form.companyRegistration}  ·  Mobile: ${form.companyPhone || ""}`, 104, 53, {
+    txt(q.companyName || "", 104, 28, { bold: true, size: 14, color: [255, 255, 255] });
+    txt(q.companyAddress || "", 104, 42, { size: 8, color: [208, 221, 242] });
+    if (q.companyRegistration) {
+      txt(`Reg. No: ${q.companyRegistration}  ·  Mobile: ${q.companyPhone || ""}`, 104, 53, {
         size: 8,
         color: [208, 221, 242],
       });
     }
-    if (form.companyTagline) {
-      txt(form.companyTagline, 104, 64, { bold: true, size: 8, color: [234, 241, 255] });
+    if (q.companyTagline) {
+      txt(q.companyTagline, 104, 64, { bold: true, size: 8, color: [234, 241, 255] });
     }
 
     txt("INVOICE", pageW - margin, 30, { bold: true, size: 20, align: "right", color: [255, 255, 255] });
-    txt(`Ref No: ${form.quotationNumber || "-"}`, pageW - margin, 47, {
+    txt(`Ref No: ${q.quotationNumber || "-"}`, pageW - margin, 47, {
       size: 8,
       align: "right",
       color: [208, 221, 242],
     });
-    txt(`Date: ${dayjs(form.quotationDate).format("DD/MM/YYYY")}`, pageW - margin, 58, {
+    txt(`Date: ${dayjs(q.quotationDate).format("DD/MM/YYYY")}`, pageW - margin, 58, {
       size: 8,
       align: "right",
       color: [208, 221, 242],
@@ -451,9 +413,9 @@ export default function Quotations() {
     doc.rect(margin, y, blockW, blockH);
     doc.rect(margin + blockW + blockGap, y, blockW, blockH);
     txt("Bill To", margin + 8, y + 14, { bold: true, size: 9, color: [55, 91, 145] });
-    txt(form.recipientName || "", margin + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
-    if (form.recipientAddress) {
-      const billAddress = doc.splitTextToSize(form.recipientAddress, blockW - 16);
+    txt(q.recipientName || "", margin + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
+    if (q.recipientAddress) {
+      const billAddress = doc.splitTextToSize(q.recipientAddress, blockW - 16);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(75, 85, 99);
@@ -461,25 +423,25 @@ export default function Quotations() {
     }
 
     txt("From", margin + blockW + blockGap + 8, y + 14, { bold: true, size: 9, color: [55, 91, 145] });
-    txt(form.companyName || "", margin + blockW + blockGap + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
-    const fromLines = doc.splitTextToSize(form.companyAddress || "", blockW - 16);
+    txt(q.companyName || "", margin + blockW + blockGap + 8, y + 28, { bold: true, size: 10, color: [17, 24, 39] });
+    const fromLines = doc.splitTextToSize(q.companyAddress || "", blockW - 16);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
     doc.setTextColor(75, 85, 99);
     doc.text(fromLines, margin + blockW + blockGap + 8, y + 41);
-    const signerLine = [form.senderName, form.senderPhone].filter(Boolean).join(" · ");
+    const signerLine = [q.senderName, q.senderPhone].filter(Boolean).join(" · ");
     if (signerLine) {
       txt(signerLine, margin + blockW + blockGap + 8, y + 67, { size: 8.5, color: [75, 85, 99] });
     }
     y += blockH + 14;
 
-    txt(form.subject || "", margin, y, { bold: true, size: 13, color: [15, 44, 92] });
+    txt(q.subject || "", margin, y, { bold: true, size: 13, color: [15, 44, 92] });
     y += 14;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(75, 85, 99);
-    const introLines = doc.splitTextToSize(form.introText || "", contentW);
+    const introLines = doc.splitTextToSize(q.introText || "", contentW);
     doc.text(introLines, margin, y);
     y += introLines.length * 11 + 14;
 
@@ -516,17 +478,17 @@ export default function Quotations() {
     txt("Amount", margin + srW + descW + chargeW - 6, y + 15, { bold: true, size: 9, align: "right", color: [255, 255, 255] });
     y += rowH;
 
-    drawRow(y, "1", String(form.serviceDescription || ""), formatCurrency(form.amount)); y += rowH;
+    drawRow(y, "1", String(q.serviceDescription || ""), formatCurrency(q.amount)); y += rowH;
     if (showGst) {
-      drawRow(y, "", `GST (${form.gstPercent}%)`, formatCurrency(totals.gstAmount)); y += rowH;
+      drawRow(y, "", `GST (${q.gstPercent}%)`, formatCurrency(localTotals.gstAmount)); y += rowH;
     }
-    drawRow(y, "", "Total", formatCurrency(totals.totalAmount), true, true); y += rowH + 10;
+    drawRow(y, "", "Total", formatCurrency(localTotals.totalAmount), true, true); y += rowH + 10;
 
     const amountBoxW = 220;
     const amountBoxH = 30;
     doc.setFillColor(29, 79, 145);
     doc.rect(pageW - margin - amountBoxW, y, amountBoxW, amountBoxH, "F");
-    txt(`Amount Due: ${formatCurrency(totals.totalAmount)}`, pageW - margin - 10, y + 19, {
+    txt(`Amount Due: ${formatCurrency(localTotals.totalAmount)}`, pageW - margin - 10, y + 19, {
       bold: true,
       size: 10,
       align: "right",
@@ -539,7 +501,7 @@ export default function Quotations() {
       doc.setFillColor(243, 247, 255);
       doc.setDrawColor(201, 215, 238);
       doc.rect(margin, y, contentW, noteH, "FD");
-      txt(`Note: GST @ ${form.gstPercent}% is included in the above total.`, margin + 8, y + 14, {
+      txt(`Note: GST @ ${q.gstPercent}% is included in the above total.`, margin + 8, y + 14, {
         size: 8.5,
         color: [75, 85, 99],
       });
@@ -548,10 +510,10 @@ export default function Quotations() {
 
     txt("Payment Info", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
     y += 12;
-    txt(form.paymentTerms || "", margin, y, { size: 8.5, color: [75, 85, 99] });
+    txt(q.paymentTerms || "", margin, y, { size: 8.5, color: [75, 85, 99] });
     y += 12;
 
-    const finalPaymentLinkUrl = paymentLinkUrl || form.paymentLinkUrl || "";
+    const finalPaymentLinkUrl = paymentLinkUrl || q.paymentLinkUrl || "";
     const paymentLinkRaw = `Payment Link: ${finalPaymentLinkUrl || "Not available"}`;
     const paymentLinkLines = doc.splitTextToSize(paymentLinkRaw, contentW);
     doc.setFont("helvetica", "normal");
@@ -568,7 +530,7 @@ export default function Quotations() {
 
     const signBaseY = pageH - 86;
     txt("Authorized Signatory", pageW - margin, signBaseY, { size: 8.5, align: "right", color: [107, 114, 128] });
-    txt(form.senderName || form.companyName || "", pageW - margin, signBaseY + 14, {
+    txt(q.senderName || q.companyName || "", pageW - margin, signBaseY + 14, {
       bold: true,
       size: 10,
       align: "right",
