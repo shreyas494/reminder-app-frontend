@@ -247,21 +247,31 @@ export default function Quotations() {
       const activeForm = { ...form, ...(saveRes?.data || {}), _id: activeQuotationId };
 
       let paymentRes;
+      let linkError;
       try {
         paymentRes = await API.post(`/quotations/${activeQuotationId}/payment-link`);
       } catch (linkErr) {
+        linkError = linkErr;
         if (linkErr?.response?.status === 404) {
-          paymentRes = await API.post(`/quotations/payment-link/${activeQuotationId}`);
-        } else {
-          throw linkErr;
+          try {
+            paymentRes = await API.post(`/quotations/payment-link/${activeQuotationId}`);
+            linkError = null;
+          } catch (fallbackErr) {
+            linkError = fallbackErr;
+          }
         }
+      }
+
+      if (linkError) {
+        const errorMsg = linkError?.response?.data?.message || linkError?.message;
+        throw new Error(`Payment link generation failed: ${errorMsg || "Unknown error from Razorpay"}`);
       }
 
       const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
       const paymentLinkId = paymentRes?.data?.paymentLinkId || "";
 
       if (!paymentLinkUrl) {
-        throw new Error("Failed to generate fresh payment link. Please try again.");
+        throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
       }
 
       const pdfDoc = await buildPdfDocument(paymentLinkUrl, activeForm);
@@ -277,6 +287,8 @@ export default function Quotations() {
       const serverMessage = err?.response?.data?.message;
       if (status === 404) {
         setError(serverMessage || "Quotation API endpoint not found on deployed backend. Please redeploy backend and try again.");
+      } else if (err.message?.includes("Payment link")) {
+        setError(err.message);
       } else {
         setError(serverMessage || err.message || "Failed to send quotation");
       }
@@ -317,11 +329,31 @@ export default function Quotations() {
       const activeQuotationId = saveRes?.data?._id || form._id;
       const activeForm = { ...form, ...(saveRes?.data || {}), _id: activeQuotationId };
 
-      const paymentRes = await API.post(`/quotations/${activeQuotationId}/payment-link`);
-      const paymentLinkUrl = paymentRes.data?.paymentLinkUrl || "";
+      let paymentRes;
+      let linkError;
+      try {
+        paymentRes = await API.post(`/quotations/${activeQuotationId}/payment-link`);
+      } catch (linkErr) {
+        linkError = linkErr;
+        if (linkErr?.response?.status === 404) {
+          try {
+            paymentRes = await API.post(`/quotations/payment-link/${activeQuotationId}`);
+            linkError = null;
+          } catch (fallbackErr) {
+            linkError = fallbackErr;
+          }
+        }
+      }
+
+      if (linkError) {
+        const errorMsg = linkError?.response?.data?.message || linkError?.message;
+        throw new Error(`Payment link generation failed: ${errorMsg || "Unknown error from Razorpay"}`);
+      }
+
+      const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
 
       if (!paymentLinkUrl) {
-        throw new Error("Failed to generate fresh payment link. Please try again.");
+        throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
       }
 
       const doc = await buildPdfDocument(paymentLinkUrl, activeForm);
@@ -331,7 +363,12 @@ export default function Quotations() {
       await fetchQuotations(quotationPage, quotationTab);
       setMessage("Quotation downloaded successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to download quotation");
+      const serverMessage = err?.response?.data?.message;
+      if (err.message?.includes("Payment link")) {
+        setError(err.message);
+      } else {
+        setError(serverMessage || err.message || "Failed to download quotation");
+      }
     } finally {
       setBusy(false);
     }
