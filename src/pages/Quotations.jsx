@@ -359,6 +359,12 @@ export default function Quotations() {
       doc.text(String(text || ""), x, y, opts.align ? { align: opts.align } : undefined);
     };
 
+    const ensureSpace = (requiredHeight = 80) => {
+      if (y + requiredHeight <= pageH - 90) return;
+      doc.addPage();
+      y = margin + 20;
+    };
+
     const headerH = 84;
     doc.setFillColor(15, 44, 92);
     doc.rect(0, 0, pageW, headerH, "F");
@@ -510,22 +516,30 @@ export default function Quotations() {
       y += noteH + 10;
     }
 
+    ensureSpace(120);
     txt("Payment Info", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
     y += 12;
-    txt(q.paymentTerms || "", margin, y, { size: 8.5, color: [75, 85, 99] });
-    y += 12;
+
+    const paymentTermLines = doc.splitTextToSize(q.paymentTerms || "", contentW);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(75, 85, 99);
+    doc.text(paymentTermLines, margin, y);
+    y += paymentTermLines.length * 10 + 6;
 
     const finalPaymentLinkUrl = paymentLinkUrl || q.paymentLinkUrl || "";
     const paymentLinkRaw = `Payment Link: ${finalPaymentLinkUrl || "Not available"}`;
     const paymentLinkLines = doc.splitTextToSize(paymentLinkRaw, contentW);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.setTextColor(75, 85, 99);
+    doc.setTextColor(finalPaymentLinkUrl ? 37 : 75, finalPaymentLinkUrl ? 99 : 85, finalPaymentLinkUrl ? 235 : 99);
     doc.text(paymentLinkLines, margin, y);
+    doc.setTextColor(75, 85, 99);
 
-    const noteY = y + paymentLinkLines.length * 10 + 10;
-    txt("Notes", margin, noteY, { bold: true, size: 9, color: [55, 91, 145] });
-    txt("Please give us your confirmation for the renewal as soon as possible.", margin, noteY + 12, {
+    y += paymentLinkLines.length * 10 + 10;
+    ensureSpace(40);
+    txt("Notes", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
+    txt("Please give us your confirmation for the renewal as soon as possible.", margin, y + 12, {
       size: 8.5,
       color: [75, 85, 99],
     });
