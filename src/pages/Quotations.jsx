@@ -264,9 +264,19 @@ export default function Quotations() {
 
       await API.put(`/quotations/${form._id}`, savePayload);
 
-      const paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
-      const paymentLinkUrl = paymentRes.data?.paymentLinkUrl || "";
-      const paymentLinkId = paymentRes.data?.paymentLinkId || "";
+      let paymentRes;
+      try {
+        paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
+      } catch (linkErr) {
+        if (linkErr?.response?.status === 404) {
+          paymentRes = await API.post(`/quotations/payment-link/${form._id}`);
+        } else {
+          throw linkErr;
+        }
+      }
+
+      const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
+      const paymentLinkId = paymentRes?.data?.paymentLinkId || "";
 
       if (!paymentLinkUrl) {
         throw new Error("Failed to generate fresh payment link. Please try again.");
@@ -281,7 +291,13 @@ export default function Quotations() {
       await fetchQuotations(quotationPage);
       setMessage("Quotation email sent successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to send quotation");
+      const status = err?.response?.status;
+      const serverMessage = err?.response?.data?.message;
+      if (status === 404) {
+        setError(serverMessage || "Quotation API endpoint not found on deployed backend. Please redeploy backend and try again.");
+      } else {
+        setError(serverMessage || err.message || "Failed to send quotation");
+      }
     } finally {
       setBusy(false);
     }
