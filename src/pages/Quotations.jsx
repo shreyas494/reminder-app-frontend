@@ -236,16 +236,52 @@ export default function Quotations() {
     setMessage("");
 
     try {
-      const pdfDoc = await buildPdfDocument();
+      const savePayload = {
+        quotationType: form.quotationType,
+        quotationDate: form.quotationDate,
+        clientEmail: form.clientEmail,
+        recipientName: form.recipientName,
+        recipientAddress: form.recipientAddress,
+        subject: form.subject,
+        introText: form.introText,
+        serviceDescription: form.serviceDescription,
+        expiryText: form.expiryText,
+        paymentTerms: form.paymentTerms,
+        amount: Number(form.amount || 0),
+        gstPercent: Number(form.gstPercent || 0),
+        senderName: form.senderName,
+        senderPhone: form.senderPhone,
+        companyName: form.companyName,
+        companyAddress: form.companyAddress,
+        companyRegistration: form.companyRegistration,
+        companyPhone: form.companyPhone,
+        companyTagline: form.companyTagline,
+        companyLogoUrl:
+          resolveLogoUrl(form.companyLogoUrl) ||
+          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+          FIXED_LOGO_URL,
+      };
+
+      await API.put(`/quotations/${form._id}`, savePayload);
+
+      const paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
+      const paymentLinkUrl = paymentRes.data?.paymentLinkUrl || "";
+      const paymentLinkId = paymentRes.data?.paymentLinkId || "";
+
+      if (!paymentLinkUrl) {
+        throw new Error("Failed to generate fresh payment link. Please try again.");
+      }
+
+      const pdfDoc = await buildPdfDocument(paymentLinkUrl);
       const pdfDataUri = pdfDoc.output("datauristring");
       const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
 
-      await API.post(`/quotations/${form._id}/send`, { pdfBase64 });
+      await API.post(`/quotations/${form._id}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
       await openQuotation(form._id);
       await fetchQuotations(quotationPage);
       setMessage("Quotation email sent successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send quotation");
+      setError(err.response?.data?.message || err.message || "Failed to send quotation");
     } finally {
       setBusy(false);
     }
@@ -274,11 +310,59 @@ export default function Quotations() {
   async function downloadPdf() {
     if (!form) return;
 
-    const doc = await buildPdfDocument();
-    doc.save(`${form.quotationNumber || "quotation"}.pdf`);
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const savePayload = {
+        quotationType: form.quotationType,
+        quotationDate: form.quotationDate,
+        clientEmail: form.clientEmail,
+        recipientName: form.recipientName,
+        recipientAddress: form.recipientAddress,
+        subject: form.subject,
+        introText: form.introText,
+        serviceDescription: form.serviceDescription,
+        expiryText: form.expiryText,
+        paymentTerms: form.paymentTerms,
+        amount: Number(form.amount || 0),
+        gstPercent: Number(form.gstPercent || 0),
+        senderName: form.senderName,
+        senderPhone: form.senderPhone,
+        companyName: form.companyName,
+        companyAddress: form.companyAddress,
+        companyRegistration: form.companyRegistration,
+        companyPhone: form.companyPhone,
+        companyTagline: form.companyTagline,
+        companyLogoUrl:
+          resolveLogoUrl(form.companyLogoUrl) ||
+          localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+          FIXED_LOGO_URL,
+      };
+
+      await API.put(`/quotations/${form._id}`, savePayload);
+
+      const paymentRes = await API.post(`/quotations/${form._id}/payment-link`);
+      const paymentLinkUrl = paymentRes.data?.paymentLinkUrl || "";
+
+      if (!paymentLinkUrl) {
+        throw new Error("Failed to generate fresh payment link. Please try again.");
+      }
+
+      const doc = await buildPdfDocument(paymentLinkUrl);
+      doc.save(`${form.quotationNumber || "quotation"}.pdf`);
+
+      await openQuotation(form._id);
+      await fetchQuotations(quotationPage);
+      setMessage("Quotation downloaded successfully.");
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Failed to download quotation");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  async function buildPdfDocument() {
+  async function buildPdfDocument(paymentLinkUrl = "") {
     if (!form) throw new Error("No quotation selected");
 
     const doc = new jsPDF("p", "pt", "a4");
@@ -314,7 +398,9 @@ export default function Quotations() {
         doc.rect(16, 12, 78, 58, "F");
         doc.addImage(logoDataUrl, fmt, 20, 16, 70, 50);
       }
-    } catch {}
+    } catch (logoError) {
+      console.warn("[QUOTATION_PDF] Failed to load logo:", logoError);
+    }
 
     txt(form.companyName || "", 104, 28, { bold: true, size: 14, color: [255, 255, 255] });
     txt(form.companyAddress || "", 104, 42, { size: 8, color: [208, 221, 242] });
@@ -447,8 +533,17 @@ export default function Quotations() {
     txt("Payment Info", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
     y += 12;
     txt(form.paymentTerms || "", margin, y, { size: 8.5, color: [75, 85, 99] });
+    y += 12;
 
-    const noteY = y + 20;
+    const finalPaymentLinkUrl = paymentLinkUrl || form.paymentLinkUrl || "";
+    const paymentLinkRaw = `Payment Link: ${finalPaymentLinkUrl || "Not available"}`;
+    const paymentLinkLines = doc.splitTextToSize(paymentLinkRaw, contentW);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(75, 85, 99);
+    doc.text(paymentLinkLines, margin, y);
+
+    const noteY = y + paymentLinkLines.length * 10 + 10;
     txt("Notes", margin, noteY, { bold: true, size: 9, color: [55, 91, 145] });
     txt("Please give us your confirmation for the renewal as soon as possible.", margin, noteY + 12, {
       size: 8.5,
