@@ -65,6 +65,7 @@ export default function Quotations() {
   const [quotations, setQuotations] = useState([]);
   const [quotationPage, setQuotationPage] = useState(1);
   const [quotationTotalPages, setQuotationTotalPages] = useState(1);
+  const [quotationTab, setQuotationTab] = useState("all");
 
   const [selectedId, setSelectedId] = useState("");
   const [form, setForm] = useState(null);
@@ -81,8 +82,8 @@ export default function Quotations() {
   }, [reminderPage]);
 
   useEffect(() => {
-    fetchQuotations(quotationPage);
-  }, [quotationPage]);
+    fetchQuotations(quotationPage, quotationTab);
+  }, [quotationPage, quotationTab]);
 
   useEffect(() => {
     const openQuotationId = location.state?.openQuotationId;
@@ -162,9 +163,10 @@ export default function Quotations() {
     }
   }
 
-  async function fetchQuotations(page) {
+  async function fetchQuotations(page, tab = "all") {
     try {
-      const res = await API.get(`/quotations?page=${page}`);
+      const statusQuery = tab === "paid" ? "&status=paid" : "";
+      const res = await API.get(`/quotations?page=${page}${statusQuery}`);
       setQuotations(res.data.data || []);
       setQuotationPage(res.data.page || 1);
       setQuotationTotalPages(res.data.totalPages || 1);
@@ -223,7 +225,7 @@ export default function Quotations() {
       const activeQuotationId = saveRes?.data?._id || form._id;
 
       await openQuotation(activeQuotationId);
-      await fetchQuotations(quotationPage);
+      await fetchQuotations(quotationPage, quotationTab);
       setMessage("Quotation saved as a new version.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save quotation");
@@ -268,7 +270,7 @@ export default function Quotations() {
 
       await API.post(`/quotations/${activeQuotationId}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
       await openQuotation(activeQuotationId);
-      await fetchQuotations(quotationPage);
+      await fetchQuotations(quotationPage, quotationTab);
       setMessage("Quotation email sent successfully.");
     } catch (err) {
       const status = err?.response?.status;
@@ -326,7 +328,7 @@ export default function Quotations() {
       doc.save(`${activeForm.quotationNumber || "quotation"}.pdf`);
 
       await openQuotation(activeQuotationId);
-      await fetchQuotations(quotationPage);
+      await fetchQuotations(quotationPage, quotationTab);
       setMessage("Quotation downloaded successfully.");
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Failed to download quotation");
@@ -608,7 +610,31 @@ export default function Quotations() {
 
         <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
+            <div className="space-y-2">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
+              <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("all");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "all" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("paid");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "paid" ? "bg-emerald-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  Paid
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
               <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
               <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
@@ -622,6 +648,9 @@ export default function Quotations() {
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Total</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Payment</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Reviewed</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Sent</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Action</th>
@@ -636,6 +665,13 @@ export default function Quotations() {
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientName || "-"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{q.clientEmail || "-"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatCurrency(q.totalAmount || 0)}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : q.paymentStatus === "partial" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}>
+                        {String(q.paymentStatus || "unpaid").toUpperCase()}
+                      </span>
+                    </td>
                     <td className="px-3 py-2">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
                         {q.reviewed ? "Yes" : "No"}
@@ -658,7 +694,7 @@ export default function Quotations() {
                 ))}
                 {quotations.length === 0 && (
                   <tr>
-                    <td className="px-3 py-4 text-slate-500" colSpan={6}>No quotation records found.</td>
+                    <td className="px-3 py-4 text-slate-500" colSpan={10}>No quotation records found.</td>
                   </tr>
                 )}
               </tbody>
