@@ -269,8 +269,10 @@ export default function Quotations() {
 
       const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
       const paymentLinkId = paymentRes?.data?.paymentLinkId || "";
+      const paymentMessage = String(paymentRes?.data?.message || "").toLowerCase();
+      const noPaymentDue = paymentMessage.includes("no payment due");
 
-      if (!paymentLinkUrl) {
+      if (!paymentLinkUrl && !noPaymentDue) {
         throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
       }
 
@@ -281,7 +283,7 @@ export default function Quotations() {
       await API.post(`/quotations/${activeQuotationId}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
       await openQuotation(activeQuotationId);
       await fetchQuotations(quotationPage, quotationTab);
-      setMessage("Quotation email sent successfully.");
+      setMessage(noPaymentDue ? "Quotation email sent successfully (payment already completed)." : "Quotation email sent successfully.");
     } catch (err) {
       const status = err?.response?.status;
       const serverMessage = err?.response?.data?.message;
@@ -351,8 +353,10 @@ export default function Quotations() {
       }
 
       const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
+      const paymentMessage = String(paymentRes?.data?.message || "").toLowerCase();
+      const noPaymentDue = paymentMessage.includes("no payment due");
 
-      if (!paymentLinkUrl) {
+      if (!paymentLinkUrl && !noPaymentDue) {
         throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
       }
 
