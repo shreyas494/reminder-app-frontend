@@ -312,7 +312,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     required
                     value={form.serviceType}
                     onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                    className={inputClass}
+                    className="w-full px-4 py-2.5 rounded-xl
+                   bg-slate-50 dark:bg-slate-900/50
+                   border border-slate-200 dark:border-slate-700
+                   text-slate-900 dark:text-white
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
+                   transition-all duration-200"
                   >
                     {SERVICE_TYPE_OPTIONS.map((option) => (
                       <option key={option} value={option}>
