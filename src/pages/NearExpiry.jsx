@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import AddReminderModal from "../components/AddReminderModal";
 
 const WHATSAPP_LOGO_URL = "https://cdn.simpleicons.org/whatsapp/25D366";
 const GMAIL_LOGO_URL = "https://cdn.simpleicons.org/gmail/EA4335";
@@ -13,6 +14,8 @@ export default function NearExpiry() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [creatingQuotationId, setCreatingQuotationId] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editReminder, setEditReminder] = useState(null);
 
   useEffect(() => {
     fetchNearExpiry(page);
@@ -202,6 +205,18 @@ export default function NearExpiry() {
                             >
                               {creatingQuotationId === r._id ? "…" : "📄"}
                             </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditReminder({ ...r, _mode: "renew" });
+                                setShowModal(true);
+                              }}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200"
+                              title="Renew"
+                            >
+                              ♻️
+                            </button>
                           </div>
                         </Td>
                       </tr>
@@ -220,6 +235,17 @@ export default function NearExpiry() {
           </span>
           <PaginationButton disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} label="Next" />
         </div>
+
+        {showModal && (
+          <AddReminderModal
+            existing={editReminder}
+            onAdded={() => fetchNearExpiry(page)}
+            onClose={() => {
+              setShowModal(false);
+              setEditReminder(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );
