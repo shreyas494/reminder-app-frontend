@@ -7,6 +7,13 @@ import {
   DesktopDateTimePicker,
 } from "@mui/x-date-pickers";
 
+const SERVICE_TYPE_OPTIONS = [
+  "Domain,Hosting and SSL",
+  "Domain",
+  "Hosting and SSL",
+  "Website maintenance",
+];
+
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isEdit = Boolean(existing);
@@ -23,6 +30,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     mobile2: "",
     email: "",
     projectName: "",
+    serviceType: "Domain,Hosting and SSL",
     domainName: "",
     activationDate: null,
     expiryDate: null,
@@ -57,6 +65,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       mobile2: existing.mobile2 || "",
       email: existing.email || "",
       projectName: existing.projectName || "",
+      serviceType: existing.serviceType || "Domain,Hosting and SSL",
       domainName: existing.domainName || "",
       activationDate: existing.activationDate
         ? dayjs(existing.activationDate)
@@ -149,6 +158,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         !form.mobile1 ||
         !form.email ||
         !form.projectName ||
+        !form.serviceType ||
         !isValidDayjsValue(form.activationDate) ||
         !isValidDayjsValue(form.expiryDate)
       ) {
@@ -186,6 +196,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         mobile2: form.mobile2 || undefined,
         email: form.email,
         projectName: form.projectName,
+        serviceType: form.serviceType,
         domainName: form.domainName || undefined,
         amount:
           form.amount !== "" && form.amount !== null
@@ -292,6 +303,24 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
                 <Input label="Project Name" required value={form.projectName}
                   onChange={(v) => setForm({ ...form, projectName: v })} />
+
+                <label className="space-y-1 block">
+                  <span className="text-sm font-semibold dark:text-slate-200">
+                    Service Type <span className="text-red-500">*</span>
+                  </span>
+                  <select
+                    required
+                    value={form.serviceType}
+                    onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                    className={inputClass}
+                  >
+                    {SERVICE_TYPE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
                 <Input label="Domain Name" value={form.domainName}
                   onChange={(v) => setForm({ ...form, domainName: v })} />

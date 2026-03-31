@@ -19,42 +19,6 @@ function formatCurrency(value) {
   return `Rs. ${amount}/-`;
 }
 
-const SERVICE_TYPE_OPTIONS = [
-  "Domain,Hosting and SSL",
-  "Domain",
-  "Hosting and SSL",
-  "Website maintenance",
-];
-
-function detectServiceType(serviceDescription) {
-  const text = String(serviceDescription || "").toLowerCase();
-  if (text.includes("website maintenance")) return "Website maintenance";
-  if (text.includes("domain") && text.includes("hosting") && text.includes("ssl")) return "Domain,Hosting and SSL";
-  if (text.includes("hosting") || text.includes("ssl")) return "Hosting and SSL";
-  if (text.includes("domain")) return "Domain";
-  return "Domain,Hosting and SSL";
-}
-
-function subjectByServiceType(serviceType) {
-  switch (serviceType) {
-    case "Domain":
-      return "Domain Renewal Quotation";
-    case "Hosting and SSL":
-      return "Hosting and SSL Renewal Quotation";
-    case "Website maintenance":
-      return "Website Maintenance Quotation";
-    default:
-      return "Domain, Hosting and SSL Renewal Quotation";
-  }
-}
-
-function introByServiceType(serviceType, currentForm) {
-  const expiryText = currentForm?.expiryText || "-";
-  const serviceLabel = serviceType === "Domain,Hosting and SSL" ? "Domain, Hosting and SSL" : serviceType;
-
-  return `As per our discussion, sending you the quotation for ${serviceLabel} service renewal. The service is going to expire on ${expiryText}. Please check renewal plans listed below:`;
-}
-
 export default function Quotations() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -108,23 +72,6 @@ export default function Quotations() {
     const gstAmount = form.quotationType === "with-gst" ? (amount * gstPercent) / 100 : 0;
     return { gstAmount, totalAmount: amount + gstAmount };
   }, [form]);
-
-  const selectedServiceType = useMemo(
-    () => detectServiceType(form?.serviceDescription),
-    [form?.serviceDescription]
-  );
-
-  const applyServiceType = (serviceType) => {
-    setForm((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        serviceDescription: serviceType,
-        subject: subjectByServiceType(serviceType),
-        introText: introByServiceType(serviceType, prev),
-      };
-    });
-  };
 
   const buildSavePayload = (sourceForm) => ({
     quotationType: sourceForm.quotationType,
@@ -800,21 +747,6 @@ export default function Quotations() {
                   </div>
                 ) : (
                   <>
-                    <label className="space-y-1 block">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Service Type</span>
-                      <select
-                        value={selectedServiceType}
-                        onChange={(e) => applyServiceType(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
-                      >
-                        {SERVICE_TYPE_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
                     <Input
                       label="Client Name"

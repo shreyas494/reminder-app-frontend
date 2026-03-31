@@ -5,6 +5,13 @@ import dayjs from "dayjs";
 import { DesktopDateTimePicker } from "@mui/x-date-pickers/DesktopDateTimePicker";
 import CustomPickerLayout from "../components/CustomPickerLayout";
 
+const SERVICE_TYPE_OPTIONS = [
+  "Domain,Hosting and SSL",
+  "Domain",
+  "Hosting and SSL",
+  "Website maintenance",
+];
+
 export default function AddReminder() {
   const [form, setForm] = useState({
     clientName: "",
@@ -12,6 +19,7 @@ export default function AddReminder() {
     mobile1: "",
     email: "",
     projectName: "",
+    serviceType: "Domain,Hosting and SSL",
     domainName: "",
     activationDate: null,
     expiryDate: null,
@@ -30,6 +38,7 @@ export default function AddReminder() {
       !form.contactPerson ||
       !form.mobile1 ||
       !form.projectName ||
+      !form.serviceType ||
       !form.activationDate ||
       !form.expiryDate
     ) {
@@ -44,6 +53,7 @@ export default function AddReminder() {
         mobile1: form.mobile1,
         email: form.email || undefined,
         projectName: form.projectName,
+        serviceType: form.serviceType,
         domainName: form.domainName || undefined,
         activationDate: form.activationDate.toISOString(),
         expiryDate: form.expiryDate.toISOString(),
@@ -59,6 +69,7 @@ export default function AddReminder() {
         mobile1: "",
         email: "",
         projectName: "",
+        serviceType: "Domain,Hosting and SSL",
         domainName: "",
         activationDate: null,
         expiryDate: null,
@@ -119,6 +130,24 @@ export default function AddReminder() {
           value={form.projectName}
           onChange={(v) => setForm({ ...form, projectName: v })}
         />
+
+        <div>
+          <label className="block mb-1 text-sm dark:text-gray-300">
+            Service Type <span className="text-red-500">*</span>
+          </label>
+          <select
+            required
+            value={form.serviceType}
+            onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+            className={inputClass}
+          >
+            {SERVICE_TYPE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <Input
           label="Domain Name"
