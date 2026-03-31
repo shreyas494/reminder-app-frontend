@@ -45,12 +45,20 @@ export default function Navbar() {
               Login
             </Link>
           ) : (
-            <button
-              onClick={() => navigate("/")}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
-            >
-              Open App
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/near-expiry")}
+                className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 font-semibold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+              >
+                Near Expiry
+              </button>
+              <button
+                onClick={() => navigate("/")}
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+              >
+                Open App
+              </button>
+            </div>
           )}
         </div>
       </div>
