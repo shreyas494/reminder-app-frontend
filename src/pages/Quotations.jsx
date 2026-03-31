@@ -735,16 +735,26 @@ export default function Quotations() {
                 </div>
 
                 {editorView === "static" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
-                    <Input label="Quotation Date" value={dayjs(form.quotationDate).format("DD MMM YYYY")} readOnly />
-                    <Input label="Quotation Type" value={form.quotationType === "with-gst" ? "With GST" : "Without GST"} readOnly />
-                    <Input label="Client Email" value={form.clientEmail || ""} readOnly />
-                    <Input label="Recipient Name" value={form.recipientName || ""} readOnly />
-                    <Input label="Recipient Address" value={form.recipientAddress || ""} readOnly />
-                    <Input label="Subject" value={form.subject || ""} readOnly />
-                    <Input label="Service Description" value={form.serviceDescription || ""} readOnly />
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Input label="Quotation Number" value={form.quotationNumber || ""} readOnly />
+                      <Input label="Quotation Date" value={dayjs(form.quotationDate).format("DD MMM YYYY")} readOnly />
+                      <Input label="Quotation Type" value={form.quotationType === "with-gst" ? "With GST" : "Without GST"} readOnly />
+                      <Input label="Client Email" value={form.clientEmail || ""} readOnly />
+                      <Input label="Recipient Name" value={form.recipientName || ""} onChange={(v) => setForm({ ...form, recipientName: v })} />
+                      <Input label="Recipient Address" value={form.recipientAddress || ""} onChange={(v) => setForm({ ...form, recipientAddress: v })} />
+                      <Input label="Subject" value={form.subject || ""} onChange={(v) => setForm({ ...form, subject: v })} />
+                      <Input label="Service Description" value={form.serviceDescription || ""} onChange={(v) => setForm({ ...form, serviceDescription: v })} />
+                    </div>
+
+                    <button
+                      disabled={busy}
+                      onClick={saveQuotation}
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      Save Manual Edits (Required)
+                    </button>
+                  </>
                 ) : (
                   <>
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
