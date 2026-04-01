@@ -15,6 +15,7 @@ export default function Layout() {
     const baseItems = [
       { label: "Dashboard", to: "/" },
       { label: "Quotations", to: "/quotations" },
+      { label: "Services", to: "/services" },
     ];
     if (user?.role === "superadmin") {
       baseItems.push({ label: "Admin Users", to: "/admin/users" });

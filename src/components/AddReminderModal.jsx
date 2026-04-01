@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import API from "../services/api";
 import dayjs from "dayjs";
 
@@ -6,13 +6,6 @@ import { useMediaQuery } from "@mui/material";
 import {
   DesktopDateTimePicker,
 } from "@mui/x-date-pickers";
-
-const SERVICE_TYPE_OPTIONS = [
-  "Domain,Hosting and SSL",
-  "Domain",
-  "Hosting and SSL",
-  "Website maintenance",
-];
 
 
 export default function AddReminderModal({ onClose, onAdded, existing }) {
@@ -23,6 +16,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const Picker = DesktopDateTimePicker;
 
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [serviceTypeSearch, setServiceTypeSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     clientName: "",
     contactPerson: "",
@@ -30,7 +27,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     mobile2: "",
     email: "",
     projectName: "",
-    serviceType: "Domain,Hosting and SSL",
+    serviceType: "",
     domainName: "",
     activationDate: null,
     expiryDate: null,
@@ -45,6 +42,33 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   });
 
   const [error, setError] = useState("");
+
+  const filteredServiceTypes = useMemo(() => {
+    if (!serviceTypeSearch.trim()) return serviceTypes;
+    const term = serviceTypeSearch.toLowerCase();
+    return serviceTypes.filter((st) =>
+      st.name.toLowerCase().includes(term)
+    );
+  }, [serviceTypes, serviceTypeSearch]);
+
+  /* ================= FETCH SERVICE TYPES ================= */
+  useEffect(() => {
+    async function loadServiceTypes() {
+      try {
+        const res = await API.get("/service-types");
+        setServiceTypes(res.data?.data || []);
+        // Set default service type if none selected
+        if (!form.serviceType && (res.data?.data?.length > 0)) {
+          setForm((prev) => ({ ...prev, serviceType: res.data.data[0].name }));
+        }
+      } catch (err) {
+        console.error("Failed to load service types:", err);
+        // Fallback to empty array
+        setServiceTypes([]);
+      }
+    }
+    loadServiceTypes();
+  }, []);
 
   const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
   const minExpiryDate = form.activationDate
@@ -65,7 +89,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       mobile2: existing.mobile2 || "",
       email: existing.email || "",
       projectName: existing.projectName || "",
-      serviceType: existing.serviceType || "Domain,Hosting and SSL",
+      serviceType: existing.serviceType || "",
       domainName: existing.domainName || "",
       activationDate: existing.activationDate
         ? dayjs(existing.activationDate)
@@ -300,23 +324,50 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   <span className="text-sm font-semibold dark:text-slate-200">
                     Service Type <span className="text-red-500">*</span>
                   </span>
-                  <select
-                    required
-                    value={form.serviceType}
-                    onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl
-                   bg-slate-50 dark:bg-slate-900/50
-                   border border-slate-200 dark:border-slate-700
-                   text-slate-900 dark:text-white
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
-                   transition-all duration-200"
-                  >
-                    {SERVICE_TYPE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    required={!form.serviceType}
+                    placeholder="Search or select service type"
+                    value={serviceTypeSearch}
+                    onChange={(e) => setServiceTypeSearch(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-t-xl border border-b-0 border-slate-200 dark:border-slate-700
+                     bg-slate-50 dark:bg-slate-900/50
+                     text-slate-900 dark:text-white
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
+                     transition-all duration-200 text-sm"
+                  />
+                  <div className="max-h-48 overflow-y-auto border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-xl
+                   bg-white dark:bg-slate-900
+                   divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredServiceTypes.length > 0 ? (
+                      filteredServiceTypes.map((st) => (
+                        <button
+                          key={st._id}
+                          type="button"
+                          onClick={() => {
+                            setForm({ ...form, serviceType: st.name });
+                            setServiceTypeSearch("");
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${
+                            form.serviceType === st.name
+                              ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-100 font-semibold"
+                              : "text-slate-700 dark:text-slate-300"
+                          }`}
+                        >
+                          {st.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic">
+                        {serviceTypeSearch ? "No matches found" : "Loading service types..."}
+                      </div>
+                    )}
+                  </div>
+                  {form.serviceType && (
+                    <div className="mt-2 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                      Selected: {form.serviceType}
+                    </div>
+                  )}
                 </label>
 
                 {/* SPACER */}

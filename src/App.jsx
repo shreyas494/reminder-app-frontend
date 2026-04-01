@@ -5,6 +5,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Quotations from "./pages/Quotations";
+import Services from "./pages/Services";
 import NearExpiry from "./pages/NearExpiry";
 import AdminUsers from "./pages/AdminUsers";
 import AdminCreateUser from "./pages/AdminCreateUser";
@@ -27,6 +28,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/near-expiry" element={<NearExpiry />} />
         <Route path="/quotations" element={<Quotations />} />
+        <Route path="/services" element={<Services />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/users/create" element={<AdminCreateUser />} />
       </Route>
