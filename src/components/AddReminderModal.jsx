@@ -37,7 +37,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     amount: "",
 
     // 🔁 recurring
-    recurringEnabled: false,
+    recurringEnabled: true,
     recurringInterval: "daily",
 
     // 🔄 renew
@@ -154,11 +154,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     } else {
       if (
         !form.clientName ||
-        !form.contactPerson ||
         !form.mobile1 ||
         !form.email ||
         !form.projectName ||
         !form.serviceType ||
+        form.amount === "" ||
+        Number(form.amount) <= 0 ||
         !isValidDayjsValue(form.activationDate) ||
         !isValidDayjsValue(form.expiryDate)
       ) {
@@ -283,7 +284,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 <Input label="Client Name" required value={form.clientName}
                   onChange={(v) => setForm({ ...form, clientName: v })} />
 
-                <Input label="Contact Person" required value={form.contactPerson}
+                <Input label="Contact Person" value={form.contactPerson}
                   onChange={(v) => setForm({ ...form, contactPerson: v })} />
 
                 <Input label="Mobile No 1" required value={form.mobile1}
@@ -294,15 +295,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
                 <Input label="Email" required type="email" value={form.email}
                   onChange={(v) => setForm({ ...form, email: v })} />
-
-                {/* SPACER */}
-                <div className="md:col-span-2 h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
-                <div className="md:col-span-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-[-10px]">
-                  Project & Dates
-                </div>
-
-                <Input label="Project Name" required value={form.projectName}
-                  onChange={(v) => setForm({ ...form, projectName: v })} />
 
                 <label className="space-y-1 block">
                   <span className="text-sm font-semibold dark:text-slate-200">
@@ -326,6 +318,15 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     ))}
                   </select>
                 </label>
+
+                {/* SPACER */}
+                <div className="md:col-span-2 h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
+                <div className="md:col-span-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-[-10px]">
+                  Project & Dates
+                </div>
+
+                <Input label="Project Name" required value={form.projectName}
+                  onChange={(v) => setForm({ ...form, projectName: v })} />
 
                 <Input label="Domain Name" value={form.domainName}
                   onChange={(v) => setForm({ ...form, domainName: v })} />
@@ -402,7 +403,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 )}
 
                 <div className="md:col-span-2">
-                  <Input label="Amount (₹)" type="number" value={form.amount}
+                  <Input label="Amount (₹)" required type="number" value={form.amount}
                     onChange={(v) => setForm({ ...form, amount: v })} />
                 </div>
 

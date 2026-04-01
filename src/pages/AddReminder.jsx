@@ -15,7 +15,7 @@ const SERVICE_TYPE_OPTIONS = [
 export default function AddReminder() {
   const [form, setForm] = useState({
     clientName: "",
-    contactPerson: "",   // ✅ REQUIRED BY BACKEND
+    contactPerson: "",
     mobile1: "",
     email: "",
     projectName: "",
@@ -32,13 +32,14 @@ export default function AddReminder() {
     e.preventDefault();
     setError("");
 
-    // 🔴 FRONTEND REQUIRED CHECK (MATCHES BACKEND)
+    // 🔴 FRONTEND REQUIRED CHECK
     if (
       !form.clientName ||
-      !form.contactPerson ||
       !form.mobile1 ||
       !form.projectName ||
       !form.serviceType ||
+      form.amount === "" ||
+      Number(form.amount) <= 0 ||
       !form.activationDate ||
       !form.expiryDate
     ) {
@@ -49,7 +50,7 @@ export default function AddReminder() {
     try {
       await API.post("/reminders", {
         clientName: form.clientName,
-        contactPerson: form.contactPerson, // ✅ FIX
+        contactPerson: form.contactPerson,
         mobile1: form.mobile1,
         email: form.email || undefined,
         projectName: form.projectName,
@@ -105,7 +106,6 @@ export default function AddReminder() {
 
         <Input
           label="Contact Person"
-          required
           value={form.contactPerson}
           onChange={(v) => setForm({ ...form, contactPerson: v })}
         />
@@ -194,6 +194,7 @@ export default function AddReminder() {
 
         <Input
           label="Amount (₹)"
+          required
           type="number"
           value={form.amount}
           onChange={(v) => setForm({ ...form, amount: v })}
