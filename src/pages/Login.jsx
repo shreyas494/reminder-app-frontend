@@ -25,7 +25,7 @@ export default function Login() {
   /* ✅ SAFE REDIRECT (NO EARLY RETURN) */
   useEffect(() => {
     if (user) {
-      navigate("/", { replace: true });
+      navigate("/near-expiry", { replace: true });
     }
   }, [user, navigate]);
 
@@ -46,7 +46,7 @@ export default function Login() {
     googleLogout();
   }, []);
 
-  const redirect = () => setTimeout(() => navigate("/"), 700);
+  const redirect = () => setTimeout(() => navigate("/near-expiry"), 700);
 
   /* ================= EMAIL + PASSWORD ================= */
   const handleSubmit = async (e) => {

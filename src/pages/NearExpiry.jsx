@@ -154,6 +154,7 @@ export default function NearExpiry() {
                     const status = getStatusLabel(r);
                     const hasPhone = Boolean(r.mobile1 || r.mobile2);
                     const hasEmail = Boolean(r.email);
+                    const callTarget = r.mobile1 || r.mobile2 || "";
                     return (
                       <tr key={r._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-200">
                         <Td className="font-mono text-slate-400 opacity-60">{(page - 1) * 10 + i + 1}</Td>
@@ -170,6 +171,16 @@ export default function NearExpiry() {
                         </Td>
                         <Td>
                           <div className="flex items-center gap-2">
+                            <a
+                              href={callTarget ? `tel:${callTarget}` : "#"}
+                              target="_self"
+                              rel="noreferrer"
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                              title="Call"
+                            >
+                              📞
+                            </a>
+
                             <a
                               href={smsLink(r)}
                               target="_self"
