@@ -285,6 +285,12 @@ export default function Quotations() {
     });
   }
 
+  const buildPaymentQrUrl = (url) => {
+    const encoded = encodeURIComponent(String(url || "").trim());
+    if (!encoded) return "";
+    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data=${encoded}`;
+  };
+
   async function downloadPdf() {
     if (!form) return;
 
@@ -544,6 +550,24 @@ export default function Quotations() {
     doc.setTextColor(75, 85, 99);
 
     y += paymentLinkLines.length * 10 + 10;
+
+    if (finalPaymentLinkUrl) {
+      try {
+        ensureSpace(120);
+        txt("Scan to Pay", margin, y, { bold: true, size: 8.5, color: [55, 91, 145] });
+        y += 8;
+        const qrDataUrl = await toDataUrl(buildPaymentQrUrl(finalPaymentLinkUrl));
+        if (qrDataUrl) {
+          doc.setDrawColor(201, 215, 238);
+          doc.rect(margin, y, 72, 72);
+          doc.addImage(qrDataUrl, "PNG", margin + 2, y + 2, 68, 68);
+          y += 82;
+        }
+      } catch (qrError) {
+        console.warn("[QUOTATION_PDF] Failed to generate payment QR:", qrError);
+      }
+    }
+
     ensureSpace(40);
     txt("Notes", margin, y, { bold: true, size: 9, color: [55, 91, 145] });
     txt("Please give us your confirmation for the renewal as soon as possible.", margin, y + 12, {
