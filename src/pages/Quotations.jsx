@@ -25,11 +25,13 @@ export default function Quotations() {
   const [reminders, setReminders] = useState([]);
   const [reminderPage, setReminderPage] = useState(1);
   const [reminderTotalPages, setReminderTotalPages] = useState(1);
+  const [reminderSearch, setReminderSearch] = useState("");
 
   const [quotations, setQuotations] = useState([]);
   const [quotationPage, setQuotationPage] = useState(1);
   const [quotationTotalPages, setQuotationTotalPages] = useState(1);
   const [quotationTab, setQuotationTab] = useState("all");
+  const [quotationSearch, setQuotationSearch] = useState("");
 
   const [selectedId, setSelectedId] = useState("");
   const [form, setForm] = useState(null);
@@ -58,7 +60,7 @@ export default function Quotations() {
     if (!openQuotationId) return;
 
     const openFromRedirect = async () => {
-      await fetchQuotations(1);
+      await fetchQuotations(1, quotationTab);
       await openQuotation(openQuotationId);
       if (location.state?.notice) {
         setMessage(location.state.notice);
@@ -82,6 +84,45 @@ export default function Quotations() {
     const gstAmount = form.quotationType === "with-gst" ? (amount * gstPercent) / 100 : 0;
     return { gstAmount, totalAmount: amount + gstAmount };
   }, [form]);
+
+  const filteredReminders = useMemo(() => {
+    const term = reminderSearch.trim().toLowerCase();
+    if (!term) return reminders;
+    return reminders.filter((r) => {
+      const haystack = [
+        r.clientName,
+        r.projectName,
+        r.domainName,
+        r.email,
+        r.mobile1,
+        r.mobile2,
+        r.serviceType,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [reminders, reminderSearch]);
+
+  const filteredQuotations = useMemo(() => {
+    const term = quotationSearch.trim().toLowerCase();
+    if (!term) return quotations;
+    return quotations.filter((q) => {
+      const haystack = [
+        q.quotationNumber,
+        q.recipientName,
+        q.clientEmail,
+        q.quotationType,
+        q.paymentStatus,
+        q.subject,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [quotations, quotationSearch]);
 
   const buildSavePayload = (sourceForm) => ({
     quotationType: sourceForm.quotationType,
@@ -122,8 +163,16 @@ export default function Quotations() {
 
   async function fetchQuotations(page, tab = "all") {
     try {
-      const statusQuery = tab === "paid" ? "&status=paid" : "";
-      const res = await API.get(`/quotations?page=${page}${statusQuery}`);
+      const params = new URLSearchParams({ page: String(page) });
+      if (tab === "paid") {
+        params.set("status", "paid");
+      } else if (tab === "gst") {
+        params.set("quotationType", "with-gst");
+      } else if (tab === "non-gst") {
+        params.set("quotationType", "without-gst");
+      }
+
+      const res = await API.get(`/quotations?${params.toString()}`);
       setQuotations(res.data.data || []);
       setQuotationPage(res.data.page || 1);
       setQuotationTotalPages(res.data.totalPages || 1);
@@ -143,6 +192,97 @@ export default function Quotations() {
       setMessage("Quotation draft created. Please edit and save before download/send.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create quotation");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function fetchQuotationRecord(id) {
+    const res = await API.get(`/quotations/${id}`);
+    const fixedLogo = localStorage.getItem(FIXED_LOGO_STORAGE_KEY) || FIXED_LOGO_URL;
+    return {
+      ...res.data,
+      companyLogoUrl: resolveLogoUrl(res.data.companyLogoUrl) || fixedLogo,
+    };
+  }
+
+  async function generatePaymentLinkForQuotation(id) {
+    try {
+      return await API.post(`/quotations/${id}/payment-link`);
+    } catch (linkErr) {
+      if (linkErr?.response?.status === 404) {
+        return await API.post(`/quotations/payment-link/${id}`);
+      }
+      throw linkErr;
+    }
+  }
+
+  async function downloadQuotationFromList(id) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const quotation = await fetchQuotationRecord(id);
+      const paymentRes = await generatePaymentLinkForQuotation(id);
+      const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
+      const paymentMessage = String(paymentRes?.data?.message || "").toLowerCase();
+      const noPaymentDue = paymentMessage.includes("no payment due");
+
+      if (!paymentLinkUrl && !noPaymentDue) {
+        throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
+      }
+
+      const doc = await buildPdfDocument(paymentLinkUrl, quotation);
+      doc.save(`${quotation.quotationNumber || "quotation"}.pdf`);
+
+      await fetchQuotations(quotationPage, quotationTab);
+      setMessage("Quotation downloaded successfully.");
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      if (err.message?.includes("Payment link")) {
+        setError(err.message);
+      } else {
+        setError(serverMessage || err.message || "Failed to download quotation");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendQuotationFromList(id) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const quotation = await fetchQuotationRecord(id);
+      if (!quotation.reviewed) {
+        throw new Error("Manual edit/review is required before sending quotation");
+      }
+
+      const paymentRes = await generatePaymentLinkForQuotation(id);
+      const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
+      const paymentLinkId = paymentRes?.data?.paymentLinkId || "";
+      const paymentMessage = String(paymentRes?.data?.message || "").toLowerCase();
+      const noPaymentDue = paymentMessage.includes("no payment due");
+
+      if (!paymentLinkUrl && !noPaymentDue) {
+        throw new Error("Payment link URL is empty. This may be a temporary issue with the payment gateway. Please try again in a moment.");
+      }
+
+      const pdfDoc = await buildPdfDocument(paymentLinkUrl, quotation);
+      const pdfDataUri = pdfDoc.output("datauristring");
+      const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
+
+      await API.post(`/quotations/${id}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
+      await fetchQuotations(quotationPage, quotationTab);
+      setMessage(noPaymentDue ? "Quotation email sent successfully (payment already completed)." : "Quotation email sent successfully.");
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      if (err.message?.includes("Payment link")) {
+        setError(err.message);
+      } else {
+        setError(serverMessage || err.message || "Failed to send quotation");
+      }
     } finally {
       setBusy(false);
     }
@@ -413,7 +553,7 @@ export default function Quotations() {
       txt(q.companyTagline, 104, 64, { bold: true, size: 8, color: [234, 241, 255] });
     }
 
-    txt("INVOICE", pageW - margin, 30, { bold: true, size: 20, align: "right", color: [255, 255, 255] });
+    txt("QUOTATION", pageW - margin, 30, { bold: true, size: 20, align: "right", color: [255, 255, 255] });
     txt(`Ref No: ${q.quotationNumber || "-"}`, pageW - margin, 47, {
       size: 8,
       align: "right",
@@ -608,6 +748,18 @@ export default function Quotations() {
 
         <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Reminders (Create Quotation)</h2>
+          <div className="max-w-sm">
+            <label className="space-y-1 block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Search reminders</span>
+              <input
+                type="text"
+                value={reminderSearch}
+                onChange={(e) => setReminderSearch(e.target.value)}
+                placeholder="Search client, project, email, service type"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+              />
+            </label>
+          </div>
           <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
             <table className="min-w-[760px] w-full text-sm">
               <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
@@ -619,7 +771,7 @@ export default function Quotations() {
                 </tr>
               </thead>
               <tbody>
-                {reminders.map((r) => (
+                {filteredReminders.map((r) => (
                   <tr key={r._id} className="border-t border-slate-200 dark:border-slate-700">
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{r.clientName}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{r.projectName}</td>
@@ -644,7 +796,7 @@ export default function Quotations() {
                     </td>
                   </tr>
                 ))}
-                {reminders.length === 0 && (
+                {filteredReminders.length === 0 && (
                   <tr>
                     <td className="px-3 py-4 text-slate-500" colSpan={4}>No reminders found on this page.</td>
                   </tr>
@@ -680,12 +832,45 @@ export default function Quotations() {
                 >
                   Paid
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("gst");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "gst" ? "bg-amber-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  GST
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("non-gst");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "non-gst" ? "bg-slate-700 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  Non-GST
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
               <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
               <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
             </div>
+          </div>
+
+          <div className="max-w-sm">
+            <label className="space-y-1 block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Search quotations</span>
+              <input
+                type="text"
+                value={quotationSearch}
+                onChange={(e) => setQuotationSearch(e.target.value)}
+                placeholder="Search quotation no, client, email, status"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+              />
+            </label>
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
@@ -704,7 +889,7 @@ export default function Quotations() {
                 </tr>
               </thead>
               <tbody>
-                {quotations.map((q) => (
+                {filteredQuotations.map((q) => (
                   <tr
                     key={q._id}
                     className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === q._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
@@ -730,16 +915,36 @@ export default function Quotations() {
                       </span>
                     </td>
                     <td className="px-3 py-2">
-                      <button
-                        onClick={() => openQuotation(q._id)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
-                      >
-                        Open
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <IconButton
+                          label="Open quotation"
+                          title="Open"
+                          className="bg-indigo-600 text-white hover:bg-indigo-700"
+                          onClick={() => openQuotation(q._id)}
+                        >
+                          <OpenIcon />
+                        </IconButton>
+                        <IconButton
+                          label="Download quotation"
+                          title="Download"
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          onClick={() => downloadQuotationFromList(q._id)}
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                        <IconButton
+                          label="Email quotation"
+                          title="Email"
+                          className="bg-emerald-600 text-white hover:bg-emerald-700"
+                          onClick={() => sendQuotationFromList(q._id)}
+                        >
+                          <MailIcon />
+                        </IconButton>
+                      </div>
                     </td>
                   </tr>
                 ))}
-                {quotations.length === 0 && (
+                {filteredQuotations.length === 0 && (
                   <tr>
                     <td className="px-3 py-4 text-slate-500" colSpan={10}>No quotation records found.</td>
                   </tr>
@@ -898,5 +1103,48 @@ function Pager({ page, totalPages, onPrev, onNext }) {
         Next
       </button>
     </div>
+  );
+}
+
+function IconButton({ children, label, title, className, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={label}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function OpenIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
+      <path d="M14 3h7v7" />
+      <path d="M10 14L21 3" />
+      <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
+      <path d="M12 3v10" />
+      <path d="M8 9l4 4 4-4" />
+      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
   );
 }
