@@ -168,7 +168,7 @@ export default function NearExpiry() {
                             className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
                             title={r.mobile1 || r.mobile2 || "No mobile number"}
                           >
-                            📱
+                            📞
                           </a>
                         </Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[180px]">{r.projectName}</Td>
@@ -179,16 +179,6 @@ export default function NearExpiry() {
                         </Td>
                         <Td>
                           <div className="flex items-center gap-2">
-                            <a
-                              href={callTarget ? `tel:${callTarget}` : "#"}
-                              target="_self"
-                              rel="noreferrer"
-                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
-                              title="Call"
-                            >
-                              📞
-                            </a>
-
                             <a
                               href={smsLink(r)}
                               target="_self"
