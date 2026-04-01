@@ -132,6 +132,7 @@ export default function NearExpiry() {
                   <Th>#</Th>
                   <Th>Client</Th>
                   <Th className="hidden md:table-cell">Contact</Th>
+                  <Th>Mobile</Th>
                   <Th>Project</Th>
                   <Th>Expiry</Th>
                   <Th>Remaining</Th>
@@ -142,11 +143,11 @@ export default function NearExpiry() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-12 text-slate-500">Loading...</td>
+                    <td colSpan="9" className="text-center py-12 text-slate-500">Loading...</td>
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-12 text-slate-500">No near-expiry reminders found.</td>
+                    <td colSpan="9" className="text-center py-12 text-slate-500">No near-expiry reminders found.</td>
                   </tr>
                 ) : (
                   reminders.map((r, i) => {
@@ -158,6 +159,7 @@ export default function NearExpiry() {
                         <Td className="font-mono text-slate-400 opacity-60">{(page - 1) * 10 + i + 1}</Td>
                         <Td className="font-bold text-slate-800 dark:text-slate-200">{r.clientName}</Td>
                         <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.contactPerson}</Td>
+                        <Td className="font-medium text-slate-700 dark:text-slate-300">{r.mobile1 || r.mobile2 || "-"}</Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[180px]">{r.projectName}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
                         <Td className="tabular-nums text-slate-500">{remainingTime(r)}</Td>
