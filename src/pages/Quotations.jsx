@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import dayjs from "dayjs";
 import API from "../services/api";
@@ -38,6 +38,10 @@ export default function Quotations() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+
+  const alertAnchorRef = useRef(null);
+  const previewSectionRef = useRef(null);
 
   const isReviewed = Boolean(form?.reviewed);
 
@@ -64,6 +68,12 @@ export default function Quotations() {
 
     openFromRedirect();
   }, [location.state, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (!message && !error) return;
+    if (!alertAnchorRef.current) return;
+    alertAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [message, error]);
 
   const totals = useMemo(() => {
     if (!form) return { gstAmount: 0, totalAmount: 0 };
@@ -138,7 +148,8 @@ export default function Quotations() {
     }
   }
 
-  async function openQuotation(id) {
+  async function openQuotation(id, options = {}) {
+    const shouldScrollToPreview = options.scrollToPreview !== false;
     setBusy(true);
     setError("");
     setMessage("");
@@ -153,6 +164,13 @@ export default function Quotations() {
         companyLogoUrl: resolvedLogo,
       });
       setPreviewHtml(res.data.previewHtml || "");
+      setIsPreviewOpen(true);
+
+      if (shouldScrollToPreview) {
+        setTimeout(() => {
+          previewSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load quotation");
     } finally {
@@ -171,8 +189,9 @@ export default function Quotations() {
       const saveRes = await API.put(`/quotations/${form._id}`, payload);
       const activeQuotationId = saveRes?.data?._id || form._id;
 
-      await openQuotation(activeQuotationId);
+      await openQuotation(activeQuotationId, { scrollToPreview: false });
       await fetchQuotations(quotationPage, quotationTab);
+      setIsPreviewOpen(false);
       setMessage("Quotation saved as a new version.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save quotation");
@@ -228,7 +247,7 @@ export default function Quotations() {
       const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
 
       await API.post(`/quotations/${activeQuotationId}/send`, { pdfBase64, paymentLinkUrl, paymentLinkId });
-      await openQuotation(activeQuotationId);
+      await openQuotation(activeQuotationId, { scrollToPreview: false });
       await fetchQuotations(quotationPage, quotationTab);
       setMessage(noPaymentDue ? "Quotation email sent successfully (payment already completed)." : "Quotation email sent successfully.");
     } catch (err) {
@@ -310,7 +329,7 @@ export default function Quotations() {
       const doc = await buildPdfDocument(paymentLinkUrl, activeForm);
       doc.save(`${activeForm.quotationNumber || "quotation"}.pdf`);
 
-      await openQuotation(activeQuotationId);
+      await openQuotation(activeQuotationId, { scrollToPreview: false });
       await fetchQuotations(quotationPage, quotationTab);
       setMessage("Quotation downloaded successfully.");
     } catch (err) {
@@ -558,6 +577,8 @@ export default function Quotations() {
           </p>
         </div>
 
+        <div ref={alertAnchorRef} />
+
         {error && <div className="rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-600 text-sm">{error}</div>}
         {message && <div className="rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{message}</div>}
 
@@ -783,11 +804,27 @@ export default function Quotations() {
                 )}
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                <h3 className="text-sm font-bold text-slate-600 mb-3">Review Preview</h3>
-                <div className="max-h-[520px] overflow-auto bg-white rounded-lg border border-slate-200">
-                  <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              <div ref={previewSectionRef} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <h3 className="text-sm font-bold text-slate-600">Review Preview</h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen((prev) => !prev)}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-600 hover:bg-slate-100"
+                  >
+                    {isPreviewOpen ? "Close Preview" : "Open Preview"}
+                  </button>
                 </div>
+
+                {isPreviewOpen ? (
+                  <div className="max-h-[520px] overflow-auto bg-white rounded-lg border border-slate-200">
+                    <div className="min-w-[760px]" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500">
+                    Preview is closed.
+                  </div>
+                )}
               </div>
             </div>
           )}
