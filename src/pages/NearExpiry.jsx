@@ -161,7 +161,15 @@ export default function NearExpiry() {
                         <Td className="font-bold text-slate-800 dark:text-slate-200">{r.clientName}</Td>
                         <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.contactPerson}</Td>
                         <Td>
-                          <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
+                          <a
+                            href={r.mobile1 || r.mobile2 ? `tel:${r.mobile1 || r.mobile2}` : "#"}
+                            target="_self"
+                            rel="noreferrer"
+                            className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasPhone ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                            title={r.mobile1 || r.mobile2 || "No mobile number"}
+                          >
+                            📱
+                          </a>
                         </Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[180px]">{r.projectName}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
@@ -304,20 +312,3 @@ function PaginationButton({ disabled, onClick, label }) {
   );
 }
 
-function CallButton({ mobile1, mobile2 }) {
-  return (
-    <div className="flex flex-col gap-1 text-xs">
-      {mobile1 && (
-        <a href={`tel:${mobile1}`} className="hover:text-indigo-600 transition-colors font-mono">
-          {mobile1}
-        </a>
-      )}
-      {mobile2 && (
-        <a href={`tel:${mobile2}`} className="text-slate-400 hover:text-indigo-500 transition-colors font-mono">
-          {mobile2}
-        </a>
-      )}
-      {!mobile1 && !mobile2 && <span className="text-slate-400">-</span>}
-    </div>
-  );
-}
