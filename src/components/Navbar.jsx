@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { APP_ROUTES } from "../constants/routes";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export default function Navbar() {
 
         {/* LEFT */}
         <Link
-          to={user ? "/" : "/landing"}
+          to={user ? APP_ROUTES.dashboard : APP_ROUTES.landing}
           className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 tracking-tight hover:opacity-80 transition-opacity"
         >
           Reminder App
@@ -39,7 +40,7 @@ export default function Navbar() {
 
           {!user ? (
             <Link
-              to="/login"
+              to={APP_ROUTES.login}
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/30 transition-colors"
             >
               Login
@@ -47,13 +48,13 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate("/near-expiry")}
+                onClick={() => navigate(APP_ROUTES.nearExpiry)}
                 className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 font-semibold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
               >
                 Near Expiry
               </button>
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate(APP_ROUTES.dashboard)}
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
               >
                 Open App

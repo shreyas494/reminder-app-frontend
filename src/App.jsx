@@ -11,12 +11,13 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminCreateUser from "./pages/AdminCreateUser";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+import { APP_ROUTES } from "./constants/routes";
 
 function App() {
   return (
     <Routes>
-      <Route path="/landing" element={<><Navbar /><Landing /></>} />
-      <Route path="/login" element={<><Navbar /><Login /></>} />
+      <Route path={APP_ROUTES.landing} element={<><Navbar /><Landing /></>} />
+      <Route path={APP_ROUTES.login} element={<><Navbar /><Login /></>} />
 
       <Route
         element={
@@ -25,15 +26,15 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/near-expiry" element={<NearExpiry />} />
-        <Route path="/quotations" element={<Quotations />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/users/create" element={<AdminCreateUser />} />
+        <Route path={APP_ROUTES.dashboard} element={<Dashboard />} />
+        <Route path={APP_ROUTES.nearExpiry} element={<NearExpiry />} />
+        <Route path={APP_ROUTES.quotations} element={<Quotations />} />
+        <Route path={APP_ROUTES.services} element={<Services />} />
+        <Route path={APP_ROUTES.adminUsers} element={<AdminUsers />} />
+        <Route path={APP_ROUTES.adminCreateUser} element={<AdminCreateUser />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/landing" />} />
+      <Route path="*" element={<Navigate to={APP_ROUTES.landing} />} />
     </Routes>
   );
 }
