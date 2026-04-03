@@ -7,6 +7,68 @@ import { useLocation, useNavigate } from "react-router-dom";
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
 const FIXED_LOGO_URL = "https://reminder-app-backend-u8wb.onrender.com/assets/company-logo.png";
 
+function getQuotationTemplates(serviceType) {
+  const type = String(serviceType || "").trim();
+
+  switch (type) {
+    case "Domain":
+      return {
+        subject: "Domain Renewal Quotation",
+        serviceDescription: "Domain Renewal For 1 Year",
+      };
+    case "Hosting and SSL":
+      return {
+        subject: "Hosting and SSL Renewal Quotation",
+        serviceDescription: "Hosting & SSL Certificate For 1 Year",
+      };
+    case "Website maintenance":
+      return {
+        subject: "Website Maintenance Quotation",
+        serviceDescription: "Website Maintenance Service For 1 Year",
+      };
+    case "Domain,Hosting and SSL":
+      return {
+        subject: "Domain, Hosting and SSL Renewal Quotation",
+        serviceDescription: "Domain, Hosting & SSL Renewal For 1 Year",
+      };
+    default:
+      return {
+        subject: `${type || "Service"} Renewal Quotation`,
+        serviceDescription: `${type || "Service"} Renewal Service For 1 Year`,
+      };
+  }
+}
+
+function replaceIntroServiceType(introText, nextServiceType) {
+  const source = String(introText || "");
+  const next = String(nextServiceType || "").trim();
+  if (!source || !next) return source;
+
+  const pattern = /(sending you the quotation for\s+)(.+?)(\s+service renewal\s+for\s+)/i;
+  if (pattern.test(source)) {
+    return source.replace(pattern, `$1${next}$3`);
+  }
+
+  return source;
+}
+
+function inferServiceTypeFromQuotation(quotation) {
+  const explicit = String(quotation?.serviceType || "").trim();
+  if (explicit) return explicit;
+
+  const haystack = [quotation?.subject, quotation?.serviceDescription, quotation?.introText]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (haystack.includes("website maintenance")) return "Website maintenance";
+  if (haystack.includes("hosting") && haystack.includes("ssl")) return "Hosting and SSL";
+  if (haystack.includes("domain") && haystack.includes("ssl")) return "Domain,Hosting and SSL";
+  if (haystack.includes("domain")) return "Domain";
+
+  return "";
+}
+
 function resolveLogoUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -26,6 +88,7 @@ export default function Quotations() {
   const [reminderPage, setReminderPage] = useState(1);
   const [reminderTotalPages, setReminderTotalPages] = useState(1);
   const [reminderSearch, setReminderSearch] = useState("");
+  const [serviceTypes, setServiceTypes] = useState([]);
 
   const [quotations, setQuotations] = useState([]);
   const [quotationPage, setQuotationPage] = useState(1);
@@ -126,6 +189,7 @@ export default function Quotations() {
 
   const buildSavePayload = (sourceForm) => ({
     quotationType: sourceForm.quotationType,
+    serviceType: sourceForm.serviceType,
     quotationDate: sourceForm.quotationDate,
     clientEmail: sourceForm.clientEmail,
     recipientName: sourceForm.recipientName,
@@ -301,6 +365,7 @@ export default function Quotations() {
       const resolvedLogo = resolveLogoUrl(res.data.companyLogoUrl) || fixedLogo;
       setForm({
         ...res.data,
+        serviceType: inferServiceTypeFromQuotation(res.data),
         companyLogoUrl: resolvedLogo,
       });
       setPreviewHtml(res.data.previewHtml || "");
@@ -1007,6 +1072,37 @@ export default function Quotations() {
                   </>
                 ) : (
                   <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Service Type</label>
+                        <select
+                          value={form.serviceType || ""}
+                          onChange={(e) => {
+                            const nextServiceType = e.target.value;
+                            setForm((prev) => {
+                              if (!prev) return prev;
+                              const nextTemplates = getQuotationTemplates(nextServiceType);
+                              return {
+                                ...prev,
+                                serviceType: nextServiceType,
+                                subject: nextTemplates.subject,
+                                serviceDescription: nextTemplates.serviceDescription,
+                                introText: replaceIntroServiceType(prev.introText || "", nextServiceType),
+                              };
+                            });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200"
+                        >
+                          <option value="">Select service type</option>
+                          {serviceTypes.map((st) => (
+                            <option key={st._id} value={st.name}>
+                              {st.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
                     <Input
                       label="Client Name"
