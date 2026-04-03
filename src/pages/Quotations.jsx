@@ -115,6 +115,19 @@ export default function Quotations() {
   }, [reminderPage]);
 
   useEffect(() => {
+    async function fetchServiceTypes() {
+      try {
+        const res = await API.get("/service-types");
+        setServiceTypes(res.data?.data || []);
+      } catch {
+        setServiceTypes([]);
+      }
+    }
+
+    fetchServiceTypes();
+  }, []);
+
+  useEffect(() => {
     fetchQuotations(quotationPage, quotationTab);
   }, [quotationPage, quotationTab]);
 
@@ -1094,6 +1107,9 @@ export default function Quotations() {
                           className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200"
                         >
                           <option value="">Select service type</option>
+                          {form.serviceType && !serviceTypes.some((st) => st.name === form.serviceType) && (
+                            <option value={form.serviceType}>{form.serviceType}</option>
+                          )}
                           {serviceTypes.map((st) => (
                             <option key={st._id} value={st.name}>
                               {st.name}
