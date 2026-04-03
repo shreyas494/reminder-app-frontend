@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { APP_NAME } from "../constants/brand";
 import {
   APP_ROUTES,
   SIDEBAR_BASE_NAV_ITEMS,
@@ -45,7 +46,7 @@ export default function Layout() {
             </button>
 
             <Link to={APP_ROUTES.dashboard} className="text-lg sm:text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
-              Reminder App
+              {APP_NAME}
             </Link>
           </div>
 

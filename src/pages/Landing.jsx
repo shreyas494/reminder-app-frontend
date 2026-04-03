@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { APP_NAME } from "../constants/brand";
 
 export default function Landing() {
   const { user } = useAuth();
@@ -100,7 +101,7 @@ export default function Landing() {
       {/* FOOTER */}
       <footer className="mt-auto py-8 text-center border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          &copy; {new Date().getFullYear()} Reminder App. All rights reserved.
+          &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
         </p>
       </footer>
     </div>
