@@ -81,6 +81,13 @@ function formatCurrency(value) {
   return `Rs. ${amount}/-`;
 }
 
+function normalizeClickableUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://${raw}`;
+}
+
 export default function Quotations() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -758,13 +765,18 @@ export default function Quotations() {
     doc.text(paymentTermLines, margin, y);
     y += paymentTermLines.length * 10 + 6;
 
-    const finalPaymentLinkUrl = paymentLinkUrl || q.paymentLinkUrl || "";
+    const finalPaymentLinkUrl = normalizeClickableUrl(paymentLinkUrl || q.paymentLinkUrl || "");
     const paymentLinkRaw = `Payment Link: ${finalPaymentLinkUrl || "Not available"}`;
     const paymentLinkLines = doc.splitTextToSize(paymentLinkRaw, contentW);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
     doc.setTextColor(finalPaymentLinkUrl ? 37 : 75, finalPaymentLinkUrl ? 99 : 85, finalPaymentLinkUrl ? 235 : 99);
     doc.text(paymentLinkLines, margin, y);
+    if (finalPaymentLinkUrl) {
+      doc.link(margin, y - 8, contentW, paymentLinkLines.length * 10 + 6, {
+        url: finalPaymentLinkUrl,
+      });
+    }
     doc.setTextColor(75, 85, 99);
 
     y += paymentLinkLines.length * 10 + 10;
@@ -779,6 +791,7 @@ export default function Quotations() {
           doc.setDrawColor(201, 215, 238);
           doc.rect(margin, y, 72, 72);
           doc.addImage(qrDataUrl, "PNG", margin + 2, y + 2, 68, 68);
+          doc.link(margin, y, 72, 72, { url: finalPaymentLinkUrl });
           y += 82;
         }
       } catch (qrError) {
