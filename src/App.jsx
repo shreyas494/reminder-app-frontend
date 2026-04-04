@@ -5,6 +5,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Quotations from "./pages/Quotations";
+import Bills from "./pages/Bills";
 import Services from "./pages/Services";
 import NearExpiry from "./pages/NearExpiry";
 import AdminUsers from "./pages/AdminUsers";
@@ -29,6 +30,7 @@ function App() {
         <Route path={APP_ROUTES.dashboard} element={<Dashboard />} />
         <Route path={APP_ROUTES.nearExpiry} element={<NearExpiry />} />
         <Route path={APP_ROUTES.quotations} element={<Quotations />} />
+        <Route path={APP_ROUTES.bills} element={<Bills />} />
         <Route path={APP_ROUTES.services} element={<Services />} />
         <Route path={APP_ROUTES.adminUsers} element={<AdminUsers />} />
         <Route path={APP_ROUTES.adminCreateUser} element={<AdminCreateUser />} />
