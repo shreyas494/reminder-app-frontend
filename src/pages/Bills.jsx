@@ -18,6 +18,26 @@ function formatCurrency(value) {
   return `Rs. ${amount}/-`;
 }
 
+async function toDataUrl(imageUrl) {
+  if (!imageUrl) return null;
+  if (String(imageUrl).startsWith("data:image")) {
+    return imageUrl;
+  }
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    return null;
+  }
+
+  const blob = await response.blob();
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export default function Bills() {
   const [paidQuotations, setPaidQuotations] = useState([]);
   const [paidPage, setPaidPage] = useState(1);
@@ -270,6 +290,7 @@ export default function Bills() {
 
     const doc = new jsPDF("p", "pt", "a4");
     const pageW = 595;
+    const pageH = 842;
     const margin = 28;
     const contentW = pageW - margin * 2;
     const showGst = q.billType === "with-gst";
@@ -285,73 +306,148 @@ export default function Bills() {
       doc.text(String(text || ""), x, y, opts.align ? { align: opts.align } : undefined);
     };
 
-    const headerH = 84;
-    doc.setFillColor(15, 44, 92);
-    doc.rect(0, 0, pageW, headerH, "F");
-    doc.setFillColor(29, 79, 145);
-    doc.triangle(pageW - 170, 0, pageW, 0, pageW, headerH, "F");
+    doc.setFillColor(236, 236, 236);
+    doc.rect(0, 0, pageW, pageH, "F");
 
-    txt(q.companyName || "", 104, 28, { bold: true, size: 14, color: [255, 255, 255] });
-    txt(q.companyAddress || "", 104, 42, { size: 8, color: [208, 221, 242] });
-    txt("BILL", pageW - margin, 30, { bold: true, size: 20, align: "right", color: [255, 255, 255] });
-    txt(`No: ${q.billNumber || "-"}`, pageW - margin, 47, { size: 8, align: "right", color: [208, 221, 242] });
-    txt(`Date: ${dayjs(q.billDate).format("DD/MM/YYYY")}`, pageW - margin, 58, { size: 8, align: "right", color: [208, 221, 242] });
-
-    let y = headerH + 14;
-    txt(q.subject || "", margin, y, { bold: true, size: 13, color: [15, 44, 92] });
-    y += 14;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(75, 85, 99);
-    const introLines = doc.splitTextToSize(q.introText || "", contentW);
-    doc.text(introLines, margin, y);
-    y += introLines.length * 11 + 14;
-
-    const srW = 52;
-    const descW = 330;
-    const chargeW = contentW - srW - descW;
-    const rowH = 24;
-
-    const drawRow = (top, sr, desc, charge, bold = false, shade = false) => {
-      if (shade) {
-        doc.setFillColor(241, 246, 255);
-        doc.rect(margin, top, contentW, rowH, "F");
+    const logoSource =
+      resolveLogoUrl(q.companyLogoUrl) ||
+      localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
+      FIXED_LOGO_URL;
+    try {
+      const logoDataUrl = await toDataUrl(logoSource);
+      if (logoDataUrl) {
+        const fmt = logoDataUrl.includes("image/png") ? "PNG" : "JPEG";
+        doc.setFillColor(255, 255, 255);
+        doc.rect(margin, 34, 62, 48, "F");
+        doc.addImage(logoDataUrl, fmt, margin + 3, 37, 56, 42);
       }
-      doc.setDrawColor(201, 215, 238);
-      doc.rect(margin, top, srW, rowH);
-      doc.rect(margin + srW, top, descW, rowH);
-      doc.rect(margin + srW + descW, top, chargeW, rowH);
-      doc.setFont("helvetica", bold ? "bold" : "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(26, 26, 26);
-      doc.text(String(sr), margin + 6, top + 15);
-      doc.text(String(desc), margin + srW + 6, top + 15);
-      doc.text(String(charge), margin + srW + descW + chargeW - 6, top + 15, { align: "right" });
-    };
-
-    doc.setFillColor(23, 58, 115);
-    doc.rect(margin, y, contentW, rowH, "F");
-    txt("No.", margin + 6, y + 15, { bold: true, size: 9, color: [255, 255, 255] });
-    txt("Description", margin + srW + 6, y + 15, { bold: true, size: 9, color: [255, 255, 255] });
-    txt("Amount", margin + srW + descW + chargeW - 6, y + 15, { bold: true, size: 9, align: "right", color: [255, 255, 255] });
-    y += rowH;
-
-    drawRow(y, "1", String(q.serviceDescription || ""), formatCurrency(q.amount)); y += rowH;
-    if (showGst) {
-      drawRow(y, "", `GST (${q.gstPercent}%)`, formatCurrency(localTotals.gstAmount)); y += rowH;
+    } catch (logoError) {
+      console.warn("[BILL_PDF] Failed to load logo:", logoError);
     }
-    drawRow(y, "", "Total", formatCurrency(localTotals.totalAmount), true, true); y += rowH + 10;
 
-    const amountBoxW = 240;
-    const amountBoxH = 30;
-    doc.setFillColor(29, 79, 145);
-    doc.rect(pageW - margin - amountBoxW, y, amountBoxW, amountBoxH, "F");
-    txt(`Amount Received: ${formatCurrency(q.amountPaid || localTotals.totalAmount)}`, pageW - margin - 10, y + 19, {
+    txt(q.companyName || "Company Name", margin + 70, 56, { bold: true, size: 18, color: [29, 56, 122] });
+    txt(q.companyAddress || "", margin + 70, 72, { size: 8.5, color: [31, 41, 55] });
+    if (q.companyPhone) {
+      txt(`Phone: ${q.companyPhone}`, margin + 70, 84, { size: 8.5, color: [31, 41, 55] });
+    }
+
+    txt("INVOICE", pageW - margin, 58, { bold: true, size: 30, align: "right", color: [88, 110, 181] });
+
+    const infoX = pageW - 180;
+    const infoTop = 86;
+    const labelW = 74;
+    const valueW = 78;
+    const infoRowH = 18;
+    const infoRows = [
+      ["DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
+      ["INVOICE #", q.billNumber || "-"],
+      ["CUSTOMER ID", q.clientEmail || "-"],
+      ["DUE DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
+    ];
+    infoRows.forEach((row, index) => {
+      const y = infoTop + index * infoRowH;
+      txt(row[0], infoX, y + 12, { size: 8.5, color: [17, 24, 39] });
+      doc.setFillColor(224, 230, 243);
+      doc.setDrawColor(112, 127, 167);
+      doc.rect(infoX + labelW, y, valueW, infoRowH, "FD");
+      txt(row[1], infoX + labelW + valueW / 2, y + 12, { size: 8.5, align: "center", color: [17, 24, 39] });
+    });
+
+    let y = 172;
+    doc.setFillColor(52, 73, 138);
+    doc.rect(margin, y, 196, 16, "F");
+    txt("BILL TO", margin + 8, y + 12, { bold: true, size: 9, color: [255, 255, 255] });
+    y += 20;
+    txt(q.recipientName || "", margin + 8, y + 10, { size: 9, color: [17, 24, 39] });
+    const billToAddress = doc.splitTextToSize(q.recipientAddress || "", 188);
+    doc.setFontSize(8.5);
+    doc.setTextColor(31, 41, 55);
+    doc.text(billToAddress, margin + 8, y + 22);
+
+    y = 262;
+    const tableTop = y;
+    const tableW = contentW;
+    const descW = 430;
+    const taxW = 56;
+    const amountW = tableW - descW - taxW;
+    const rowH = 20;
+    const bodyRows = 14;
+
+    doc.setFillColor(52, 73, 138);
+    doc.rect(margin, tableTop, tableW, rowH, "F");
+    txt("DESCRIPTION", margin + descW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
+    txt("TAXED", margin + descW + taxW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
+    txt("AMOUNT", margin + descW + taxW + amountW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
+
+    let tableY = tableTop + rowH;
+    for (let i = 0; i < bodyRows; i += 1) {
+      doc.setFillColor(i % 2 === 0 ? 248 : 237, i % 2 === 0 ? 248 : 237, i % 2 === 0 ? 248 : 237);
+      doc.rect(margin, tableY, tableW, rowH, "F");
+      doc.setDrawColor(170, 170, 170);
+      doc.rect(margin, tableY, tableW, rowH);
+      tableY += rowH;
+    }
+    doc.setDrawColor(80, 80, 80);
+    doc.rect(margin, tableTop + rowH, tableW, bodyRows * rowH);
+    doc.line(margin + descW, tableTop + rowH, margin + descW, tableTop + rowH + bodyRows * rowH);
+    doc.line(margin + descW + taxW, tableTop + rowH, margin + descW + taxW, tableTop + rowH + bodyRows * rowH);
+
+    txt(q.serviceDescription || "Service Fee", margin + 10, tableTop + rowH + 14, { size: 9, color: [17, 24, 39] });
+    txt(showGst ? "X" : "", margin + descW + taxW / 2, tableTop + rowH + 14, { size: 9, align: "center", color: [17, 24, 39] });
+    txt(formatCurrency(localAmount), margin + tableW - 8, tableTop + rowH + 14, { size: 9, align: "right", color: [17, 24, 39] });
+
+    const summaryX = margin + 420;
+    const summaryY = tableTop + rowH + bodyRows * rowH + 16;
+    const subtotal = localAmount;
+    const taxable = showGst ? localAmount : 0;
+    const taxRate = showGst ? `${localGstPercent.toFixed(2)}%` : "-";
+    const taxDue = showGst ? localTotals.gstAmount : 0;
+    const total = localTotals.totalAmount;
+    const summaryRows = [
+      ["Subtotal", formatCurrency(subtotal)],
+      ["Taxable", formatCurrency(taxable)],
+      ["Tax rate", taxRate],
+      ["Tax due", formatCurrency(taxDue)],
+      ["Other", "-"],
+    ];
+
+    summaryRows.forEach((row, idx) => {
+      txt(row[0], summaryX, summaryY + idx * 15, { size: 9, color: [17, 24, 39] });
+      txt(row[1], pageW - margin, summaryY + idx * 15, { size: 9, align: "right", color: [17, 24, 39] });
+    });
+
+    const totalY = summaryY + summaryRows.length * 15 + 6;
+    doc.setFillColor(230, 236, 250);
+    doc.setDrawColor(112, 127, 167);
+    doc.rect(summaryX - 4, totalY - 11, pageW - margin - (summaryX - 4), 20, "FD");
+    txt("TOTAL", summaryX, totalY + 3, { bold: true, size: 12, color: [17, 24, 39] });
+    txt(formatCurrency(total), pageW - margin, totalY + 3, { bold: true, size: 12, align: "right", color: [17, 24, 39] });
+
+    const commentsY = tableTop + rowH + bodyRows * rowH + 10;
+    doc.setFillColor(52, 73, 138);
+    doc.rect(margin, commentsY, 330, 16, "F");
+    txt("OTHER COMMENTS", margin + 8, commentsY + 12, { bold: true, size: 8.5, color: [255, 255, 255] });
+    doc.setDrawColor(170, 170, 170);
+    doc.rect(margin, commentsY + 16, 330, 96);
+    txt(`1. ${q.paymentTerms || "Payment received successfully."}`, margin + 10, commentsY + 33, { size: 8.5, color: [17, 24, 39] });
+    txt(`2. Amount received: ${formatCurrency(q.amountPaid || total)}`, margin + 10, commentsY + 48, { size: 8.5, color: [17, 24, 39] });
+
+    const footY = pageH - 88;
+    txt("If you have any questions about this invoice, please contact", pageW / 2, footY, {
+      size: 8.5,
+      align: "center",
+      color: [17, 24, 39],
+    });
+    txt([q.senderName || q.companyName, q.senderPhone || q.companyPhone, q.clientEmail].filter(Boolean).join(", "), pageW / 2, footY + 14, {
+      size: 8.5,
+      align: "center",
+      color: [17, 24, 39],
+    });
+    txt("Thank You For Your Business!", pageW / 2, footY + 33, {
       bold: true,
-      size: 10,
-      align: "right",
-      color: [255, 255, 255],
+      size: 18,
+      align: "center",
+      color: [17, 24, 39],
     });
 
     return doc;
