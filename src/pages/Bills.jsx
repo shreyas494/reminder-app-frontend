@@ -309,6 +309,7 @@ export default function Bills() {
     doc.setFillColor(236, 236, 236);
     doc.rect(0, 0, pageW, pageH, "F");
 
+    // Logo placement with improved styling
     const logoSource =
       resolveLogoUrl(q.companyLogoUrl) ||
       localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
@@ -317,92 +318,127 @@ export default function Bills() {
       const logoDataUrl = await toDataUrl(logoSource);
       if (logoDataUrl) {
         const fmt = logoDataUrl.includes("image/png") ? "PNG" : "JPEG";
+        // Logo background box - white container
         doc.setFillColor(255, 255, 255);
-        doc.rect(margin, 34, 62, 48, "F");
-        doc.addImage(logoDataUrl, fmt, margin + 3, 37, 56, 42);
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.rect(margin, 32, 68, 56, "FD");
+        // Logo image centered in the box
+        doc.addImage(logoDataUrl, fmt, margin + 4, 36, 60, 48);
       }
     } catch (logoError) {
       console.warn("[BILL_PDF] Failed to load logo:", logoError);
     }
 
-    txt(q.companyName || "Company Name", margin + 70, 56, { bold: true, size: 18, color: [29, 56, 122] });
-    txt(q.companyAddress || "", margin + 70, 72, { size: 8.5, color: [31, 41, 55] });
+    // Header section with company name and details
+    const headerLeft = margin + 70;
+    const companyNameTop = 45;
+    txt(q.companyName || "Company Name", headerLeft, companyNameTop, { bold: true, size: 18, color: [29, 56, 122] });
+    const addressLines = doc.splitTextToSize(q.companyAddress || "", 120);
+    doc.setFontSize(8);
+    doc.setTextColor(31, 41, 55);
+    doc.text(addressLines, headerLeft, companyNameTop + 14);
     if (q.companyPhone) {
-      txt(`Phone: ${q.companyPhone}`, margin + 70, 84, { size: 8.5, color: [31, 41, 55] });
+      txt(`Phone: ${q.companyPhone}`, headerLeft, companyNameTop + 28, { size: 8, color: [31, 41, 55] });
     }
 
-    txt("INVOICE", pageW - margin, 58, { bold: true, size: 30, align: "right", color: [88, 110, 181] });
+    txt("INVOICE", pageW - margin - 8, 48, { bold: true, size: 32, align: "right", color: [88, 110, 181] });
 
-    const infoX = pageW - 180;
-    const infoTop = 86;
-    const labelW = 74;
-    const valueW = 78;
-    const infoRowH = 18;
+    // Top right info box with better spacing
+    const infoBoxWidth = 170;
+    const infoBoxLeft = pageW - margin - infoBoxWidth;
+    const infoBoxTop = 84;
+    const infoRowHeight = 17;
+    const infoLabelWidth = 65;
+    const infoValueWidth = 97;
+    
     const infoRows = [
       ["DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
       ["INVOICE #", q.billNumber || "-"],
-      ["CUSTOMER ID", q.clientEmail || "-"],
+      ["CUSTOMER ID", q.clientEmail?.substring(0, 16) || "-"],
       ["DUE DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
     ];
+    
     infoRows.forEach((row, index) => {
-      const y = infoTop + index * infoRowH;
-      txt(row[0], infoX, y + 12, { size: 8.5, color: [17, 24, 39] });
+      const rowY = infoBoxTop + index * infoRowHeight;
+      // Label
+      txt(row[0], infoBoxLeft, rowY + 11, { size: 7.5, color: [17, 24, 39] });
+      // Value box
       doc.setFillColor(224, 230, 243);
       doc.setDrawColor(112, 127, 167);
-      doc.rect(infoX + labelW, y, valueW, infoRowH, "FD");
-      txt(row[1], infoX + labelW + valueW / 2, y + 12, { size: 8.5, align: "center", color: [17, 24, 39] });
+      doc.setLineWidth(0.5);
+      doc.rect(infoBoxLeft + infoLabelWidth + 2, rowY, infoValueWidth, infoRowHeight, "FD");
+      txt(row[1], infoBoxLeft + infoLabelWidth + 2 + infoValueWidth / 2, rowY + 11, { size: 7.5, align: "center", color: [17, 24, 39] });
     });
 
-    let y = 172;
+    // Bill To section with proper spacing
+    let y = 188;
     doc.setFillColor(52, 73, 138);
-    doc.rect(margin, y, 196, 16, "F");
-    txt("BILL TO", margin + 8, y + 12, { bold: true, size: 9, color: [255, 255, 255] });
-    y += 20;
-    txt(q.recipientName || "", margin + 8, y + 10, { size: 9, color: [17, 24, 39] });
-    const billToAddress = doc.splitTextToSize(q.recipientAddress || "", 188);
-    doc.setFontSize(8.5);
+    doc.setDrawColor(52, 73, 138);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, y, 220, 16, "F");
+    txt("BILL TO", margin + 8, y + 11, { bold: true, size: 10, color: [255, 255, 255] });
+    
+    y += 18;
+    const recipientName = q.recipientName || "";
+    txt(recipientName, margin + 8, y + 6, { bold: true, size: 10, color: [17, 24, 39] });
+    
+    const billToAddress = doc.splitTextToSize(q.recipientAddress || "", 210);
+    doc.setFontSize(9);
     doc.setTextColor(31, 41, 55);
-    doc.text(billToAddress, margin + 8, y + 22);
+    doc.text(billToAddress, margin + 8, y + 16);
 
-    y = 262;
+    y = 270;
     const tableTop = y;
     const tableW = contentW;
-    const descW = 430;
-    const taxW = 56;
+    const descW = 380;
+    const taxW = 50;
     const amountW = tableW - descW - taxW;
     const rowH = 20;
-    const bodyRows = 14;
+    const bodyRows = 12;
 
+    // Table header
     doc.setFillColor(52, 73, 138);
+    doc.setDrawColor(52, 73, 138);
+    doc.setLineWidth(0.5);
     doc.rect(margin, tableTop, tableW, rowH, "F");
-    txt("DESCRIPTION", margin + descW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
-    txt("TAXED", margin + descW + taxW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
-    txt("AMOUNT", margin + descW + taxW + amountW / 2, tableTop + 13, { bold: true, size: 9, align: "center", color: [255, 255, 255] });
+    txt("DESCRIPTION", margin + 8, tableTop + 13, { bold: true, size: 10, color: [255, 255, 255] });
+    txt("TAXED", margin + descW + taxW / 2, tableTop + 13, { bold: true, size: 10, align: "center", color: [255, 255, 255] });
+    txt("AMOUNT", margin + descW + taxW + amountW / 2, tableTop + 13, { bold: true, size: 10, align: "center", color: [255, 255, 255] });
 
+    // Table body rows with alternating background
     let tableY = tableTop + rowH;
     for (let i = 0; i < bodyRows; i += 1) {
-      doc.setFillColor(i % 2 === 0 ? 248 : 237, i % 2 === 0 ? 248 : 237, i % 2 === 0 ? 248 : 237);
+      doc.setFillColor(i % 2 === 0 ? 245 : 235, i % 2 === 0 ? 245 : 235, i % 2 === 0 ? 245 : 235);
       doc.rect(margin, tableY, tableW, rowH, "F");
       doc.setDrawColor(170, 170, 170);
+      doc.setLineWidth(0.3);
       doc.rect(margin, tableY, tableW, rowH);
       tableY += rowH;
     }
-    doc.setDrawColor(80, 80, 80);
-    doc.rect(margin, tableTop + rowH, tableW, bodyRows * rowH);
+    
+    // Vertical lines in table
+    doc.setLineWidth(0.3);
     doc.line(margin + descW, tableTop + rowH, margin + descW, tableTop + rowH + bodyRows * rowH);
     doc.line(margin + descW + taxW, tableTop + rowH, margin + descW + taxW, tableTop + rowH + bodyRows * rowH);
 
-    txt(q.serviceDescription || "Service Fee", margin + 10, tableTop + rowH + 14, { size: 9, color: [17, 24, 39] });
-    txt(showGst ? "X" : "", margin + descW + taxW / 2, tableTop + rowH + 14, { size: 9, align: "center", color: [17, 24, 39] });
-    txt(formatCurrency(localAmount), margin + tableW - 8, tableTop + rowH + 14, { size: 9, align: "right", color: [17, 24, 39] });
+    // First row data
+    const descLines = doc.splitTextToSize(q.serviceDescription || "Service Fee", descW - 16);
+    doc.setFontSize(9);
+    doc.setTextColor(17, 24, 39);
+    doc.text(descLines, margin + 8, tableTop + rowH + 12);
+    txt(showGst ? "X" : "", margin + descW + taxW / 2, tableTop + rowH + 12, { size: 9, align: "center", color: [17, 24, 39] });
+    txt(formatCurrency(localAmount), margin + tableW - 8, tableTop + rowH + 12, { size: 9, align: "right", color: [17, 24, 39] });
 
-    const summaryX = margin + 420;
-    const summaryY = tableTop + rowH + bodyRows * rowH + 16;
+    // Summary and totals section (right side)
+    const summaryX = margin + 370;
+    const summaryY = tableTop + rowH + bodyRows * rowH + 12;
     const subtotal = localAmount;
     const taxable = showGst ? localAmount : 0;
     const taxRate = showGst ? `${localGstPercent.toFixed(2)}%` : "-";
     const taxDue = showGst ? localTotals.gstAmount : 0;
     const total = localTotals.totalAmount;
+    
     const summaryRows = [
       ["Subtotal", formatCurrency(subtotal)],
       ["Taxable", formatCurrency(taxable)],
@@ -411,43 +447,73 @@ export default function Bills() {
       ["Other", "-"],
     ];
 
+    doc.setFontSize(9);
+    doc.setTextColor(17, 24, 39);
     summaryRows.forEach((row, idx) => {
-      txt(row[0], summaryX, summaryY + idx * 15, { size: 9, color: [17, 24, 39] });
-      txt(row[1], pageW - margin, summaryY + idx * 15, { size: 9, align: "right", color: [17, 24, 39] });
+      const rowY = summaryY + idx * 13;
+      txt(row[0], summaryX, rowY, { size: 9, color: [17, 24, 39] });
+      txt(row[1], pageW - margin - 4, rowY, { size: 9, align: "right", color: [17, 24, 39] });
     });
 
-    const totalY = summaryY + summaryRows.length * 15 + 6;
+    // Total highlight box
+    const totalY = summaryY + summaryRows.length * 13 + 4;
     doc.setFillColor(230, 236, 250);
     doc.setDrawColor(112, 127, 167);
-    doc.rect(summaryX - 4, totalY - 11, pageW - margin - (summaryX - 4), 20, "FD");
-    txt("TOTAL", summaryX, totalY + 3, { bold: true, size: 12, color: [17, 24, 39] });
-    txt(formatCurrency(total), pageW - margin, totalY + 3, { bold: true, size: 12, align: "right", color: [17, 24, 39] });
+    doc.setLineWidth(0.5);
+    doc.rect(summaryX - 8, totalY - 9, pageW - margin - (summaryX - 8) + 4, 18, "FD");
+    txt("TOTAL", summaryX, totalY + 2, { bold: true, size: 12, color: [17, 24, 39] });
+    txt(formatCurrency(total), pageW - margin - 2, totalY + 2, { bold: true, size: 12, align: "right", color: [17, 24, 39] });
 
-    const commentsY = tableTop + rowH + bodyRows * rowH + 10;
+    // Other comments section
+    const commentsY = tableTop + rowH + bodyRows * rowH + 8;
     doc.setFillColor(52, 73, 138);
-    doc.rect(margin, commentsY, 330, 16, "F");
-    txt("OTHER COMMENTS", margin + 8, commentsY + 12, { bold: true, size: 8.5, color: [255, 255, 255] });
+    doc.setDrawColor(52, 73, 138);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, commentsY, 260, 16, "F");
+    txt("OTHER COMMENTS", margin + 8, commentsY + 11, { bold: true, size: 10, color: [255, 255, 255] });
     doc.setDrawColor(170, 170, 170);
-    doc.rect(margin, commentsY + 16, 330, 96);
-    txt(`1. ${q.paymentTerms || "Payment received successfully."}`, margin + 10, commentsY + 33, { size: 8.5, color: [17, 24, 39] });
-    txt(`2. Amount received: ${formatCurrency(q.amountPaid || total)}`, margin + 10, commentsY + 48, { size: 8.5, color: [17, 24, 39] });
+    doc.setLineWidth(0.3);
+    doc.rect(margin, commentsY + 16, 260, 90);
+    
+    const commentsLines = doc.splitTextToSize(q.paymentTerms || "Payment received successfully.", 252);
+    doc.setFontSize(8.5);
+    doc.setTextColor(17, 24, 39);
+    doc.text(commentsLines, margin + 8, commentsY + 28);
+    
+    const amountPaidLines = doc.splitTextToSize(
+      `Amount received: ${formatCurrency(q.amountPaid || localTotals.totalAmount)}`,
+      252
+    );
+    doc.text(amountPaidLines, margin + 8, commentsY + 60);
 
-    const footY = pageH - 88;
-    txt("If you have any questions about this invoice, please contact", pageW / 2, footY, {
-      size: 8.5,
+    // Footer
+    const footY = pageH - 80;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margin, footY, pageW - margin, footY);
+    
+    doc.setFontSize(9);
+    doc.setTextColor(31, 41, 55);
+    txt("If you have any questions about this invoice, please contact", pageW / 2, footY + 12, {
+      size: 9,
       align: "center",
       color: [17, 24, 39],
     });
-    txt([q.senderName || q.companyName, q.senderPhone || q.companyPhone, q.clientEmail].filter(Boolean).join(", "), pageW / 2, footY + 14, {
-      size: 8.5,
+    
+    const contactInfo = [q.senderName || q.companyName, q.senderPhone || q.companyPhone, q.clientEmail]
+      .filter(Boolean)
+      .join(" | ");
+    txt(contactInfo, pageW / 2, footY + 22, {
+      size: 9,
       align: "center",
       color: [17, 24, 39],
     });
-    txt("Thank You For Your Business!", pageW / 2, footY + 33, {
+    
+    txt("Thank You For Your Business!", pageW / 2, footY + 38, {
       bold: true,
-      size: 18,
+      size: 16,
       align: "center",
-      color: [17, 24, 39],
+      color: [52, 73, 138],
     });
 
     return doc;
