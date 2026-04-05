@@ -18,8 +18,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const [serviceTypes, setServiceTypes] = useState([]);
   const [serviceTypeSearch, setServiceTypeSearch] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const [form, setForm] = useState({
     clientName: "",
     contactPerson: "",
@@ -44,10 +42,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const [error, setError] = useState("");
 
   const filteredServiceTypes = useMemo(() => {
-    if (!serviceTypeSearch.trim()) return serviceTypes;
-    const term = serviceTypeSearch.toLowerCase();
+    const term = serviceTypeSearch.trim().toLowerCase();
+    if (!term) return [];
     return serviceTypes.filter((st) =>
-      st.name.toLowerCase().includes(term)
+      st.name.toLowerCase().startsWith(term)
     );
   }, [serviceTypes, serviceTypeSearch]);
 
@@ -57,10 +55,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       try {
         const res = await API.get("/service-types");
         setServiceTypes(res.data?.data || []);
-        // Set default service type if none selected
-        if (!form.serviceType && (res.data?.data?.length > 0)) {
-          setForm((prev) => ({ ...prev, serviceType: res.data.data[0].name }));
-        }
       } catch (err) {
         console.error("Failed to load service types:", err);
         // Fallback to empty array
@@ -82,6 +76,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   useEffect(() => {
     if (!existing) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       clientName: existing.clientName || "",
       contactPerson: existing.contactPerson || "",
@@ -107,6 +102,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
       renewedExpiryDate: null,
     });
+    setServiceTypeSearch(existing.serviceType || "");
   }, [existing]);
 
   useEffect(() => {
@@ -115,6 +111,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     }
 
     if (form.expiryDate.isSame(form.activationDate) || form.expiryDate.isBefore(form.activationDate)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm((current) => ({
         ...current,
         expiryDate: roundToFiveMinuteStep(current.activationDate.add(5, "minute"), "up"),
@@ -336,30 +333,34 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                      focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
                      transition-all duration-200 text-sm"
                   />
-                  <div className="max-h-48 overflow-y-auto border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-xl
-                   bg-white dark:bg-slate-900
-                   divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredServiceTypes.length > 0 ? (
-                      filteredServiceTypes.map((st) => (
-                        <button
-                          key={st._id}
-                          type="button"
-                          onClick={() => {
-                            setForm({ ...form, serviceType: st.name });
-                            setServiceTypeSearch("");
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${
-                            form.serviceType === st.name
-                              ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-100 font-semibold"
-                              : "text-slate-700 dark:text-slate-300"
-                          }`}
-                        >
-                          {st.name}
-                        </button>
-                      ))
+                  <div className="max-h-48 overflow-y-auto border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-xl bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
+                    {serviceTypeSearch.trim() ? (
+                      filteredServiceTypes.length > 0 ? (
+                        filteredServiceTypes.map((st) => (
+                          <button
+                            key={st._id}
+                            type="button"
+                            onClick={() => {
+                              setForm({ ...form, serviceType: st.name });
+                              setServiceTypeSearch("");
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${
+                              form.serviceType === st.name
+                                ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-100 font-semibold"
+                                : "text-slate-700 dark:text-slate-300"
+                            }`}
+                          >
+                            {st.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic">
+                          No matches found
+                        </div>
+                      )
                     ) : (
                       <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic">
-                        {serviceTypeSearch ? "No matches found" : "Loading service types..."}
+                        Type to search service types
                       </div>
                     )}
                   </div>
