@@ -310,6 +310,10 @@ export default function Bills() {
     doc.rect(0, 0, pageW, pageH, "F");
 
     // Logo placement with improved styling
+    const logoX = margin;
+    const logoY = 32;
+    const logoW = 68;
+    const logoH = 56;
     const logoSource =
       resolveLogoUrl(q.companyLogoUrl) ||
       localStorage.getItem(FIXED_LOGO_STORAGE_KEY) ||
@@ -322,40 +326,49 @@ export default function Bills() {
         doc.setFillColor(255, 255, 255);
         doc.setDrawColor(200, 200, 200);
         doc.setLineWidth(0.5);
-        doc.rect(margin, 32, 68, 56, "FD");
+        doc.rect(logoX, logoY, logoW, logoH, "FD");
         // Logo image centered in the box
-        doc.addImage(logoDataUrl, fmt, margin + 4, 36, 60, 48);
+        doc.addImage(logoDataUrl, fmt, logoX + 4, logoY + 4, logoW - 8, logoH - 8);
       }
     } catch (logoError) {
       console.warn("[BILL_PDF] Failed to load logo:", logoError);
     }
 
-    // Header section with company name and details
-    const headerLeft = margin + 70;
-    const companyNameTop = 45;
-    txt(q.companyName || "Company Name", headerLeft, companyNameTop, { bold: true, size: 18, color: [29, 56, 122] });
-    const addressLines = doc.splitTextToSize(q.companyAddress || "", 120);
+    // Header section with dynamic spacing to prevent overlap
+    const infoBoxWidth = 182;
+    const infoBoxLeft = pageW - margin - infoBoxWidth;
+    const infoBoxTop = 84;
+    const infoRowHeight = 17;
+    const infoLabelWidth = 68;
+    const infoValueWidth = 108;
+
+    const headerLeft = logoX + logoW + 8;
+    const headerGapToInfo = 12;
+    const companyBlockWidth = Math.max(150, infoBoxLeft - headerGapToInfo - headerLeft);
+    const companyNameTop = 48;
+    const companyNameLines = doc.splitTextToSize(q.companyName || "Company Name", companyBlockWidth);
+    txt(companyNameLines, headerLeft, companyNameTop, { bold: true, size: 12.5, color: [29, 56, 122] });
+
+    const nameLinesCount = Array.isArray(companyNameLines) ? companyNameLines.length : 1;
+    const addressTop = companyNameTop + nameLinesCount * 12 + 2;
+    const addressLines = doc.splitTextToSize(q.companyAddress || "", companyBlockWidth);
     doc.setFontSize(8);
     doc.setTextColor(31, 41, 55);
-    doc.text(addressLines, headerLeft, companyNameTop + 14);
+    doc.text(addressLines, headerLeft, addressTop);
+    const addressLinesCount = Array.isArray(addressLines) ? addressLines.length : 1;
+
+    const phoneTop = addressTop + addressLinesCount * 9 + 4;
     if (q.companyPhone) {
-      txt(`Phone: ${q.companyPhone}`, headerLeft, companyNameTop + 28, { size: 8, color: [31, 41, 55] });
+      txt(`Phone: ${q.companyPhone}`, headerLeft, phoneTop, { size: 8, color: [31, 41, 55] });
     }
 
     txt("INVOICE", pageW - margin - 8, 48, { bold: true, size: 32, align: "right", color: [88, 110, 181] });
 
     // Top right info box with better spacing
-    const infoBoxWidth = 170;
-    const infoBoxLeft = pageW - margin - infoBoxWidth;
-    const infoBoxTop = 84;
-    const infoRowHeight = 17;
-    const infoLabelWidth = 65;
-    const infoValueWidth = 97;
-    
     const infoRows = [
       ["DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
       ["INVOICE #", q.billNumber || "-"],
-      ["CUSTOMER ID", q.clientEmail?.substring(0, 16) || "-"],
+      ["CUSTOMER ID", q.clientEmail?.substring(0, 20) || "-"],
       ["DUE DATE", dayjs(q.billDate).format("DD/MM/YYYY")],
     ];
     
@@ -367,12 +380,16 @@ export default function Bills() {
       doc.setFillColor(224, 230, 243);
       doc.setDrawColor(112, 127, 167);
       doc.setLineWidth(0.5);
-      doc.rect(infoBoxLeft + infoLabelWidth + 2, rowY, infoValueWidth, infoRowHeight, "FD");
-      txt(row[1], infoBoxLeft + infoLabelWidth + 2 + infoValueWidth / 2, rowY + 11, { size: 7.5, align: "center", color: [17, 24, 39] });
+      doc.rect(infoBoxLeft + infoLabelWidth + 3, rowY, infoValueWidth, infoRowHeight, "FD");
+      txt(row[1], infoBoxLeft + infoLabelWidth + 3 + infoValueWidth / 2, rowY + 11, { size: 7.3, align: "center", color: [17, 24, 39] });
     });
 
-    // Bill To section with proper spacing
-    let y = 188;
+    const companyBlockBottom = q.companyPhone ? phoneTop : addressTop + addressLinesCount * 9;
+    const infoBlockBottom = infoBoxTop + infoRows.length * infoRowHeight;
+    const headerBottom = Math.max(companyBlockBottom, infoBlockBottom, logoY + logoH);
+
+    // Bill To section with dynamic top spacing
+    let y = headerBottom + 20;
     doc.setFillColor(52, 73, 138);
     doc.setDrawColor(52, 73, 138);
     doc.setLineWidth(0.5);
@@ -388,7 +405,10 @@ export default function Bills() {
     doc.setTextColor(31, 41, 55);
     doc.text(billToAddress, margin + 8, y + 16);
 
-    y = 270;
+    const billToLinesCount = Array.isArray(billToAddress) ? billToAddress.length : 1;
+    const billToBottom = y + 16 + billToLinesCount * 10;
+
+    y = Math.max(270, billToBottom + 18);
     const tableTop = y;
     const tableW = contentW;
     const descW = 380;
