@@ -727,7 +727,7 @@ export default function Bills() {
                     <Input label="Client Name" value={form.recipientName || ""} onChange={(v) => setForm({ ...form, recipientName: v })} />
                     <Input label="Service Type" value={form.serviceType || ""} onChange={(v) => setForm({ ...form, serviceType: v })} />
                     <Input label="Amount" type="number" value={form.amount ?? 0} readOnly />
-                    <Input label="Amount Paid" type="number" value={form.amountPaid ?? 0} onChange={(v) => setForm({ ...form, amountPaid: v })} />
+                    <Input label="Amount Paid" type="number" value={form.amountPaid ?? 0} readOnly />
 
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
                       {form.billType === "with-gst" && (
