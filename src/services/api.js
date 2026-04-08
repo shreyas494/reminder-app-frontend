@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://reminder-app-backend-u8wb.onrender.com/api",
+  baseURL: "https://reminder-app-backend-aaac.onrender.com/api",
 });
 
 API.interceptors.request.use((req) => {

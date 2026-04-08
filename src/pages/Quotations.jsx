@@ -5,7 +5,7 @@ import API from "../services/api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
-const FIXED_LOGO_URL = "https://reminder-app-backend-u8wb.onrender.com/assets/company-logo.png";
+const FIXED_LOGO_URL = "https://reminder-app-backend-aaac.onrender.com/assets/company-logo.png";
 
 function getQuotationTemplates(serviceType) {
   const type = String(serviceType || "").trim();
