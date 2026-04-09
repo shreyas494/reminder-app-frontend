@@ -14,27 +14,27 @@ function getQuotationTemplates(serviceType) {
     case "Domain":
       return {
         subject: "Domain Renewal Quotation",
-        serviceDescription: "Domain Renewal For 1 Year",
+        serviceDescription: "Domain Renewal",
       };
     case "Hosting and SSL":
       return {
         subject: "Hosting and SSL Renewal Quotation",
-        serviceDescription: "Hosting & SSL Certificate For 1 Year",
+        serviceDescription: "Hosting & SSL Certificate Renewal",
       };
     case "Website maintenance":
       return {
         subject: "Website Maintenance Quotation",
-        serviceDescription: "Website Maintenance Service For 1 Year",
+        serviceDescription: "Website Maintenance Service Renewal",
       };
     case "Domain,Hosting and SSL":
       return {
         subject: "Domain, Hosting and SSL Renewal Quotation",
-        serviceDescription: "Domain, Hosting & SSL Renewal For 1 Year",
+        serviceDescription: "Domain, Hosting & SSL Renewal",
       };
     default:
       return {
         subject: `${type || "Service"} Renewal Quotation`,
-        serviceDescription: `${type || "Service"} Renewal Service For 1 Year`,
+        serviceDescription: `${type || "Service"} Renewal Service`,
       };
   }
 }
@@ -1133,6 +1133,11 @@ export default function Quotations() {
                     </div>
 
                     <TextArea label="Intro Text" value={form.introText || ""} onChange={(v) => setForm({ ...form, introText: v })} />
+                    <TextArea
+                      label="Service Description"
+                      value={form.serviceDescription || ""}
+                      onChange={(v) => setForm({ ...form, serviceDescription: v })}
+                    />
                     <Input
                       label="Client Name"
                       value={form.recipientName || ""}
