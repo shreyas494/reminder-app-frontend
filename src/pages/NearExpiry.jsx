@@ -70,7 +70,7 @@ export default function NearExpiry() {
       timeStyle: "short",
     });
 
-    return `📢 Subscription Reminder\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\nPlease renew on time.`;
+    return `📢 Subscription Notice\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\nPlease renew on time.`;
   };
 
   const smsLink = (r) => {
@@ -87,7 +87,7 @@ export default function NearExpiry() {
 
   const mailLink = (r) => {
     if (!r.email) return "#";
-    return `mailto:${r.email}?subject=${encodeURIComponent("Subscription Expiry Reminder")}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+    return `mailto:${r.email}?subject=${encodeURIComponent("Subscription Expiry Notice")}&body=${encodeURIComponent(buildReminderMessage(r))}`;
   };
 
   const createGstQuotationAndOpen = async (r) => {
@@ -116,10 +116,10 @@ export default function NearExpiry() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              Near Expiry Reminders
+              Near Expiry Subscriptions
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
-              Reminders expiring in the next 30 days
+              Subscriptions expiring in the next 30 days
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function NearExpiry() {
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-12 text-slate-500">No near-expiry reminders found.</td>
+                    <td colSpan="9" className="text-center py-12 text-slate-500">No near-expiry subscriptions found.</td>
                   </tr>
                 ) : (
                   reminders.map((r, i) => {
