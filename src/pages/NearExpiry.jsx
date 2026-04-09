@@ -98,7 +98,7 @@ export default function NearExpiry() {
       });
       navigate("/quotations", {
         state: {
-          openQuotationId: res.data?._id,
+          openQuotationId: res.data?.quotation?._id,
           notice: "GST quotation draft created. You can edit and change type if needed.",
         },
       });
