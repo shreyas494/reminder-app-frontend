@@ -64,13 +64,20 @@ export default function NearExpiry() {
   };
 
   const buildReminderMessage = (r) => {
+    const expiryDate = dayjs(r.expiryDate);
+    const isExpired = dayjs().isAfter(expiryDate) || dayjs().isSame(expiryDate);
     const expiryIST = new Date(r.expiryDate).toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       dateStyle: "medium",
       timeStyle: "short",
     });
 
-    return `📢 Subscription Notice\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\nPlease renew on time.`;
+    const noticeTitle = isExpired ? "Subscription Expired Notice" : "Subscription Expiry Notice";
+    const statusLine = isExpired
+      ? `Your service has expired on ${expiryIST}.`
+      : `Your service is about to expire on ${expiryIST}.`;
+
+    return `📢 ${noticeTitle}\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\n${statusLine}`;
   };
 
   const smsLink = (r) => {
@@ -87,7 +94,10 @@ export default function NearExpiry() {
 
   const mailLink = (r) => {
     if (!r.email) return "#";
-    return `mailto:${r.email}?subject=${encodeURIComponent("Subscription Expiry Notice")}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+    const expiryDate = dayjs(r.expiryDate);
+    const isExpired = dayjs().isAfter(expiryDate) || dayjs().isSame(expiryDate);
+    const subject = isExpired ? "Subscription Expired Notice" : "Subscription Expiry Notice";
+    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildReminderMessage(r))}`;
   };
 
   const createGstQuotationAndOpen = async (r) => {
