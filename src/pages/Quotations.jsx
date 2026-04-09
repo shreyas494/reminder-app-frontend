@@ -272,7 +272,7 @@ export default function Quotations() {
     try {
       const res = await API.post(`/quotations/from-reminder/${reminderId}`, { quotationType });
       await fetchQuotations(1);
-      await openQuotation(res.data._id);
+      await openQuotation(res.data.quotation._id);
       setMessage("Quotation draft created. Please edit and save before download/send.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create quotation");
