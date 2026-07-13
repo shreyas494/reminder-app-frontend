@@ -41,7 +41,7 @@ export default function Dashboard() {
   };
 
   /* 🔑 SINGLE SOURCE OF TRUTH */
-  const getExpiry = (r) => dayjs(r.expiryDate);
+  const getExpiry = (r) => dayjs(r.expiryDate ? r.expiryDate.split("T")[0] : undefined);
 
   const hasBeenRenewed = (r) =>
     Array.isArray(r.renewals) && r.renewals.length > 0;

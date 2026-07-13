@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 import { useMediaQuery } from "@mui/material";
 import {
-  DesktopDateTimePicker,
+  DesktopDatePicker,
 } from "@mui/x-date-pickers";
 
 
@@ -14,7 +14,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const isRenewMode = mode === "renew";
 
   const isMobile = useMediaQuery("(max-width:768px)");
-  const Picker = DesktopDateTimePicker;
+  const Picker = DesktopDatePicker;
 
   const [serviceTypes, setServiceTypes] = useState([]);
   const [serviceTypeSearch, setServiceTypeSearch] = useState("");
@@ -66,10 +66,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
   const minExpiryDate = form.activationDate
-    ? roundToFiveMinuteStep(form.activationDate.add(5, "minute"), "up")
+    ? form.activationDate.add(1, "day")
     : null;
   const minRenewalDate = originalExpiryDate
-    ? roundToFiveMinuteStep(originalExpiryDate.add(5, "minute"), "up")
+    ? originalExpiryDate.add(1, "day")
     : null;
 
   /* ================= PREFILL ================= */
@@ -165,11 +165,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         return;
       }
 
-      if (
-        minRenewalDate &&
-        (form.renewedExpiryDate.isSame(minRenewalDate) || form.renewedExpiryDate.isAfter(minRenewalDate)) === false
-      ) {
-        setError("New expiry must be at least 5 minutes after the current expiry");
+      if (minRenewalDate && form.renewedExpiryDate.isBefore(minRenewalDate)) {
+        setError("New expiry must be after the current expiry date");
         return;
       }
     } else {
@@ -198,13 +195,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         return;
       }
 
-      if (form.expiryDate.isSame(form.activationDate) || form.expiryDate.isBefore(form.activationDate)) {
-        setError("Expiry date must be at least 5 minutes after activation date");
-        return;
-      }
-
       if (minExpiryDate && form.expiryDate.isBefore(minExpiryDate)) {
-        setError("Expiry date must be at least 5 minutes after activation date");
+        setError("Expiry date must be after activation date");
         return;
       }
     }
@@ -233,14 +225,14 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
       // 🔄 RENEW ONLY
       if (isRenewMode) {
-        payload.expiryDate = form.renewedExpiryDate.toISOString();
+        payload.expiryDate = form.renewedExpiryDate.format("YYYY-MM-DD");
       }
 
       // ✏️ EDIT / 🔄 RENEW
       if (isEdit) {
         if (isRenewMode) {
           await API.patch(`/reminders/${existing._id}`, {
-            expiryDate: form.renewedExpiryDate.toISOString(),
+            expiryDate: form.renewedExpiryDate.format("YYYY-MM-DD"),
           });
         } else {
           await API.put(`/reminders/${existing._id}`, payload);
@@ -250,8 +242,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       else {
         await API.post("/reminders", {
           ...payload,
-          activationDate: form.activationDate.toISOString(),
-          expiryDate: form.expiryDate.toISOString(),
+          activationDate: form.activationDate.format("YYYY-MM-DD"),
+          expiryDate: form.expiryDate.format("YYYY-MM-DD"),
         });
       }
 
@@ -385,7 +377,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
                 {/* 🔒 dates locked in edit */}
                 {isMobile ? (
-                  <MobileDateTimeInput
+                  <MobileDateInput
                     label="Activation Date *"
                     value={form.activationDate}
                     onChange={handleActivationDateChange}
@@ -393,7 +385,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     required
                     helperText={isEdit
                       ? "Activation date is locked after reminder creation"
-                      : "Select or update activation date and time"}
+                      : "Select or update activation date"}
                   />
                 ) : (
                   <Picker
@@ -401,23 +393,20 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     value={form.activationDate}
                     onChange={handleActivationDateChange}
                     disabled={isEdit}
-                    ampm
-                    format="DD/MM/YYYY hh:mm A"
-                    views={["year", "month", "day", "hours", "minutes"]}
-                    timeSteps={{ minutes: 5 }}
-                    closeOnSelect={false}
+                    format="DD/MM/YYYY"
+                    closeOnSelect={true}
                     slotProps={getPickerProps({
                       required: true,
                       helperText: isEdit
                         ? "Activation date is locked after reminder creation"
-                        : "You can type the date/time or pick it from the dialog",
+                        : "You can type the date or pick it from the dialog",
                       isMobile,
                     })}
                   />
                 )}
 
                 {isMobile ? (
-                  <MobileDateTimeInput
+                  <MobileDateInput
                     label="Expiry Date *"
                     value={form.expiryDate}
                     onChange={handleExpiryDateChange}
@@ -428,7 +417,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                       ? "Expiry updates are handled via Renew"
                       : !form.activationDate
                       ? "Select activation date first"
-                      : "Select or update expiry date and time"}
+                      : "Select or update expiry date"}
                   />
                 ) : (
                   <Picker
@@ -436,19 +425,16 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     value={form.expiryDate}
                     onChange={handleExpiryDateChange}
                     disabled={isEdit || !form.activationDate}
-                    ampm
-                    format="DD/MM/YYYY hh:mm A"
-                    views={["year", "month", "day", "hours", "minutes"]}
-                    timeSteps={{ minutes: 5 }}
-                    closeOnSelect={false}
-                    minDateTime={minExpiryDate}
+                    format="DD/MM/YYYY"
+                    closeOnSelect={true}
+                    minDate={minExpiryDate}
                     slotProps={getPickerProps({
                       required: true,
                       helperText: isEdit
                         ? "Expiry updates are handled via Renew"
                         : !form.activationDate
                         ? "Select activation date first"
-                        : "Expiry must be at least 5 minutes after activation",
+                        : "Expiry must be after activation",
                       isMobile,
                     })}
                   />
@@ -501,8 +487,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 </div>
 
                 {isMobile ? (
-                  <MobileDateTimeInput
-                    label="New Expiry Date & Time *"
+                  <MobileDateInput
+                    label="New Expiry Date *"
                     value={form.renewedExpiryDate}
                     onChange={handleRenewedExpiryDateChange}
                     required
@@ -511,15 +497,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   />
                 ) : (
                   <Picker
-                    label="New Expiry Date & Time *"
+                    label="New Expiry Date *"
                     value={form.renewedExpiryDate}
                     onChange={handleRenewedExpiryDateChange}
-                    ampm
-                    format="DD/MM/YYYY hh:mm A"
-                    views={["year", "month", "day", "hours", "minutes"]}
-                    timeSteps={{ minutes: 5 }}
-                    closeOnSelect={false}
-                    minDateTime={minRenewalDate}
+                    format="DD/MM/YYYY"
+                    closeOnSelect={true}
+                    minDate={minRenewalDate}
                     slotProps={getPickerProps({
                       required: true,
                       helperText: "Renewal expiry must be later than the current expiry",
@@ -596,7 +579,7 @@ function normalizePickerValue(value) {
   return roundToFiveMinuteStep(value, "nearest");
 }
 
-function MobileDateTimeInput({
+function MobileDateInput({
   label,
   value,
   onChange,
@@ -606,11 +589,11 @@ function MobileDateTimeInput({
   minValue = null,
 }) {
   const inputValue = isValidDayjsValue(value)
-    ? value.format("YYYY-MM-DDTHH:mm")
+    ? value.format("YYYY-MM-DD")
     : "";
 
   const minInputValue = isValidDayjsValue(minValue)
-    ? minValue.format("YYYY-MM-DDTHH:mm")
+    ? minValue.format("YYYY-MM-DD")
     : undefined;
 
   return (
@@ -620,10 +603,9 @@ function MobileDateTimeInput({
       </label>
 
       <input
-        type="datetime-local"
+        type="date"
         value={inputValue}
         min={minInputValue}
-        step={300}
         required={required}
         disabled={disabled}
         onChange={(e) => {
