@@ -378,7 +378,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 {/* 🔒 dates locked in edit */}
                 {isMobile ? (
                   <MobileDateInput
-                    label="Activation Date *"
+                    label="Activation Date"
                     value={form.activationDate}
                     onChange={handleActivationDateChange}
                     disabled={isEdit}
@@ -389,7 +389,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   />
                 ) : (
                   <Picker
-                    label="Activation Date *"
+                    label="Activation Date"
                     value={form.activationDate}
                     onChange={handleActivationDateChange}
                     disabled={isEdit}
@@ -407,7 +407,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
                 {isMobile ? (
                   <MobileDateInput
-                    label="Expiry Date *"
+                    label="Expiry Date"
                     value={form.expiryDate}
                     onChange={handleExpiryDateChange}
                     disabled={isEdit || !form.activationDate}
@@ -421,7 +421,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   />
                 ) : (
                   <Picker
-                    label="Expiry Date *"
+                    label="Expiry Date"
                     value={form.expiryDate}
                     onChange={handleExpiryDateChange}
                     disabled={isEdit || !form.activationDate}
@@ -488,7 +488,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
                 {isMobile ? (
                   <MobileDateInput
-                    label="New Expiry Date *"
+                    label="New Expiry Date"
                     value={form.renewedExpiryDate}
                     onChange={handleRenewedExpiryDateChange}
                     required
@@ -497,7 +497,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   />
                 ) : (
                   <Picker
-                    label="New Expiry Date *"
+                    label="New Expiry Date"
                     value={form.renewedExpiryDate}
                     onChange={handleRenewedExpiryDateChange}
                     format="DD/MM/YYYY"
