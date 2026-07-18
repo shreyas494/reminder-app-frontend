@@ -12,15 +12,34 @@ export default function Dashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchReminders(page);
-  }, [page]);
+  // Filter states
+  const [clientFilter, setClientFilter] = useState("");
+  const [contactFilter, setContactFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState("");
 
-  /* 🔄 FETCH REMINDERS (With Auto-Correction) */
-  const fetchReminders = async (pageNo = 1) => {
+  const [appliedClient, setAppliedClient] = useState("");
+  const [appliedContact, setAppliedContact] = useState("");
+  const [appliedProject, setAppliedProject] = useState("");
+
+  useEffect(() => {
+    fetchReminders(page, appliedClient, appliedContact, appliedProject);
+  }, [page, appliedClient, appliedContact, appliedProject]);
+
+  /* 🔄 FETCH REMINDERS (With Auto-Correction and Filtering) */
+  const fetchReminders = async (
+    pageNo = 1,
+    client = appliedClient,
+    contact = appliedContact,
+    project = appliedProject
+  ) => {
     setLoading(true);
     try {
-      const res = await API.get(`/reminders?page=${pageNo}`);
+      const params = { page: pageNo };
+      if (client.trim()) params.clientName = client.trim();
+      if (contact.trim()) params.contactPerson = contact.trim();
+      if (project.trim()) params.projectName = project.trim();
+
+      const res = await API.get("/reminders", { params });
 
       const { data, totalPages: total, page: current } = res.data;
 
@@ -65,6 +84,22 @@ export default function Dashboard() {
     if (hasBeenRenewed(r)) return { text: "Renewed", color: "blue" };
     return { text: "Active", color: "green" };
   };
+  const handleSearch = () => {
+    setAppliedClient(clientFilter);
+    setAppliedContact(contactFilter);
+    setAppliedProject(projectFilter);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setClientFilter("");
+    setContactFilter("");
+    setProjectFilter("");
+    setAppliedClient("");
+    setAppliedContact("");
+    setAppliedProject("");
+    setPage(1);
+  };
 
   return (
     <div className="relative min-h-[calc(100vh-64px)] px-4 sm:px-6 py-8 overflow-hidden transition-colors">
@@ -97,6 +132,57 @@ export default function Dashboard() {
           >
             New Reminder
           </button>
+        </div>
+
+        {/* 🌟 FILTER BAR */}
+        <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Client Name</label>
+              <input
+                type="text"
+                value={clientFilter}
+                onChange={(e) => setClientFilter(e.target.value)}
+                placeholder="Filter by Client Name"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Contact Person</label>
+              <input
+                type="text"
+                value={contactFilter}
+                onChange={(e) => setContactFilter(e.target.value)}
+                placeholder="Filter by Contact Person"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Project Name</label>
+              <input
+                type="text"
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                placeholder="Filter by Project Name"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={handleClearFilters}
+              className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleSearch}
+              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors"
+            >
+              Search
+            </button>
+          </div>
         </div>
 
         {/* 🌟 GLASS TABLE CARD */}
