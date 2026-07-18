@@ -53,18 +53,6 @@ export default function Layout() {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={() => navigate(APP_ROUTES.nearExpiry)}
-              className={`inline-flex shrink-0 items-center justify-center px-2 sm:px-3 h-9 rounded-lg border text-[11px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
-                location.pathname === APP_ROUTES.nearExpiry
-                  ? "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                  : "border-indigo-100 dark:border-indigo-900/40 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
-              }`}
-            >
-              Near Expiry
-            </button>
-
-            <button
-              type="button"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-indigo-100 dark:border-indigo-900/40 text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
             >
