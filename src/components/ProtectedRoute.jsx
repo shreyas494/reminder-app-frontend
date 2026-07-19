@@ -7,7 +7,8 @@ export default function ProtectedRoute({ children }) {
   if (loading) return null; // or loader
 
   if (!user) {
-    return <Navigate to="/landing" replace />;
+    const isLogout = localStorage.getItem("logout_reason") === "logout" || localStorage.getItem("logout_reason") === "expired";
+    return <Navigate to={isLogout ? "/login" : "/landing"} replace />;
   }
 
   return children;

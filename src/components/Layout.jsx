@@ -27,7 +27,7 @@ export default function Layout() {
 
   const handleLogout = () => {
     logout();
-    navigate(APP_ROUTES.login + "?logout=true", { replace: true });
+    navigate(APP_ROUTES.login, { replace: true });
   };
 
   return (

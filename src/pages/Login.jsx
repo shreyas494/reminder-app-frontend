@@ -48,15 +48,15 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("expired") === "true") {
+    const reason = localStorage.getItem("logout_reason");
+    if (reason === "expired") {
       setIsSuccess(false);
       setMessage("Session expired. Please log in again.");
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (params.get("logout") === "true") {
+      localStorage.removeItem("logout_reason");
+    } else if (reason === "logout") {
       setIsSuccess(true);
       setMessage("You have been logged out successfully.");
-      window.history.replaceState({}, document.title, window.location.pathname);
+      localStorage.removeItem("logout_reason");
     }
   }, [location.search]);
 
