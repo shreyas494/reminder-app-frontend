@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, user } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -47,7 +48,7 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     if (params.get("expired") === "true") {
       setIsSuccess(false);
       setMessage("Session expired. Please log in again.");
@@ -57,7 +58,7 @@ export default function Login() {
       setMessage("You have been logged out successfully.");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [location.search]);
 
   const redirect = () => setTimeout(() => navigate("/near-expiry"), 700);
 
