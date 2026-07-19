@@ -46,6 +46,15 @@ export default function Login() {
     googleLogout();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("expired") === "true") {
+      setIsSuccess(false);
+      setMessage("Session expired. Please log in again.");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const redirect = () => setTimeout(() => navigate("/near-expiry"), 700);
 
   /* ================= EMAIL + PASSWORD ================= */
