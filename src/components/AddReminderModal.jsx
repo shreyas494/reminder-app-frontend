@@ -17,7 +17,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const Picker = DesktopDatePicker;
 
   const [serviceTypes, setServiceTypes] = useState([]);
-  const [serviceTypeSearch, setServiceTypeSearch] = useState("");
   const [form, setForm] = useState({
     clientName: "",
     contactPerson: "",
@@ -40,14 +39,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   });
 
   const [error, setError] = useState("");
-
-  const filteredServiceTypes = useMemo(() => {
-    const term = serviceTypeSearch.trim().toLowerCase();
-    if (!term) return [];
-    return serviceTypes.filter((st) =>
-      st.name.toLowerCase().startsWith(term)
-    );
-  }, [serviceTypes, serviceTypeSearch]);
 
   /* ================= FETCH SERVICE TYPES ================= */
   useEffect(() => {
@@ -102,7 +93,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
       renewedExpiryDate: null,
     });
-    setServiceTypeSearch(existing.serviceType || "");
   }, [existing]);
 
   useEffect(() => {
@@ -313,54 +303,23 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   <span className="text-sm font-semibold dark:text-slate-200">
                     Service Type <span className="text-red-500">*</span>
                   </span>
-                  <input
-                    type="text"
-                    required={!form.serviceType}
-                    placeholder="Search or select service type"
-                    value={serviceTypeSearch}
-                    onChange={(e) => setServiceTypeSearch(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-t-xl border border-b-0 border-slate-200 dark:border-slate-700
+                  <select
+                    required
+                    value={form.serviceType}
+                    onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700
                      bg-slate-50 dark:bg-slate-900/50
                      text-slate-900 dark:text-white
                      focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
-                     transition-all duration-200 text-sm"
-                  />
-                  <div className="max-h-48 overflow-y-auto border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-xl bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
-                    {serviceTypeSearch.trim() ? (
-                      filteredServiceTypes.length > 0 ? (
-                        filteredServiceTypes.map((st) => (
-                          <button
-                            key={st._id}
-                            type="button"
-                            onClick={() => {
-                              setForm({ ...form, serviceType: st.name });
-                              setServiceTypeSearch("");
-                            }}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${
-                              form.serviceType === st.name
-                                ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-100 font-semibold"
-                                : "text-slate-700 dark:text-slate-300"
-                            }`}
-                          >
-                            {st.name}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic">
-                          No matches found
-                        </div>
-                      )
-                    ) : (
-                      <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic">
-                        Type to search service types
-                      </div>
-                    )}
-                  </div>
-                  {form.serviceType && (
-                    <div className="mt-2 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-xs font-medium text-indigo-700 dark:text-indigo-300">
-                      Selected: {form.serviceType}
-                    </div>
-                  )}
+                     transition-all duration-200 text-sm cursor-pointer"
+                  >
+                    <option value="" disabled>Select service type</option>
+                    {serviceTypes.map((st) => (
+                      <option key={st._id} value={st.name}>
+                        {st.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 {/* SPACER */}
