@@ -52,6 +52,10 @@ export default function Login() {
       setIsSuccess(false);
       setMessage("Session expired. Please log in again.");
       window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (params.get("logout") === "true") {
+      setIsSuccess(true);
+      setMessage("You have been logged out successfully.");
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
