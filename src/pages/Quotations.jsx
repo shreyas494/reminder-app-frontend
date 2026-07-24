@@ -770,20 +770,28 @@ export default function Quotations() {
     y += paymentTermLines.length * 10 + 6;
 
     const finalPaymentLinkUrl = normalizeClickableUrl(paymentLinkUrl || q.paymentLinkUrl || "");
-    const paymentLinkRaw = `Payment Link: ${finalPaymentLinkUrl || "Not available"}`;
-    const paymentLinkLines = doc.splitTextToSize(paymentLinkRaw, contentW);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(finalPaymentLinkUrl ? 37 : 75, finalPaymentLinkUrl ? 99 : 85, finalPaymentLinkUrl ? 235 : 99);
-    doc.text(paymentLinkLines, margin, y);
     if (finalPaymentLinkUrl) {
-      doc.link(margin, y - 8, contentW, paymentLinkLines.length * 10 + 6, {
-        url: finalPaymentLinkUrl,
-      });
+      const btnW = 90;
+      const btnH = 20;
+      doc.setFillColor(37, 99, 235);
+      doc.roundedRect(margin, y, btnW, btnH, 3, 3, "F");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Pay Online Now", margin + 12, y + 12.5);
+      
+      doc.link(margin, y, btnW, btnH, { url: finalPaymentLinkUrl });
+      doc.setTextColor(75, 85, 99);
+      y += btnH + 12;
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(107, 114, 128);
+      doc.text("Payment Link: Not available", margin, y);
+      doc.setTextColor(75, 85, 99);
+      y += 12;
     }
-    doc.setTextColor(75, 85, 99);
-
-    y += paymentLinkLines.length * 10 + 10;
 
     if (finalPaymentLinkUrl) {
       try {
