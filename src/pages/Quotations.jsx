@@ -103,6 +103,7 @@ export default function Quotations() {
   const [quotationTab, setQuotationTab] = useState("all");
   const [quotationSearch, setQuotationSearch] = useState("");
 
+  const [selectedFirm, setSelectedFirm] = useState("firm1");
   const [selectedId, setSelectedId] = useState("");
   const [form, setForm] = useState(null);
   const [editorView, setEditorView] = useState("edit");
@@ -135,15 +136,15 @@ export default function Quotations() {
   }, []);
 
   useEffect(() => {
-    fetchQuotations(quotationPage, quotationTab);
-  }, [quotationPage, quotationTab]);
+    fetchQuotations(quotationPage, quotationTab, selectedFirm);
+  }, [quotationPage, quotationTab, selectedFirm]);
 
   useEffect(() => {
     const openQuotationId = location.state?.openQuotationId;
     if (!openQuotationId) return;
 
     const openFromRedirect = async () => {
-      await fetchQuotations(1, quotationTab);
+      await fetchQuotations(1, quotationTab, selectedFirm);
       await openQuotation(openQuotationId);
       if (location.state?.notice) {
         setMessage(location.state.notice);
@@ -245,9 +246,9 @@ export default function Quotations() {
     }
   }
 
-  async function fetchQuotations(page, tab = "all") {
+  async function fetchQuotations(page, tab = "all", firm = selectedFirm) {
     try {
-      const params = new URLSearchParams({ page: String(page) });
+      const params = new URLSearchParams({ page: String(page), firmKey: firm });
       if (tab === "paid") {
         params.set("status", "paid");
       } else if (tab === "gst") {
@@ -270,8 +271,11 @@ export default function Quotations() {
     setError("");
     setMessage("");
     try {
-      const res = await API.post(`/quotations/from-reminder/${reminderId}`, { quotationType });
-      await fetchQuotations(1);
+      const res = await API.post(`/quotations/from-reminder/${reminderId}`, { 
+        quotationType,
+        firmKey: selectedFirm
+      });
+      await fetchQuotations(1, quotationTab, selectedFirm);
       await openQuotation(res.data.quotation._id);
       setMessage("Quotation draft created. Please edit and save before download/send.");
     } catch (err) {
@@ -830,6 +834,44 @@ export default function Quotations() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Create quotation from reminder, manually edit, review, then download PDF or send email.
           </p>
+        </div>
+
+        {/* 🏢 FIRM SELECTOR TABS */}
+        <div className="flex border-b border-indigo-100 dark:border-indigo-900/40">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedFirm("firm1");
+              setQuotationPage(1);
+              setSelectedId("");
+              setForm(null);
+              setPreviewHtml("");
+            }}
+            className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
+              selectedFirm === "firm1"
+                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            Lemonade Software Developers
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedFirm("firm2");
+              setQuotationPage(1);
+              setSelectedId("");
+              setForm(null);
+              setPreviewHtml("");
+            }}
+            className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
+              selectedFirm === "firm2"
+                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            Orange Tech Solutions
+          </button>
         </div>
 
         <div ref={alertAnchorRef} />
