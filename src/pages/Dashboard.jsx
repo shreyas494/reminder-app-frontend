@@ -78,6 +78,7 @@ export default function Dashboard() {
   };
 
   const getStatusLabel = (r) => {
+    if (r.status === "cancelled") return { text: "Cancelled", color: "gray" };
     const end = getExpiry(r);
 
     if (end.isBefore(dayjs())) return { text: "Expired", color: "red" };
@@ -281,6 +282,29 @@ export default function Dashboard() {
                                 setShowModal(true);
                               }}
                             />
+                            {r.status !== "cancelled" ? (
+                              <ActionButton
+                                color="gray"
+                                label="Cancel"
+                                onClick={async () => {
+                                  if (!window.confirm("Cancel this subscription reminders?")) return;
+                                  await API.post(`/reminders/${r._id}/cancel`);
+                                  fetchReminders(page);
+                                }}
+                              />
+                            ) : (
+                              !dayjs(r.expiryDate).isBefore(dayjs()) && (
+                                <ActionButton
+                                  color="green"
+                                  label="Reactivate"
+                                  onClick={async () => {
+                                    if (!window.confirm("Reactivate this subscription reminders?")) return;
+                                    await API.post(`/reminders/${r._id}/reactivate`);
+                                    fetchReminders(page);
+                                  }}
+                                />
+                              )
+                            )}
                             <ActionButton
                               color="red"
                               label="Delete"
@@ -355,6 +379,7 @@ function Badge({ children, color }) {
     green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 ring-1 ring-emerald-600/10",
     red: "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 ring-1 ring-rose-600/10",
     blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 ring-1 ring-blue-600/10",
+    gray: "bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 ring-1 ring-slate-600/10",
   };
 
   return (
@@ -369,6 +394,8 @@ function ActionButton({ onClick, color, label }) {
     blue: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 ring-1 ring-blue-200/70 dark:ring-blue-800/50",
     amber: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 ring-1 ring-amber-200/70 dark:ring-amber-800/50",
     red: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 ring-1 ring-rose-200/70 dark:ring-rose-800/50",
+    gray: "text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/20 hover:bg-slate-100 dark:hover:bg-slate-900/40 ring-1 ring-slate-200/70 dark:ring-slate-800/50",
+    green: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 ring-1 ring-emerald-200/70 dark:ring-emerald-800/50",
   };
 
   return (
