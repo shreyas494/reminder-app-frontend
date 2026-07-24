@@ -11,8 +11,8 @@ export const APP_ROUTES = {
 };
 
 export const SIDEBAR_BASE_NAV_ITEMS = [
+  { label: "Dashboard", to: APP_ROUTES.nearExpiry },
   { label: "Subscriptions", to: APP_ROUTES.dashboard },
-  { label: "Near Expiry", to: APP_ROUTES.nearExpiry },
   { label: "Quotations", to: APP_ROUTES.quotations },
   { label: "Bills", to: APP_ROUTES.bills },
   { label: "Services", to: APP_ROUTES.services },

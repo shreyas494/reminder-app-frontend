@@ -162,7 +162,7 @@ export default function NearExpiry() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              Near Expiry Subscriptions
+              Dashboard
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
               Subscriptions expiring in the next 30 days
