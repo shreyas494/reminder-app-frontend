@@ -853,41 +853,12 @@ export default function Quotations() {
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Quotations</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Create quotation from reminder, manually edit, review, then download PDF or send email.
-          </p>
-        </div>
-
-        {/* 🏢 FIRM SELECTOR TABS */}
-        <div className="flex border-b border-indigo-100 dark:border-indigo-900/40">
-          <button
-            type="button"
-            onClick={() => {
-              setSearchParams({ firm: "firm1" });
-              setQuotationPage(1);
-            }}
-            className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
-              selectedFirm === "firm1"
-                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
-          >
-            Lemonade Software Developers
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSearchParams({ firm: "firm2" });
-              setQuotationPage(1);
-            }}
-            className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
-              selectedFirm === "firm2"
-                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
-          >
-            Orange Tech Solutions
-          </button>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing Firm:</span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+              {selectedFirm === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}
+            </span>
+          </div>
         </div>
 
         <div ref={alertAnchorRef} />
