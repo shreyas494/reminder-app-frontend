@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import dayjs from "dayjs";
 import API from "../services/api";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
 const FIXED_LOGO_URL = "https://reminder-app-backend-aaac.onrender.com/assets/company-logo.png";
@@ -108,6 +108,20 @@ export default function Quotations() {
   const [form, setForm] = useState(null);
   const [editorView, setEditorView] = useState("edit");
   const [previewHtml, setPreviewHtml] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryFirm = searchParams.get("firm");
+
+  useEffect(() => {
+    if (queryFirm === "firm1" || queryFirm === "firm2") {
+      setSelectedFirm(queryFirm);
+      setSelectedId("");
+      setForm(null);
+      setPreviewHtml("");
+    } else if (!queryFirm) {
+      setSearchParams({ firm: "firm1" }, { replace: true });
+    }
+  }, [queryFirm, setSearchParams]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -849,11 +863,8 @@ export default function Quotations() {
           <button
             type="button"
             onClick={() => {
-              setSelectedFirm("firm1");
+              setSearchParams({ firm: "firm1" });
               setQuotationPage(1);
-              setSelectedId("");
-              setForm(null);
-              setPreviewHtml("");
             }}
             className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
               selectedFirm === "firm1"
@@ -866,11 +877,8 @@ export default function Quotations() {
           <button
             type="button"
             onClick={() => {
-              setSelectedFirm("firm2");
+              setSearchParams({ firm: "firm2" });
               setQuotationPage(1);
-              setSelectedId("");
-              setForm(null);
-              setPreviewHtml("");
             }}
             className={`px-6 py-3 text-sm font-bold tracking-wide border-b-2 transition-all ${
               selectedFirm === "firm2"

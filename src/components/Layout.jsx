@@ -9,6 +9,61 @@ import {
   SIDEBAR_SUPERADMIN_NAV_ITEMS,
 } from "../constants/routes";
 
+function QuotationsSidebarItem({ item, currentPath, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const active = currentPath === item.to;
+
+  const handleSelectFirm = (firmKey) => {
+    onSelect();
+    setOpen(false);
+    navigate(`/quotations?firm=${firmKey}`);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          active
+            ? "bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
+            : "text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
+        }`}
+      >
+        <span>{item.label}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="pl-4 mt-1 space-y-1">
+          <button
+            type="button"
+            onClick={() => handleSelectFirm("firm1")}
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Lemonade Software Developers
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectFirm("firm2")}
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Orange Tech Solutions
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -110,6 +165,16 @@ export default function Layout() {
           <div className="h-full flex flex-col p-4">
             <nav className="space-y-1">
               {navItems.map((item) => {
+                if (item.label === "Quotations") {
+                  return (
+                    <QuotationsSidebarItem
+                      key={item.to}
+                      item={item}
+                      currentPath={location.pathname}
+                      onSelect={() => setSidebarOpen(false)}
+                    />
+                  );
+                }
                 const active = location.pathname === item.to;
                 return (
                   <Link
