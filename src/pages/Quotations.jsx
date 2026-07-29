@@ -1084,7 +1084,7 @@ export default function Quotations() {
                       onClick={() => setEditorView("static")}
                       className={`px-3 py-1.5 text-xs font-semibold ${editorView === "static" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
                     >
-                      Static Info
+                      Client Info
                     </button>
                     <button
                       type="button"
