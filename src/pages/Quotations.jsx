@@ -114,10 +114,14 @@ export default function Quotations() {
 
   useEffect(() => {
     if (queryFirm === "firm1" || queryFirm === "firm2") {
-      setSelectedFirm(queryFirm);
-      setSelectedId("");
-      setForm(null);
-      setPreviewHtml("");
+      setSelectedFirm((prev) => {
+        if (prev !== queryFirm) {
+          setSelectedId("");
+          setForm(null);
+          setPreviewHtml("");
+        }
+        return queryFirm;
+      });
     } else if (!queryFirm) {
       setSearchParams({ firm: "firm1" }, { replace: true });
     }

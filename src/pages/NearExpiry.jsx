@@ -125,7 +125,7 @@ export default function NearExpiry() {
       const res = await API.post(`/quotations/from-reminder/${r._id}`, {
         quotationType: "with-gst",
       });
-      navigate("/quotations", {
+      navigate("/quotations?firm=firm1", {
         state: {
           openQuotationId: res.data?.quotation?._id,
           notice: "GST quotation draft created. You can edit and change type if needed.",
