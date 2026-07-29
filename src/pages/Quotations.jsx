@@ -165,7 +165,7 @@ export default function Quotations() {
       await fetchQuotations(1, quotationTab, selectedFirm);
       await openQuotation(openQuotationId);
       if (location.state?.notice) {
-        setMessage(location.state.notice);
+        window.alert(location.state.notice);
       }
       navigate(location.pathname, { replace: true, state: null });
     };
