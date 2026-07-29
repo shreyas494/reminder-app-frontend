@@ -179,7 +179,7 @@ export default function Quotations() {
       if (location.state?.notice) {
         window.alert(location.state.notice);
       }
-      navigate(location.pathname, { replace: true, state: null });
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
     };
 
     openFromRedirect();
