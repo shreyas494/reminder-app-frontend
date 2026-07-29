@@ -933,148 +933,10 @@ export default function Quotations() {
         </section>
 
         <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="space-y-2">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
-              <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuotationTab("all");
-                    setQuotationPage(1);
-                  }}
-                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "all" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuotationTab("paid");
-                    setQuotationPage(1);
-                  }}
-                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "paid" ? "bg-emerald-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
-                >
-                  Paid
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuotationTab("unpaid");
-                    setQuotationPage(1);
-                  }}
-                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "unpaid" ? "bg-amber-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
-                >
-                  Unpaid
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
-              <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
-              <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
-            </div>
-          </div>
-
-          <div className="max-w-sm">
-            <label className="space-y-1 block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Search quotations</span>
-              <input
-                type="text"
-                value={quotationSearch}
-                onChange={(e) => setQuotationSearch(e.target.value)}
-                placeholder="Search quotation no, client, email, status"
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
-              />
-            </label>
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
-            <table className="min-w-[880px] w-full text-sm">
-              <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
-                <tr>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Total</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Payment</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Reviewed</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Sent</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredQuotations.map((q) => (
-                  <tr
-                    key={q._id}
-                    className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === q._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
-                  >
-                    <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientName || "-"}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{q.clientEmail || "-"}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatCurrency(q.totalAmount || 0)}</td>
-                    <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : q.paymentStatus === "partial" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}>
-                        {String(q.paymentStatus || "unpaid").toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                        {q.reviewed ? "Yes" : "No"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.sent ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-700"}`}>
-                        {q.sent ? "Yes" : "No"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <IconButton
-                          label="Open quotation"
-                          title="Open"
-                          className="bg-indigo-600 text-white hover:bg-indigo-700"
-                          onClick={() => openQuotation(q._id)}
-                        >
-                          <OpenIcon />
-                        </IconButton>
-                        <IconButton
-                          label="Download quotation"
-                          title="Download"
-                          className="bg-blue-600 text-white hover:bg-blue-700"
-                          onClick={() => downloadQuotationFromList(q._id)}
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-                        <IconButton
-                          label="Email quotation"
-                          title="Email"
-                          className="bg-emerald-600 text-white hover:bg-emerald-700"
-                          onClick={() => sendQuotationFromList(q._id)}
-                        >
-                          <MailIcon />
-                        </IconButton>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredQuotations.length === 0 && (
-                  <tr>
-                    <td className="px-3 py-4 text-slate-500" colSpan={10}>No quotation records found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <Pager page={quotationPage} totalPages={quotationTotalPages} onPrev={() => setQuotationPage((p) => Math.max(1, p - 1))} onNext={() => setQuotationPage((p) => Math.min(quotationTotalPages, p + 1))} />
-        </section>
-
-        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Selected Quotation Record</h2>
           {!form ? (
             <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-sm text-slate-500">
-              Select a quotation record from the table above to edit and review.
+              Select a quotation record from the table below to edit and review.
             </div>
           ) : (
             <div className="space-y-3">
@@ -1211,6 +1073,144 @@ export default function Quotations() {
               </div>
             </div>
           )}
+        </section>
+
+        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="space-y-2">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Quotation Records</h2>
+              <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("all");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "all" ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("paid");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "paid" ? "bg-emerald-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  Paid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuotationTab("unpaid");
+                    setQuotationPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "unpaid" ? "bg-amber-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                >
+                  Unpaid
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
+              <button disabled={!form || !isReviewed || busy} onClick={downloadPdf} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-50">Download PDF</button>
+              <button disabled={!form || !isReviewed || busy} onClick={sendQuotation} className="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-50">Send Email</button>
+            </div>
+          </div>
+
+          <div className="max-w-sm">
+            <label className="space-y-1 block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Search quotations</span>
+              <input
+                type="text"
+                value={quotationSearch}
+                onChange={(e) => setQuotationSearch(e.target.value)}
+                placeholder="Search quotation no, client, email, status"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+              />
+            </label>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+            <table className="min-w-[880px] w-full text-sm">
+              <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
+                <tr>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Total</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Payment</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Reviewed</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Sent</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredQuotations.map((q) => (
+                  <tr
+                    key={q._id}
+                    className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === q._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
+                  >
+                    <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientName || "-"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{q.clientEmail || "-"}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatCurrency(q.totalAmount || 0)}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : q.paymentStatus === "partial" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}>
+                        {String(q.paymentStatus || "unpaid").toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.reviewed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        {q.reviewed ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${q.sent ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-700"}`}>
+                        {q.sent ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-1.5">
+                        <IconButton
+                          label="Open quotation"
+                          title="Open"
+                          className="bg-indigo-600 text-white hover:bg-indigo-700"
+                          onClick={() => openQuotation(q._id)}
+                        >
+                          <OpenIcon />
+                        </IconButton>
+                        <IconButton
+                          label="Download quotation"
+                          title="Download"
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          onClick={() => downloadQuotationFromList(q._id)}
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                        <IconButton
+                          label="Email quotation"
+                          title="Email"
+                          className="bg-emerald-600 text-white hover:bg-emerald-700"
+                          onClick={() => sendQuotationFromList(q._id)}
+                        >
+                          <MailIcon />
+                        </IconButton>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredQuotations.length === 0 && (
+                  <tr>
+                    <td className="px-3 py-4 text-slate-500" colSpan={10}>No quotation records found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pager page={quotationPage} totalPages={quotationTotalPages} onPrev={() => setQuotationPage((p) => Math.max(1, p - 1))} onNext={() => setQuotationPage((p) => Math.min(quotationTotalPages, p + 1))} />
         </section>
       </div>
     </div>
