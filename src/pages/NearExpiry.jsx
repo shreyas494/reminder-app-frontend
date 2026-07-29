@@ -387,7 +387,7 @@ export default function NearExpiry() {
                     setSelectFirmModal(null);
                     createQuotationForFirm(r, "firm2");
                   }}
-                  className="w-full py-3 px-4 rounded-xl text-sm font-semibold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-md hover:shadow-amber-500/20"
+                  className="w-full py-3 px-4 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-md hover:shadow-indigo-500/20"
                 >
                   Orange Tech Solutions
                 </button>

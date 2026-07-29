@@ -115,7 +115,7 @@ export default function Quotations() {
   useEffect(() => {
     if (queryFirm === "firm1" || queryFirm === "firm2") {
       setSelectedFirm((prev) => {
-        if (prev !== queryFirm) {
+        if (prev !== queryFirm && !location.state?.openQuotationId) {
           setSelectedId("");
           setForm(null);
           setPreviewHtml("");
@@ -125,7 +125,7 @@ export default function Quotations() {
     } else if (!queryFirm) {
       setSearchParams({ firm: "firm1" }, { replace: true });
     }
-  }, [queryFirm, setSearchParams]);
+  }, [queryFirm, setSearchParams, location.state]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -173,7 +173,8 @@ export default function Quotations() {
     if (!openQuotationId) return;
 
     const openFromRedirect = async () => {
-      await fetchQuotations(1, quotationTab, selectedFirm);
+      const targetFirm = queryFirm || "firm1";
+      await fetchQuotations(1, quotationTab, targetFirm);
       await openQuotation(openQuotationId);
       if (location.state?.notice) {
         window.alert(location.state.notice);
@@ -182,7 +183,7 @@ export default function Quotations() {
     };
 
     openFromRedirect();
-  }, [location.state, location.pathname, navigate]);
+  }, [location.state, location.pathname, navigate, queryFirm]);
 
   useEffect(() => {
     if (message) {
