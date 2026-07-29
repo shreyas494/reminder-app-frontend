@@ -16,6 +16,7 @@ export default function NearExpiry() {
   const [creatingQuotationId, setCreatingQuotationId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editReminder, setEditReminder] = useState(null);
+  const [selectFirmModal, setSelectFirmModal] = useState(null);
 
   // Filter states
   const [clientFilter, setClientFilter] = useState("");
@@ -119,21 +120,22 @@ export default function NearExpiry() {
     return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildReminderMessage(r))}`;
   };
 
-  const createGstQuotationAndOpen = async (r) => {
+  const createQuotationForFirm = async (r, firmKey) => {
     setCreatingQuotationId(r._id);
     try {
       const res = await API.post(`/quotations/from-reminder/${r._id}`, {
         quotationType: "with-gst",
+        firmKey: firmKey,
       });
-      navigate("/quotations?firm=firm1", {
+      navigate(`/quotations?firm=${firmKey}`, {
         state: {
           openQuotationId: res.data?.quotation?._id,
-          notice: "GST quotation draft created. You can edit and change type if needed.",
+          notice: `GST quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`,
         },
       });
     } catch (err) {
-      console.error("Failed to create GST quotation draft", err);
-      window.alert(err.response?.data?.message || "Failed to create GST quotation draft");
+      console.error("Failed to create quotation draft", err);
+      window.alert(err.response?.data?.message || "Failed to create quotation draft");
     } finally {
       setCreatingQuotationId("");
     }
@@ -308,7 +310,7 @@ export default function NearExpiry() {
 
                             <button
                               type="button"
-                              onClick={() => createGstQuotationAndOpen(r)}
+                              onClick={() => setSelectFirmModal(r)}
                               disabled={creatingQuotationId === r._id}
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${creatingQuotationId === r._id ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200"}`}
                               title="Open Quotations"
@@ -355,6 +357,50 @@ export default function NearExpiry() {
               setEditReminder(null);
             }}
           />
+        )}
+
+        {selectFirmModal && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#111827] shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white text-center">
+                Select Firm for Quotation
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                Choose which firm you want to create this quotation for.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const r = selectFirmModal;
+                    setSelectFirmModal(null);
+                    createQuotationForFirm(r, "firm1");
+                  }}
+                  className="w-full py-3 px-4 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-md hover:shadow-indigo-500/20"
+                >
+                  Lemonade Software Developers
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const r = selectFirmModal;
+                    setSelectFirmModal(null);
+                    createQuotationForFirm(r, "firm2");
+                  }}
+                  className="w-full py-3 px-4 rounded-xl text-sm font-semibold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-md hover:shadow-amber-500/20"
+                >
+                  Orange Tech Solutions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectFirmModal(null)}
+                  className="w-full py-2.5 px-4 mt-2 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
