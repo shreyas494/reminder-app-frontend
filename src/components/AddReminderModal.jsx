@@ -40,6 +40,13 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (error) {
+      window.alert(error);
+      setError("");
+    }
+  }, [error]);
+
   /* ================= FETCH SERVICE TYPES ================= */
   useEffect(() => {
     async function loadServiceTypes() {
