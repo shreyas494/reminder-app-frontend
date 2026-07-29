@@ -136,9 +136,20 @@ export default function Quotations() {
 
   const isReviewed = Boolean(form?.reviewed);
 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   useEffect(() => {
-    fetchReminders(reminderPage);
-  }, [reminderPage]);
+    const delayDebounce = setTimeout(() => {
+      setDebouncedSearch(reminderSearch);
+      setReminderPage(1);
+    }, 400);
+
+    return () => clearTimeout(delayDebounce);
+  }, [reminderSearch]);
+
+  useEffect(() => {
+    fetchReminders(reminderPage, debouncedSearch);
+  }, [reminderPage, debouncedSearch]);
 
   useEffect(() => {
     async function fetchServiceTypes() {
@@ -195,25 +206,7 @@ export default function Quotations() {
     return { gstAmount, totalAmount: amount + gstAmount };
   }, [form]);
 
-  const filteredReminders = useMemo(() => {
-    const term = reminderSearch.trim().toLowerCase();
-    if (!term) return reminders;
-    return reminders.filter((r) => {
-      const haystack = [
-        r.clientName,
-        r.projectName,
-        r.domainName,
-        r.email,
-        r.mobile1,
-        r.mobile2,
-        r.serviceType,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(term);
-    });
-  }, [reminders, reminderSearch]);
+  const filteredReminders = reminders;
 
   const filteredQuotations = useMemo(() => {
     const term = quotationSearch.trim().toLowerCase();
@@ -261,9 +254,13 @@ export default function Quotations() {
       FIXED_LOGO_URL,
   });
 
-  async function fetchReminders(page) {
+  async function fetchReminders(page, search = "") {
     try {
-      const res = await API.get(`/reminders?page=${page}`);
+      const params = new URLSearchParams({ page: String(page) });
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+      const res = await API.get(`/reminders?${params.toString()}`);
       setReminders(res.data.data || []);
       setReminderPage(res.data.page || 1);
       setReminderTotalPages(res.data.totalPages || 1);
