@@ -265,10 +265,8 @@ export default function Quotations() {
       const params = new URLSearchParams({ page: String(page), firmKey: firm });
       if (tab === "paid") {
         params.set("status", "paid");
-      } else if (tab === "gst") {
-        params.set("quotationType", "with-gst");
-      } else if (tab === "non-gst") {
-        params.set("quotationType", "without-gst");
+      } else if (tab === "unpaid") {
+        params.set("status", "unpaid");
       }
 
       const res = await API.get(`/quotations?${params.toString()}`);
@@ -955,22 +953,12 @@ export default function Quotations() {
                 <button
                   type="button"
                   onClick={() => {
-                    setQuotationTab("gst");
+                    setQuotationTab("unpaid");
                     setQuotationPage(1);
                   }}
-                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "gst" ? "bg-amber-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
+                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "unpaid" ? "bg-amber-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
                 >
-                  GST
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuotationTab("non-gst");
-                    setQuotationPage(1);
-                  }}
-                  className={`px-3 py-1.5 text-xs font-semibold ${quotationTab === "non-gst" ? "bg-slate-700 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
-                >
-                  Non-GST
+                  Unpaid
                 </button>
               </div>
             </div>
