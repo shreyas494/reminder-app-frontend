@@ -256,7 +256,7 @@ export default function Bills() {
         }, 120);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load bill");
+      window.alert(err.response?.data?.message || "Failed to load bill");
     } finally {
       setBusy(false);
     }
@@ -274,11 +274,11 @@ export default function Bills() {
       const activeBillId = saveRes?.data?._id || form._id;
 
       await openBill(activeBillId, { scrollToPreview: false });
-      await fetchBills(billPage);
+      await fetchBills(billPage, selectedFirm);
       setIsPreviewOpen(false);
-      setMessage("Bill saved successfully.");
+      window.alert("Bill saved successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save bill");
+      window.alert(err.response?.data?.message || "Failed to save bill");
     } finally {
       setBusy(false);
     }
@@ -299,11 +299,11 @@ export default function Bills() {
 
       await API.post(`/bills/${form._id}/send`, { pdfBase64 });
 
-      await fetchBills(billPage);
+      await fetchBills(billPage, selectedFirm);
       await openBill(form._id, { scrollToPreview: false });
-      setMessage("Bill sent successfully.");
+      window.alert("Bill sent successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send bill");
+      window.alert(err.response?.data?.message || "Failed to send bill");
     } finally {
       setBusy(false);
     }
@@ -322,11 +322,11 @@ export default function Bills() {
       const doc = await buildPdfDocument();
       doc.save(`${form.billNumber || "bill"}.pdf`);
 
-      await fetchBills(billPage);
+      await fetchBills(billPage, selectedFirm);
       await openBill(form._id, { scrollToPreview: false });
-      setMessage("Bill downloaded successfully.");
+      window.alert("Bill downloaded successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to download bill");
+      window.alert(err.response?.data?.message || "Failed to download bill");
     } finally {
       setBusy(false);
     }
