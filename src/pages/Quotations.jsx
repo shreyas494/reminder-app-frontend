@@ -1042,7 +1042,7 @@ export default function Quotations() {
                       value={form.recipientName || ""}
                       onChange={(v) => setForm({ ...form, recipientName: v })}
                     />
-                    <Input label="Amount" type="number" value={form.amount ?? 0} readOnly />
+                    <Input label="Amount" type="number" value={form.amount ?? 0} onChange={(v) => setForm({ ...form, amount: v })} />
 
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
                       {form.quotationType === "with-gst" && (
