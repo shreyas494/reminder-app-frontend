@@ -128,10 +128,13 @@ export default function NearExpiry() {
         quotationType: quotationType,
         firmKey: firmKey,
       });
+      const noticeText = res.data?.isExisting
+        ? `Existing quotation loaded for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`
+        : `${firmKey === "firm2" ? "Non-GST" : "GST"} quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`;
       navigate(`/quotations?firm=${firmKey}`, {
         state: {
           openQuotationId: res.data?.quotation?._id,
-          notice: `${firmKey === "firm2" ? "Non-GST" : "GST"} quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`,
+          notice: noticeText,
         },
       });
     } catch (err) {

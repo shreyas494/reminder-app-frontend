@@ -300,7 +300,11 @@ export default function Quotations() {
       });
       await fetchQuotations(1, quotationTab, selectedFirm);
       await openQuotation(res.data.quotation._id);
-      setMessage("Quotation draft created. Please edit and save before download/send.");
+      if (res.data?.isExisting) {
+        setMessage("Existing quotation loaded for this firm.");
+      } else {
+        setMessage("Quotation draft created. Please edit and save before download/send.");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create quotation");
     } finally {
