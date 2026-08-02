@@ -115,7 +115,7 @@ export default function Quotations() {
   useEffect(() => {
     if (queryFirm === "firm1" || queryFirm === "firm2") {
       setSelectedFirm((prev) => {
-        if (prev !== queryFirm && !location.state?.openQuotationId) {
+        if (prev !== queryFirm) {
           setSelectedId("");
           setForm(null);
           setPreviewHtml("");
@@ -125,7 +125,7 @@ export default function Quotations() {
     } else if (!queryFirm) {
       setSearchParams({ firm: "firm1" }, { replace: true });
     }
-  }, [queryFirm, setSearchParams, location.state]);
+  }, [queryFirm, setSearchParams]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -169,21 +169,19 @@ export default function Quotations() {
   }, [quotationPage, quotationTab, selectedFirm]);
 
   useEffect(() => {
-    const openQuotationId = location.state?.openQuotationId;
-    if (!openQuotationId) return;
+    if (!location.state?.notice && !location.state?.savedQuotationId && !location.state?.openQuotationId) return;
 
-    const openFromRedirect = async () => {
+    const handleRedirect = async () => {
       const targetFirm = queryFirm || "firm1";
       await fetchQuotations(1, quotationTab, targetFirm);
-      await openQuotation(openQuotationId);
       if (location.state?.notice) {
         window.alert(location.state.notice);
       }
       navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
     };
 
-    openFromRedirect();
-  }, [location.state, location.pathname, navigate, queryFirm]);
+    handleRedirect();
+  }, [location.state, location.pathname, location.search, navigate, queryFirm, quotationTab]);
 
   useEffect(() => {
     if (message) {
@@ -299,11 +297,10 @@ export default function Quotations() {
         firmKey: selectedFirm
       });
       await fetchQuotations(1, quotationTab, selectedFirm);
-      await openQuotation(res.data.quotation._id);
       if (res.data?.isExisting) {
-        setMessage("Existing quotation loaded for this firm.");
+        window.alert("Existing quotation record found for this firm. Click 'Open' under Actions in Quotation Records below to view/edit.");
       } else {
-        setMessage("Quotation draft created. Please edit and save before download/send.");
+        window.alert("Quotation record created and saved for this firm. Click 'Open' under Actions in Quotation Records below to view/edit.");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create quotation");

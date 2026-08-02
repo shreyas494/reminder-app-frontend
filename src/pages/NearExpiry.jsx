@@ -128,12 +128,13 @@ export default function NearExpiry() {
         quotationType: quotationType,
         firmKey: firmKey,
       });
+      const firmName = firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers";
       const noticeText = res.data?.isExisting
-        ? `Existing quotation loaded for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`
-        : `${firmKey === "firm2" ? "Non-GST" : "GST"} quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`;
+        ? `Existing quotation record found for ${firmName}. Click 'Open' under Actions in Quotation Records to view/edit.`
+        : `Quotation record saved for ${firmName}. Click 'Open' under Actions in Quotation Records to view/edit.`;
       navigate(`/quotations?firm=${firmKey}`, {
         state: {
-          openQuotationId: res.data?.quotation?._id,
+          savedQuotationId: res.data?.quotation?._id,
           notice: noticeText,
         },
       });
