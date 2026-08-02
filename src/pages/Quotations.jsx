@@ -400,6 +400,26 @@ export default function Quotations() {
     }
   }
 
+  async function generateBillFromQuotation(quotation) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await API.post(`/bills/from-quotation/${quotation._id}`);
+      const firmName = quotation.firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers";
+      if (res.data?.isExisting) {
+        window.alert(`Bill record already exists for this quotation (${firmName}). Redirecting to Bills page.`);
+      } else {
+        window.alert(`Bill record generated successfully for ${firmName}. Redirecting to Bills page.`);
+      }
+      navigate(`/bills?firm=${quotation.firmKey || selectedFirm}`);
+    } catch (err) {
+      window.alert(err.response?.data?.message || "Failed to generate bill from quotation");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function openQuotation(id, options = {}) {
     const shouldScrollToPreview = options.scrollToPreview !== false;
     setBusy(true);
@@ -1191,6 +1211,14 @@ export default function Quotations() {
                         >
                           <MailIcon />
                         </IconButton>
+                        <IconButton
+                          label="Generate Bill"
+                          title="Generate Bill"
+                          className="bg-purple-600 text-white hover:bg-purple-700"
+                          onClick={() => generateBillFromQuotation(q)}
+                        >
+                          <BillIcon />
+                        </IconButton>
                       </div>
                     </td>
                   </tr>
@@ -1292,6 +1320,18 @@ function MailIcon() {
     <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <path d="M3 7l9 6 9-6" />
+    </svg>
+  );
+}
+
+function BillIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+      <path d="M10 9H8" />
     </svg>
   );
 }
