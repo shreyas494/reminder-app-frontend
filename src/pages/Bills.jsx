@@ -738,7 +738,7 @@ export default function Bills() {
                       onClick={saveBill}
                       className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
                     >
-                      Save Manual Edits (Required)
+                      Save
                     </button>
                   </>
                 ) : (
@@ -761,7 +761,7 @@ export default function Bills() {
                       onClick={saveBill}
                       className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
                     >
-                      Save Manual Edits (Required)
+                      Save
                     </button>
                   </>
                 )}
