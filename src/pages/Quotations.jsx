@@ -862,7 +862,7 @@ export default function Quotations() {
     <div className="min-h-[calc(100vh-64px)] px-3 sm:px-6 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Quotations</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Quotations</h1>
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing Firm:</span>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
