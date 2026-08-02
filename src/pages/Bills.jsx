@@ -109,10 +109,18 @@ export default function Bills() {
   }, [location.state, location.pathname, location.search, navigate, queryFirm]);
 
   useEffect(() => {
-    if (!message && !error) return;
-    if (!alertAnchorRef.current) return;
-    alertAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [message, error]);
+    if (message) {
+      window.alert(message);
+      setMessage("");
+    }
+  }, [message]);
+
+  useEffect(() => {
+    if (error) {
+      window.alert(error);
+      setError("");
+    }
+  }, [error]);
 
   const totals = useMemo(() => {
     if (!form) return { gstAmount: 0, totalAmount: 0 };
@@ -593,9 +601,6 @@ export default function Bills() {
         </div>
 
         <div ref={alertAnchorRef} />
-
-        {error && <div className="rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-600 text-sm">{error}</div>}
-        {message && <div className="rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{message}</div>}
 
         <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-white/85 dark:bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Paid Clients (Generate Bill)</h2>
