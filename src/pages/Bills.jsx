@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import dayjs from "dayjs";
 import API from "../services/api";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const FIXED_LOGO_STORAGE_KEY = "fixedQuotationLogo";
 const FIXED_LOGO_URL = "https://reminder-app-backend-aaac.onrender.com/assets/company-logo.png";
@@ -39,6 +40,12 @@ async function toDataUrl(imageUrl) {
 }
 
 export default function Bills() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryFirm = searchParams.get("firm");
+  const [selectedFirm, setSelectedFirm] = useState("firm1");
+
   const [paidQuotations, setPaidQuotations] = useState([]);
   const [paidPage, setPaidPage] = useState(1);
   const [paidTotalPages, setPaidTotalPages] = useState(1);
@@ -64,12 +71,42 @@ export default function Bills() {
   const isReviewed = Boolean(form?.reviewed);
 
   useEffect(() => {
+    if (queryFirm === "firm1" || queryFirm === "firm2") {
+      setSelectedFirm((prev) => {
+        if (prev !== queryFirm) {
+          setSelectedId("");
+          setForm(null);
+          setPreviewHtml("");
+        }
+        return queryFirm;
+      });
+    } else if (!queryFirm) {
+      setSearchParams({ firm: "firm1" }, { replace: true });
+    }
+  }, [queryFirm, setSearchParams]);
+
+  useEffect(() => {
     fetchPaidQuotations(paidPage);
   }, [paidPage]);
 
   useEffect(() => {
-    fetchBills(billPage);
-  }, [billPage]);
+    fetchBills(billPage, selectedFirm);
+  }, [billPage, selectedFirm]);
+
+  useEffect(() => {
+    if (!location.state?.notice && !location.state?.savedBillId) return;
+
+    const handleRedirect = async () => {
+      const targetFirm = queryFirm || "firm1";
+      await fetchBills(1, targetFirm);
+      if (location.state?.notice) {
+        window.alert(location.state.notice);
+      }
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    };
+
+    handleRedirect();
+  }, [location.state, location.pathname, location.search, navigate, queryFirm]);
 
   useEffect(() => {
     if (!message && !error) return;
@@ -157,14 +194,14 @@ export default function Bills() {
     }
   }
 
-  async function fetchBills(page) {
+  async function fetchBills(page, firmKey = selectedFirm) {
     try {
-      const res = await API.get(`/bills?page=${page}`);
+      const res = await API.get(`/bills?page=${page}&firmKey=${firmKey}`);
       setBills(res.data.data || []);
       setBillPage(res.data.page || 1);
       setBillTotalPages(res.data.totalPages || 1);
     } catch {
-      setError("Failed to load bills");
+      window.alert("Failed to load bills");
     }
   }
 
@@ -174,11 +211,14 @@ export default function Bills() {
     setMessage("");
     try {
       const res = await API.post(`/bills/from-quotation/${quotationId}`);
-      await fetchBills(1);
-      await openBill(res.data._id);
-      setMessage("Bill draft created. Please edit and save before download/send.");
+      await fetchBills(1, selectedFirm);
+      if (res.data?.isExisting) {
+        window.alert("Existing bill record found for this firm. Click 'Open' under Actions in Bill Records below to view/edit.");
+      } else {
+        window.alert("Bill record created and saved for this firm. Click 'Open' under Actions in Bill Records below to view/edit.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create bill");
+      window.alert(err.response?.data?.message || "Failed to create bill");
     } finally {
       setBusy(false);
     }
@@ -543,10 +583,13 @@ export default function Bills() {
     <div className="min-h-[calc(100vh-64px)] px-3 sm:px-6 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Manual Bills</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Generate bill from paid quotations, manually edit/review, then download PDF or send email.
-          </p>
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">Bills</h1>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing Firm:</span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+              {selectedFirm === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}
+            </span>
+          </div>
         </div>
 
         <div ref={alertAnchorRef} />
@@ -633,8 +676,8 @@ export default function Bills() {
               <thead className="bg-indigo-50/70 dark:bg-indigo-950/30">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Bill No</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Date Created</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Total</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Status</th>
@@ -650,8 +693,8 @@ export default function Bills() {
                     className={`border-t border-slate-200 dark:border-slate-700 ${selectedId === b._id ? "bg-indigo-50/60 dark:bg-indigo-900/20" : ""}`}
                   >
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{b.billNumber}</td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{dayjs(b.createdAt || b.billDate).format("DD/MM/YYYY")}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{b.recipientName || "-"}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{b.billType === "with-gst" ? "With GST" : "Without GST"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{b.clientEmail || "-"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatCurrency(b.totalAmount || 0)}</td>
                     <td className="px-3 py-2">
@@ -670,13 +713,14 @@ export default function Bills() {
                       </span>
                     </td>
                     <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+                      <IconButton
+                        label="Open bill"
+                        title="Open"
+                        className="bg-indigo-600 text-white hover:bg-indigo-700"
                         onClick={() => openBill(b._id)}
                       >
-                        Open
-                      </button>
+                        <OpenIcon />
+                      </IconButton>
                     </td>
                   </tr>
                 ))}
@@ -837,5 +881,29 @@ function Pager({ page, totalPages, onPrev, onNext }) {
         Next
       </button>
     </div>
+  );
+}
+
+function IconButton({ children, label, title, className, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={label}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function OpenIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]" aria-hidden="true">
+      <path d="M14 3h7v7" />
+      <path d="M10 14L21 3" />
+      <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+    </svg>
   );
 }
