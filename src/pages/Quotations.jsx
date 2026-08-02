@@ -408,7 +408,7 @@ export default function Quotations() {
       const res = await API.post(`/bills/from-quotation/${quotation._id}`);
       const firmName = quotation.firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers";
       if (res.data?.isExisting) {
-        window.alert(`Bill record already exists for this quotation (${firmName}). Redirecting to Bills page.`);
+        window.alert(`Bill updated with latest quotation details for ${firmName}. Redirecting to Bills page.`);
       } else {
         window.alert(`Bill record generated successfully for ${firmName}. Redirecting to Bills page.`);
       }
