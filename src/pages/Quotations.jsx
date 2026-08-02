@@ -293,8 +293,9 @@ export default function Quotations() {
     setError("");
     setMessage("");
     try {
+      const targetQuotationType = quotationType || (selectedFirm === "firm2" ? "without-gst" : "with-gst");
       const res = await API.post(`/quotations/from-reminder/${reminderId}`, { 
-        quotationType,
+        quotationType: targetQuotationType,
         firmKey: selectedFirm
       });
       await fetchQuotations(1, quotationTab, selectedFirm);
@@ -902,22 +903,13 @@ export default function Quotations() {
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{r.projectName}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{r.email || "No email"}</td>
                     <td className="px-3 py-2">
-                      <div className="flex gap-2">
-                        <button
-                          disabled={busy}
-                          onClick={() => createQuotation(r._id, "with-gst")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
-                        >
-                          Create GST
-                        </button>
-                        <button
-                          disabled={busy}
-                          onClick={() => createQuotation(r._id, "without-gst")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-60"
-                        >
-                          Create Non-GST
-                        </button>
-                      </div>
+                      <button
+                        disabled={busy}
+                        onClick={() => createQuotation(r._id)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                      >
+                        Create Quotation
+                      </button>
                     </td>
                   </tr>
                 ))}

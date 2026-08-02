@@ -123,14 +123,15 @@ export default function NearExpiry() {
   const createQuotationForFirm = async (r, firmKey) => {
     setCreatingQuotationId(r._id);
     try {
+      const quotationType = firmKey === "firm2" ? "without-gst" : "with-gst";
       const res = await API.post(`/quotations/from-reminder/${r._id}`, {
-        quotationType: "with-gst",
+        quotationType: quotationType,
         firmKey: firmKey,
       });
       navigate(`/quotations?firm=${firmKey}`, {
         state: {
           openQuotationId: res.data?.quotation?._id,
-          notice: `GST quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`,
+          notice: `${firmKey === "firm2" ? "Non-GST" : "GST"} quotation draft created for ${firmKey === "firm2" ? "Orange Tech Solutions" : "Lemonade Software Developers"}.`,
         },
       });
     } catch (err) {
