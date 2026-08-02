@@ -1131,7 +1131,6 @@ export default function Quotations() {
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Quotation No</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Date Created</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Client</th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Email</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Total</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-600">Payment</th>
@@ -1149,7 +1148,6 @@ export default function Quotations() {
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100">{q.quotationNumber}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{dayjs(q.createdAt || q.quotationDate).format("DD/MM/YYYY")}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.recipientName || "-"}</td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{q.quotationType === "with-gst" ? "With GST" : "Without GST"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300 break-all">{q.clientEmail || "-"}</td>
                     <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatCurrency(q.totalAmount || 0)}</td>
                     <td className="px-3 py-2">
