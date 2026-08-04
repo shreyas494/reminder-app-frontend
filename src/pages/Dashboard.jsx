@@ -131,7 +131,7 @@ export default function Dashboard() {
                        text-white font-semibold text-sm shadow-sm
                        transition-all duration-200"
           >
-            New Reminder
+            New Subscription
           </button>
         </div>
 

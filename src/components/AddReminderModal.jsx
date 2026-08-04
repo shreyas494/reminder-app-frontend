@@ -170,7 +170,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       if (
         !form.clientName ||
         !form.mobile1 ||
-        !form.email ||
         !form.projectName ||
         !form.serviceType ||
         form.amount === "" ||
@@ -303,7 +302,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 <Input label="Mobile No 2 (Optional)" value={form.mobile2}
                   onChange={(v) => setForm({ ...form, mobile2: v })} />
 
-                <Input label="Email" required type="email" value={form.email}
+                <Input label="Email (Optional)" type="email" value={form.email}
                   onChange={(v) => setForm({ ...form, email: v })} />
 
                 <label className="space-y-1 block">
