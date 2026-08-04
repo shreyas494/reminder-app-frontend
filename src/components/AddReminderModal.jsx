@@ -505,7 +505,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     ? "bg-amber-500 hover:bg-amber-600"
                     : "bg-indigo-600 hover:bg-indigo-700"
                 }`}>
-                {isRenewMode ? "Confirm Renewal" : isEdit ? "Update Reminder" : "Save Reminder"}
+                {isRenewMode ? "Confirm Renewal" : isEdit ? "Update Subscription" : "Save Subscription"}
               </button>
             </div>
 
