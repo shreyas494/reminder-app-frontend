@@ -211,6 +211,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         email: form.email,
         projectName: form.projectName,
         serviceType: form.serviceType,
+        domainProvider: form.domainProvider,
+        hostingProvider: form.hostingProvider,
         domainName: form.domainName || undefined,
         amount:
           form.amount !== "" && form.amount !== null
