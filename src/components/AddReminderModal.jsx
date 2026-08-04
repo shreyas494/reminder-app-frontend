@@ -25,6 +25,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     email: "",
     projectName: "",
     serviceType: "",
+    domainProvider: "",
+    hostingProvider: "",
     domainName: "",
     activationDate: null,
     expiryDate: null,
@@ -83,6 +85,8 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
       email: existing.email || "",
       projectName: existing.projectName || "",
       serviceType: existing.serviceType || "",
+      domainProvider: existing.domainProvider || "",
+      hostingProvider: existing.hostingProvider || "",
       domainName: existing.domainName || "",
       activationDate: existing.activationDate
         ? dayjs(existing.activationDate)
@@ -327,6 +331,12 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                     ))}
                   </select>
                 </label>
+
+                <Input label="Domain Provider (Optional)" value={form.domainProvider}
+                  onChange={(v) => setForm({ ...form, domainProvider: v })} />
+
+                <Input label="Hosting Provider (Optional)" value={form.hostingProvider}
+                  onChange={(v) => setForm({ ...form, hostingProvider: v })} />
 
                 {/* SPACER */}
                 <div className="md:col-span-2 h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
