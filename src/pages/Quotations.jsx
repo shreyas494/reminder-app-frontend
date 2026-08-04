@@ -361,6 +361,29 @@ export default function Quotations() {
     }
   }
 
+  async function ensureValidClientEmail(quotationId, currentEmail, sourceObject = null) {
+    let emailToUse = currentEmail ? String(currentEmail).trim() : "";
+
+    if (!emailToUse) {
+      const inputEmail = window.prompt("Please enter recipient email address for this quotation:");
+      if (!inputEmail || !inputEmail.trim()) {
+        throw new Error("Recipient email address is required to send quotation.");
+      }
+      const trimmed = inputEmail.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmed)) {
+        throw new Error("Please enter a valid recipient email address.");
+      }
+
+      await API.put(`/quotations/${quotationId}`, { clientEmail: trimmed });
+      emailToUse = trimmed;
+      if (sourceObject) {
+        sourceObject.clientEmail = trimmed;
+      }
+    }
+    return emailToUse;
+  }
+
   async function sendQuotationFromList(id) {
     setBusy(true);
     setError("");
@@ -370,6 +393,8 @@ export default function Quotations() {
       if (!quotation.reviewed) {
         throw new Error("Manual edit/review is required before sending quotation");
       }
+
+      await ensureValidClientEmail(id, quotation.clientEmail, quotation);
 
       const paymentRes = await generatePaymentLinkForQuotation(id);
       const paymentLinkUrl = paymentRes?.data?.paymentLinkUrl || "";
@@ -484,6 +509,9 @@ export default function Quotations() {
       const saveRes = await API.put(`/quotations/${form._id}`, savePayload);
       const activeQuotationId = saveRes?.data?._id || form._id;
       const activeForm = { ...form, ...(saveRes?.data || {}), _id: activeQuotationId };
+
+      await ensureValidClientEmail(activeQuotationId, activeForm.clientEmail, activeForm);
+      setForm({ ...activeForm });
 
       let paymentRes;
       let linkError;

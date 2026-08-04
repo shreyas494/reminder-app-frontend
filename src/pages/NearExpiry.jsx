@@ -112,12 +112,38 @@ export default function NearExpiry() {
     return `https://wa.me/${phone}?text=${encodeURIComponent(buildReminderMessage(r))}`;
   };
 
-  const mailLink = (r) => {
-    if (!r.email) return "#";
+  const handleEmailAction = async (r) => {
+    let emailToUse = r.email ? String(r.email).trim() : "";
+
+    if (!emailToUse) {
+      const inputEmail = window.prompt("Please enter recipient email address:");
+      if (!inputEmail || !inputEmail.trim()) {
+        window.alert("Email address is required to send email.");
+        return;
+      }
+      const trimmed = inputEmail.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmed)) {
+        window.alert("Please enter a valid email address.");
+        return;
+      }
+
+      try {
+        await API.put(`/reminders/${r._id}`, { email: trimmed });
+        r.email = trimmed;
+        emailToUse = trimmed;
+        setReminders([...reminders]);
+      } catch (err) {
+        window.alert(err.response?.data?.message || "Failed to update email address.");
+        return;
+      }
+    }
+
     const expiryDate = dayjs(r.expiryDate);
     const isExpired = dayjs().isAfter(expiryDate) || dayjs().isSame(expiryDate);
     const subject = isExpired ? "Subscription Expired Notice" : "Subscription Expiry Notice";
-    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+    const mailUrl = `mailto:${emailToUse}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildReminderMessage(r))}`;
+    window.location.href = mailUrl;
   };
 
   const createQuotationForFirm = async (r, firmKey) => {
@@ -303,15 +329,14 @@ export default function NearExpiry() {
                               <img src={WHATSAPP_LOGO_URL} alt="WhatsApp" className="w-4 h-4" />
                             </a>
 
-                            <a
-                              href={mailLink(r)}
-                              target="_self"
-                              rel="noreferrer"
-                              className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm ${hasEmail ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 hover:bg-rose-200" : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"}`}
+                            <button
+                              type="button"
+                              onClick={() => handleEmailAction(r)}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 hover:bg-rose-200 cursor-pointer"
                               title="Send Email"
                             >
                               <img src={GMAIL_LOGO_URL} alt="Gmail" className="w-4 h-4" />
-                            </a>
+                            </button>
 
                             <button
                               type="button"
