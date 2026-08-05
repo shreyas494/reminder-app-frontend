@@ -259,7 +259,7 @@ export default function NearExpiry() {
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-700/60">
                 <tr>
-                  <Th>#</Th>
+                  <Th>Sr No</Th>
                   <Th>Client</Th>
                   <Th className="hidden md:table-cell">Contact</Th>
                   <Th>Mobile</Th>

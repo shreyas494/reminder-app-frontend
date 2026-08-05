@@ -10,6 +10,7 @@ export default function Dashboard() {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Filter states
@@ -41,7 +42,7 @@ export default function Dashboard() {
 
       const res = await API.get("/reminders", { params });
 
-      const { data, totalPages: total, page: current } = res.data;
+      const { data, totalPages: tPages, page: current, total } = res.data;
 
       // 🛡️ IF PAGE IS EMPTY & NOT FIRST PAGE, GO BACK
       if (data.length === 0 && current > 1) {
@@ -51,7 +52,8 @@ export default function Dashboard() {
 
       setReminders(data);
       setPage(current);
-      setTotalPages(Math.max(1, total)); // Ensure at least 1 page
+      setTotalPages(Math.max(1, tPages)); // Ensure at least 1 page
+      setTotalCount(total || 0);
     } catch (err) {
       console.error("Failed to fetch reminders", err);
     } finally {
@@ -194,7 +196,7 @@ export default function Dashboard() {
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm">
                 <tr>
-                  <Th>#</Th>
+                  <Th>Sr No</Th>
                   <Th>Client</Th>
                   <Th className="hidden md:table-cell">Contact</Th>
                   <Th>Mobile</Th>
@@ -242,7 +244,7 @@ export default function Dashboard() {
 
                     return (
                       <tr key={r._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-200">
-                        <Td className="font-mono text-slate-400 opacity-60">{(page - 1) * 5 + i + 1}</Td>
+                        <Td className="font-mono text-slate-400 opacity-60">{totalCount - ((page - 1) * 5 + i)}</Td>
                         <Td className="font-bold text-slate-800 dark:text-slate-200">{r.clientName}</Td>
                         <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.contactPerson}</Td>
                         <Td>
