@@ -392,6 +392,34 @@ export default function NearExpiry() {
                             >
                               ♻️
                             </button>
+
+                            {r.status !== "cancelled" ? (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!window.confirm("Cancel this subscription reminders?")) return;
+                                  await API.post(`/reminders/${r._id}/cancel`);
+                                  fetchNearExpiry(appliedClient, appliedContact, appliedProject);
+                                }}
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                title="Cancel Subscription"
+                              >
+                                🚫
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!window.confirm("Reactivate this subscription reminders?")) return;
+                                  await API.post(`/reminders/${r._id}/reactivate`);
+                                  fetchNearExpiry(appliedClient, appliedContact, appliedProject);
+                                }}
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200"
+                                title="Reactivate Subscription"
+                              >
+                                ✅
+                              </button>
+                            )}
                           </div>
                         </Td>
                       </tr>
