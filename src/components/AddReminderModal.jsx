@@ -46,7 +46,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
     // 🔁 recurring
     recurringEnabled: true,
-    recurringInterval: "daily",
+    recurringInterval: "weekly",
 
     // 🔄 renew
     renewedExpiryDate: null,
@@ -149,7 +149,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
           : "",
 
       recurringEnabled: !!existing.recurringEnabled,
-      recurringInterval: existing.recurringInterval || "daily",
+      recurringInterval: existing.recurringInterval || "weekly",
 
       renewedExpiryDate: null,
     });
