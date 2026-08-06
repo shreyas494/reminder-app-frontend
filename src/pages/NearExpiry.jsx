@@ -11,8 +11,6 @@ const GMAIL_LOGO_URL = "https://cdn.simpleicons.org/gmail/EA4335";
 export default function NearExpiry() {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [creatingQuotationId, setCreatingQuotationId] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -74,31 +72,27 @@ export default function NearExpiry() {
   ).filter((v) => v && String(v).trim());
 
   useEffect(() => {
-    fetchNearExpiry(page, appliedClient, appliedContact, appliedProject);
-  }, [page, appliedClient, appliedContact, appliedProject]);
+    fetchNearExpiry(appliedClient, appliedContact, appliedProject);
+  }, [appliedClient, appliedContact, appliedProject]);
 
   async function fetchNearExpiry(
-    pageNo = 1,
     client = appliedClient,
     contact = appliedContact,
     project = appliedProject
   ) {
     setLoading(true);
     try {
-      const params = { page: pageNo };
+      const params = {};
       if (client.trim()) params.clientName = client.trim();
       if (contact.trim()) params.contactPerson = contact.trim();
       if (project.trim()) params.projectName = project.trim();
 
       const res = await API.get("/reminders/near-expiry", { params });
-      const { data, page: current, totalPages: total } = res.data;
+      const { data } = res.data;
       setReminders(data || []);
-      setPage(current || 1);
-      setTotalPages(Math.max(1, total || 1));
     } catch (err) {
       console.error("Failed to fetch near-expiry reminders", err);
       setReminders([]);
-      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -222,7 +216,6 @@ export default function NearExpiry() {
     setAppliedClient(clientFilter);
     setAppliedContact(contactFilter);
     setAppliedProject(projectFilter);
-    setPage(1);
   };
 
   const handleClearFilters = () => {
@@ -232,7 +225,6 @@ export default function NearExpiry() {
     setAppliedClient("");
     setAppliedContact("");
     setAppliedProject("");
-    setPage(1);
   };
 
   return (
@@ -326,7 +318,7 @@ export default function NearExpiry() {
                     const callTarget = r.mobile1 || r.mobile2 || "";
                     return (
                       <tr key={r._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-200">
-                        <Td className="font-mono text-slate-400 opacity-60">{(page - 1) * 10 + i + 1}</Td>
+                        <Td className="font-mono text-slate-400 opacity-60">{i + 1}</Td>
                         <Td className="font-bold text-slate-800 dark:text-slate-200">{r.clientName}</Td>
                         <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.contactPerson}</Td>
                         <Td>
@@ -411,18 +403,10 @@ export default function NearExpiry() {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4">
-          <PaginationButton disabled={page === 1} onClick={() => setPage((p) => p - 1)} label="Previous" />
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 backdrop-blur px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            Page {page} of {totalPages}
-          </span>
-          <PaginationButton disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} label="Next" />
-        </div>
-
         {showModal && (
           <AddReminderModal
             existing={editReminder}
-            onAdded={() => fetchNearExpiry(page, appliedClient, appliedContact, appliedProject)}
+            onAdded={() => fetchNearExpiry(appliedClient, appliedContact, appliedProject)}
             onClose={() => {
               setShowModal(false);
               setEditReminder(null);
