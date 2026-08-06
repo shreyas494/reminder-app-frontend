@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import API from "../services/api";
 import dayjs from "dayjs";
+import AutocompleteInput from "./AutocompleteInput";
 
 import { useMediaQuery } from "@mui/material";
 import {
@@ -345,19 +346,19 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   Client Details
                 </div>
 
-                <Input label="Client Name" required value={form.clientName} list="clientName-list"
+                <Input label="Client Name" required value={form.clientName} options={suggestions.clientNames}
                   onChange={(v) => handleClientNameChange(v)} />
 
-                <Input label="Contact Person" value={form.contactPerson} list="contactPerson-list"
+                <Input label="Contact Person" value={form.contactPerson} options={suggestions.contactPersons}
                   onChange={(v) => setForm({ ...form, contactPerson: v })} />
 
-                <Input label="Mobile No 1" required value={form.mobile1} list="mobile1-list"
+                <Input label="Mobile No 1" required value={form.mobile1} options={suggestions.mobiles1}
                   onChange={(v) => setForm({ ...form, mobile1: v })} />
 
-                <Input label="Mobile No 2 (Optional)" value={form.mobile2} list="mobile2-list"
+                <Input label="Mobile No 2 (Optional)" value={form.mobile2} options={suggestions.mobiles2}
                   onChange={(v) => setForm({ ...form, mobile2: v })} />
 
-                <Input label="Email (Optional)" type="email" value={form.email} list="email-list"
+                <Input label="Email (Optional)" type="email" value={form.email} options={suggestions.emails}
                   onChange={(v) => setForm({ ...form, email: v })} />
 
                 <label className="space-y-1 block">
@@ -383,10 +384,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   </select>
                 </label>
 
-                <Input label="Domain Provider (Optional)" value={form.domainProvider} list="domainProvider-list"
+                <Input label="Domain Provider (Optional)" value={form.domainProvider} options={suggestions.domainProviders}
                   onChange={(v) => setForm({ ...form, domainProvider: v })} />
 
-                <Input label="Hosting Provider (Optional)" value={form.hostingProvider} list="hostingProvider-list"
+                <Input label="Hosting Provider (Optional)" value={form.hostingProvider} options={suggestions.hostingProviders}
                   onChange={(v) => setForm({ ...form, hostingProvider: v })} />
 
                 {/* SPACER */}
@@ -467,7 +468,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 )}
 
                 <div className="md:col-span-2">
-                  <Input label="Amount (₹)" required type="number" value={form.amount} list="amount-list"
+                  <Input label="Amount (₹)" required type="number" value={form.amount} options={suggestions.amounts}
                     onChange={(v) => setForm({ ...form, amount: v })} />
                 </div>
 
@@ -562,48 +563,6 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
           </form>
         </div>
-
-        {/* 💡 AUTO-COMPLETE DATALISTS */}
-        <datalist id="clientName-list">
-          {suggestions.clientNames.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="contactPerson-list">
-          {suggestions.contactPersons.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="mobile1-list">
-          {suggestions.mobiles1.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="mobile2-list">
-          {suggestions.mobiles2.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="email-list">
-          {suggestions.emails.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="domainProvider-list">
-          {suggestions.domainProviders.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="hostingProvider-list">
-          {suggestions.hostingProviders.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
-        <datalist id="amount-list">
-          {suggestions.amounts.map((val) => (
-            <option key={val} value={val} />
-          ))}
-        </datalist>
       </div>
     </div>
   );
@@ -696,7 +655,20 @@ function MobileDateInput({
  }
 
 /* ================= INPUT ================= */
-function Input({ label, required, type = "text", value, onChange, list }) {
+function Input({ label, required, type = "text", value, onChange, options = [] }) {
+  if (options && options.length > 0) {
+    return (
+      <AutocompleteInput
+        label={label}
+        required={required}
+        type={type}
+        value={value}
+        onChange={onChange}
+        options={options}
+      />
+    );
+  }
+
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
@@ -705,7 +677,6 @@ function Input({ label, required, type = "text", value, onChange, list }) {
       <input
         type={type}
         value={value}
-        list={list}
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-4 py-2.5 rounded-xl
                    bg-slate-50 dark:bg-slate-900/50

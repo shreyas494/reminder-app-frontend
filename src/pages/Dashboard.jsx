@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import dayjs from "dayjs";
 import AddReminderModal from "../components/AddReminderModal";
+import AutocompleteInput from "../components/AutocompleteInput";
 
 export default function Dashboard() {
   const [reminders, setReminders] = useState([]);
@@ -162,39 +163,27 @@ export default function Dashboard() {
         <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Client Name</label>
-              <input
-                type="text"
-                value={clientFilter}
-                list="dashboard-filter-clientNames"
-                onChange={(e) => setClientFilter(e.target.value)}
-                placeholder="Filter by Client Name"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Contact Person</label>
-              <input
-                type="text"
-                value={contactFilter}
-                list="dashboard-filter-contactPersons"
-                onChange={(e) => setContactFilter(e.target.value)}
-                placeholder="Filter by Contact Person"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1">Project Name</label>
-              <input
-                type="text"
-                value={projectFilter}
-                list="dashboard-filter-projectNames"
-                onChange={(e) => setProjectFilter(e.target.value)}
-                placeholder="Filter by Project Name"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-              />
-            </div>
+            <AutocompleteInput
+              label="Client Name"
+              value={clientFilter}
+              onChange={(v) => setClientFilter(v)}
+              placeholder="Filter by Client Name"
+              options={filterSuggestions.clientNames}
+            />
+            <AutocompleteInput
+              label="Contact Person"
+              value={contactFilter}
+              onChange={(v) => setContactFilter(v)}
+              placeholder="Filter by Contact Person"
+              options={filterSuggestions.contactPersons}
+            />
+            <AutocompleteInput
+              label="Project Name"
+              value={projectFilter}
+              onChange={(v) => setProjectFilter(v)}
+              placeholder="Filter by Project Name"
+              options={filterSuggestions.projectNames}
+            />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -210,22 +199,6 @@ export default function Dashboard() {
               Search
             </button>
           </div>
-
-          <datalist id="dashboard-filter-clientNames">
-            {filterSuggestions.clientNames.map((val) => (
-              <option key={val} value={val} />
-            ))}
-          </datalist>
-          <datalist id="dashboard-filter-contactPersons">
-            {filterSuggestions.contactPersons.map((val) => (
-              <option key={val} value={val} />
-            ))}
-          </datalist>
-          <datalist id="dashboard-filter-projectNames">
-            {filterSuggestions.projectNames.map((val) => (
-              <option key={val} value={val} />
-            ))}
-          </datalist>
         </div>
         </div>
 
