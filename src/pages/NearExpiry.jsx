@@ -52,6 +52,27 @@ export default function NearExpiry() {
     loadFilterSuggestions();
   }, []);
 
+  const clientNameOptions = Array.from(
+    new Set([
+      ...(filterSuggestions.clientNames || []),
+      ...(reminders || []).map((r) => r.clientName),
+    ])
+  ).filter((v) => v && String(v).trim());
+
+  const contactPersonOptions = Array.from(
+    new Set([
+      ...(filterSuggestions.contactPersons || []),
+      ...(reminders || []).map((r) => r.contactPerson),
+    ])
+  ).filter((v) => v && String(v).trim());
+
+  const projectNameOptions = Array.from(
+    new Set([
+      ...(filterSuggestions.projectNames || []),
+      ...(reminders || []).map((r) => r.projectName),
+    ])
+  ).filter((v) => v && String(v).trim());
+
   useEffect(() => {
     fetchNearExpiry(page, appliedClient, appliedContact, appliedProject);
   }, [page, appliedClient, appliedContact, appliedProject]);
@@ -237,21 +258,24 @@ export default function NearExpiry() {
               value={clientFilter}
               onChange={(v) => setClientFilter(v)}
               placeholder="Filter by Client Name"
-              options={filterSuggestions.clientNames}
+              options={clientNameOptions}
+              list="nearexpiry-filter-clientNames"
             />
             <AutocompleteInput
               label="Contact Person"
               value={contactFilter}
               onChange={(v) => setContactFilter(v)}
               placeholder="Filter by Contact Person"
-              options={filterSuggestions.contactPersons}
+              options={contactPersonOptions}
+              list="nearexpiry-filter-contactPersons"
             />
             <AutocompleteInput
               label="Project Name"
               value={projectFilter}
               onChange={(v) => setProjectFilter(v)}
               placeholder="Filter by Project Name"
-              options={filterSuggestions.projectNames}
+              options={projectNameOptions}
+              list="nearexpiry-filter-projectNames"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
