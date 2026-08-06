@@ -315,7 +315,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
             {isRenewMode
               ? "Renew Subscription"
               : isEdit
-                ? "Edit Reminder"
+                ? "Edit Subscription"
                 : "New Subscription"}
           </h2>
           <button
