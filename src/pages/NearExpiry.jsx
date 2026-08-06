@@ -27,6 +27,30 @@ export default function NearExpiry() {
   const [appliedContact, setAppliedContact] = useState("");
   const [appliedProject, setAppliedProject] = useState("");
 
+  const [filterSuggestions, setFilterSuggestions] = useState({
+    clientNames: [],
+    contactPersons: [],
+    projectNames: [],
+  });
+
+  useEffect(() => {
+    async function loadFilterSuggestions() {
+      try {
+        const res = await API.get("/reminders/suggestions");
+        if (res.data) {
+          setFilterSuggestions({
+            clientNames: res.data.clientNames || [],
+            contactPersons: res.data.contactPersons || [],
+            projectNames: res.data.projectNames || [],
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load filter suggestions:", err);
+      }
+    }
+    loadFilterSuggestions();
+  }, []);
+
   useEffect(() => {
     fetchNearExpiry(page, appliedClient, appliedContact, appliedProject);
   }, [page, appliedClient, appliedContact, appliedProject]);
@@ -212,6 +236,7 @@ export default function NearExpiry() {
               <input
                 type="text"
                 value={clientFilter}
+                list="nearexpiry-filter-clientNames"
                 onChange={(e) => setClientFilter(e.target.value)}
                 placeholder="Filter by Client Name"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -222,6 +247,7 @@ export default function NearExpiry() {
               <input
                 type="text"
                 value={contactFilter}
+                list="nearexpiry-filter-contactPersons"
                 onChange={(e) => setContactFilter(e.target.value)}
                 placeholder="Filter by Contact Person"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -232,6 +258,7 @@ export default function NearExpiry() {
               <input
                 type="text"
                 value={projectFilter}
+                list="nearexpiry-filter-projectNames"
                 onChange={(e) => setProjectFilter(e.target.value)}
                 placeholder="Filter by Project Name"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -252,6 +279,23 @@ export default function NearExpiry() {
               Search
             </button>
           </div>
+
+          <datalist id="nearexpiry-filter-clientNames">
+            {filterSuggestions.clientNames.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+          <datalist id="nearexpiry-filter-contactPersons">
+            {filterSuggestions.contactPersons.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+          <datalist id="nearexpiry-filter-projectNames">
+            {filterSuggestions.projectNames.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+        </div>
         </div>
 
         <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">

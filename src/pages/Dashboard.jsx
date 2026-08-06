@@ -22,6 +22,30 @@ export default function Dashboard() {
   const [appliedContact, setAppliedContact] = useState("");
   const [appliedProject, setAppliedProject] = useState("");
 
+  const [filterSuggestions, setFilterSuggestions] = useState({
+    clientNames: [],
+    contactPersons: [],
+    projectNames: [],
+  });
+
+  useEffect(() => {
+    async function loadFilterSuggestions() {
+      try {
+        const res = await API.get("/reminders/suggestions");
+        if (res.data) {
+          setFilterSuggestions({
+            clientNames: res.data.clientNames || [],
+            contactPersons: res.data.contactPersons || [],
+            projectNames: res.data.projectNames || [],
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load filter suggestions:", err);
+      }
+    }
+    loadFilterSuggestions();
+  }, []);
+
   useEffect(() => {
     fetchReminders(page, appliedClient, appliedContact, appliedProject);
   }, [page, appliedClient, appliedContact, appliedProject]);
@@ -143,6 +167,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={clientFilter}
+                list="dashboard-filter-clientNames"
                 onChange={(e) => setClientFilter(e.target.value)}
                 placeholder="Filter by Client Name"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -153,6 +178,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={contactFilter}
+                list="dashboard-filter-contactPersons"
                 onChange={(e) => setContactFilter(e.target.value)}
                 placeholder="Filter by Contact Person"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -163,6 +189,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={projectFilter}
+                list="dashboard-filter-projectNames"
                 onChange={(e) => setProjectFilter(e.target.value)}
                 placeholder="Filter by Project Name"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -183,6 +210,23 @@ export default function Dashboard() {
               Search
             </button>
           </div>
+
+          <datalist id="dashboard-filter-clientNames">
+            {filterSuggestions.clientNames.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+          <datalist id="dashboard-filter-contactPersons">
+            {filterSuggestions.contactPersons.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+          <datalist id="dashboard-filter-projectNames">
+            {filterSuggestions.projectNames.map((val) => (
+              <option key={val} value={val} />
+            ))}
+          </datalist>
+        </div>
         </div>
 
         {/* 🌟 GLASS TABLE CARD */}
