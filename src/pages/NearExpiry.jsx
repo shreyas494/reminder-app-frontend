@@ -264,6 +264,8 @@ export default function NearExpiry() {
                   <Th className="hidden md:table-cell">Contact</Th>
                   <Th>Mobile</Th>
                   <Th>Project</Th>
+                  <Th className="hidden md:table-cell">Domain Provider</Th>
+                  <Th className="hidden md:table-cell">Hosting Provider</Th>
                   <Th>Expiry</Th>
                   <Th>Remaining</Th>
                   <Th>Status</Th>
@@ -273,11 +275,11 @@ export default function NearExpiry() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {loading ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-12 text-slate-500">Loading...</td>
+                    <td colSpan="11" className="text-center py-12 text-slate-500">Loading...</td>
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-12 text-slate-500">No near-expiry subscriptions found.</td>
+                    <td colSpan="11" className="text-center py-12 text-slate-500">No near-expiry subscriptions found.</td>
                   </tr>
                 ) : (
                   reminders.map((r, i) => {
@@ -302,6 +304,8 @@ export default function NearExpiry() {
                           </a>
                         </Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium break-words whitespace-normal">{r.projectName}</Td>
+                        <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.domainProvider || "-"}</Td>
+                        <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.hostingProvider || "-"}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
                         <Td className="tabular-nums text-slate-500">{remainingTime(r)}</Td>
                         <Td>

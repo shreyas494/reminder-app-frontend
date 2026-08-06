@@ -198,6 +198,8 @@ export default function Dashboard() {
                   <Th className="hidden md:table-cell">Contact</Th>
                   <Th>Mobile</Th>
                   <Th>Project</Th>
+                  <Th className="hidden md:table-cell">Domain Provider</Th>
+                  <Th className="hidden md:table-cell">Hosting Provider</Th>
                   <Th>Expiry</Th>
                   <Th className="hidden lg:table-cell">Remaining</Th>
                   <Th>Status</Th>
@@ -209,7 +211,7 @@ export default function Dashboard() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {loading ? (
                   <tr>
-                    <td colSpan="10" className="text-center py-24">
+                    <td colSpan="12" className="text-center py-24">
                       <div className="flex flex-col items-center gap-3 animate-pulse">
                         <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800"></div>
                         <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded"></div>
@@ -218,7 +220,7 @@ export default function Dashboard() {
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="10" className="text-center py-24">
+                    <td colSpan="12" className="text-center py-24">
                       <div className="flex flex-col items-center gap-4">
                         <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
@@ -248,6 +250,8 @@ export default function Dashboard() {
                           <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
                         </Td>
                         <Td className="text-indigo-600 dark:text-indigo-400 font-medium break-words whitespace-normal">{r.projectName}</Td>
+                        <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.domainProvider || "-"}</Td>
+                        <Td className="hidden md:table-cell text-slate-600 dark:text-slate-400">{r.hostingProvider || "-"}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
                           <div className="flex flex-col">
                             <span>{getExpiry(r).format("DD MMM YYYY")}</span>
