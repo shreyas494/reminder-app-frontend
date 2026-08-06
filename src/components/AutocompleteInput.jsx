@@ -45,6 +45,7 @@ export default function AutocompleteInput({
           value={value}
           placeholder={placeholder}
           onFocus={() => setIsOpen(true)}
+          onClick={() => setIsOpen(true)}
           onChange={(e) => {
             onChange(e.target.value);
             setIsOpen(true);
@@ -56,7 +57,7 @@ export default function AutocompleteInput({
         />
 
         {isOpen && filteredOptions.length > 0 && (
-          <ul className="absolute z-50 left-0 right-0 mt-1 max-h-52 overflow-y-auto rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl py-1 divide-y divide-slate-100 dark:divide-slate-800">
+          <ul className="absolute z-[999] left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 shadow-2xl py-1 divide-y divide-slate-100 dark:divide-slate-800/60">
             {filteredOptions.map((opt, idx) => (
               <li
                 key={`${opt}-${idx}`}
