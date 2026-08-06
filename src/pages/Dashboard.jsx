@@ -250,7 +250,7 @@ export default function Dashboard() {
                         <Td>
                           <CallButton mobile1={r.mobile1} mobile2={r.mobile2} />
                         </Td>
-                        <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[150px]">{r.projectName}</Td>
+                        <Td className="text-indigo-600 dark:text-indigo-400 font-medium break-words whitespace-normal">{r.projectName}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
                           <div className="flex flex-col">
                             <span>{getExpiry(r).format("DD MMM YYYY")}</span>

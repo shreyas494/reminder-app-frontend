@@ -301,7 +301,7 @@ export default function NearExpiry() {
                             📞
                           </a>
                         </Td>
-                        <Td className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[180px]">{r.projectName}</Td>
+                        <Td className="text-indigo-600 dark:text-indigo-400 font-medium break-words whitespace-normal">{r.projectName}</Td>
                         <Td className="tabular-nums font-medium text-slate-700 dark:text-slate-300">{dayjs(r.expiryDate).format("DD MMM YYYY")}</Td>
                         <Td className="tabular-nums text-slate-500">{remainingTime(r)}</Td>
                         <Td>
