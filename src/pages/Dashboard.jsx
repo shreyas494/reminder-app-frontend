@@ -68,15 +68,12 @@ export default function Dashboard() {
     Array.isArray(r.renewals) && r.renewals.length > 0;
 
   const remainingTime = (r) => {
-    const now = dayjs();
-    const end = getExpiry(r);
+    const now = dayjs().startOf("day");
+    const end = getExpiry(r).startOf("day");
+    const days = end.diff(now, "day");
 
-    if (end.isBefore(now)) return "Expired";
-
-    const months = end.diff(now, "month");
-    if (months >= 1) return `${months} month(s)`;
-
-    return `${end.diff(now, "day")} day(s)`;
+    if (days < 0) return "Expired";
+    return `${days} day(s)`;
   };
 
   const getStatusLabel = (r) => {

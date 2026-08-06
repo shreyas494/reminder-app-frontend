@@ -59,12 +59,12 @@ export default function NearExpiry() {
   }
 
   const remainingTime = (r) => {
-    const now = dayjs();
-    const end = dayjs(r.expiryDate);
-    if (end.isBefore(now)) return "Expired";
-    const months = end.diff(now, "month");
-    if (months >= 1) return `${months} month(s)`;
-    return `${end.diff(now, "day")} day(s)`;
+    const now = dayjs().startOf("day");
+    const end = dayjs(r.expiryDate).startOf("day");
+    const days = end.diff(now, "day");
+
+    if (days < 0) return "Expired";
+    return `${days} day(s)`;
   };
 
   const getStatusLabel = (r) => {
