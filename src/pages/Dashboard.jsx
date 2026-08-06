@@ -224,7 +224,6 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-        </div>
 
         {/* 🌟 GLASS TABLE CARD */}
         <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 

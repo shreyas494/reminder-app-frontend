@@ -293,7 +293,6 @@ export default function NearExpiry() {
             </button>
           </div>
         </div>
-        </div>
 
         <div className="backdrop-blur-xl bg-white/70 dark:bg-[#111827]/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
           <div className="overflow-x-auto">
