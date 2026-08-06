@@ -483,7 +483,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                       className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
                     />
                     <span className="font-medium text-slate-700 dark:text-slate-300">
-                      Enable recurring reminders
+                      Auto Send Renewal Reminders
                     </span>
                   </label>
 
