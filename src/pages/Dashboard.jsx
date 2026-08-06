@@ -190,7 +190,6 @@ export default function Dashboard() {
               onChange={(v) => setClientFilter(v)}
               placeholder="Filter by Client Name"
               options={clientNameOptions}
-              list="dashboard-filter-clientNames"
             />
             <AutocompleteInput
               label="Contact Person"
@@ -198,7 +197,6 @@ export default function Dashboard() {
               onChange={(v) => setContactFilter(v)}
               placeholder="Filter by Contact Person"
               options={contactPersonOptions}
-              list="dashboard-filter-contactPersons"
             />
             <AutocompleteInput
               label="Project Name"
@@ -206,7 +204,6 @@ export default function Dashboard() {
               onChange={(v) => setProjectFilter(v)}
               placeholder="Filter by Project Name"
               options={projectNameOptions}
-              list="dashboard-filter-projectNames"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">

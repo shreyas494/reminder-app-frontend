@@ -9,7 +9,6 @@ export default function AutocompleteInput({
   placeholder = "",
   options = [],
   className = "",
-  list,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
@@ -45,7 +44,6 @@ export default function AutocompleteInput({
           type={type}
           value={value}
           placeholder={placeholder}
-          list={list}
           onFocus={() => setIsOpen(true)}
           onClick={() => setIsOpen(true)}
           onChange={(e) => {
@@ -57,14 +55,6 @@ export default function AutocompleteInput({
             `w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm`
           }
         />
-
-        {list && options && options.length > 0 && (
-          <datalist id={list}>
-            {options.map((opt, idx) => (
-              <option key={`${opt}-${idx}`} value={opt} />
-            ))}
-          </datalist>
-        )}
 
         {isOpen && filteredOptions.length > 0 && (
           <ul className="absolute z-[999] left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 shadow-2xl py-1 divide-y divide-slate-100 dark:divide-slate-800/60">

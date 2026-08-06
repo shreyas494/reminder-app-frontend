@@ -259,7 +259,6 @@ export default function NearExpiry() {
               onChange={(v) => setClientFilter(v)}
               placeholder="Filter by Client Name"
               options={clientNameOptions}
-              list="nearexpiry-filter-clientNames"
             />
             <AutocompleteInput
               label="Contact Person"
@@ -267,7 +266,6 @@ export default function NearExpiry() {
               onChange={(v) => setContactFilter(v)}
               placeholder="Filter by Contact Person"
               options={contactPersonOptions}
-              list="nearexpiry-filter-contactPersons"
             />
             <AutocompleteInput
               label="Project Name"
@@ -275,7 +273,6 @@ export default function NearExpiry() {
               onChange={(v) => setProjectFilter(v)}
               placeholder="Filter by Project Name"
               options={projectNameOptions}
-              list="nearexpiry-filter-projectNames"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
