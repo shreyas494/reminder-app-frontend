@@ -13,12 +13,15 @@ export default function AutocompleteInput({
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
-  // Filter options based on input value
-  const filteredOptions = (options || []).filter((opt) => {
-    if (!opt) return false;
-    if (!value || !value.trim()) return true;
-    return String(opt).toLowerCase().includes(String(value).toLowerCase());
-  });
+  const typedQuery = String(value || "").trim().toLowerCase();
+
+  // Filter options based ONLY on typed query (do not show everything when empty)
+  const filteredOptions = !typedQuery
+    ? []
+    : (options || []).filter((opt) => {
+        if (!opt) return false;
+        return String(opt).toLowerCase().includes(typedQuery);
+      });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function AutocompleteInput({
           }
         />
 
-        {isOpen && filteredOptions.length > 0 && (
+        {isOpen && typedQuery && filteredOptions.length > 0 && (
           <ul className="absolute z-[999] left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 shadow-2xl py-1 divide-y divide-slate-100 dark:divide-slate-800/60">
             {filteredOptions.map((opt, idx) => (
               <li
