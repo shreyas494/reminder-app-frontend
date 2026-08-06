@@ -17,6 +17,18 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
   const Picker = DesktopDatePicker;
 
   const [serviceTypes, setServiceTypes] = useState([]);
+  const [suggestions, setSuggestions] = useState({
+    clientNames: [],
+    contactPersons: [],
+    mobiles1: [],
+    mobiles2: [],
+    emails: [],
+    domainProviders: [],
+    hostingProviders: [],
+    amounts: [],
+    clientProfiles: {},
+  });
+
   const [form, setForm] = useState({
     clientName: "",
     contactPerson: "",
@@ -49,7 +61,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
     }
   }, [error]);
 
-  /* ================= FETCH SERVICE TYPES ================= */
+  /* ================= FETCH SERVICE TYPES & SUGGESTIONS ================= */
   useEffect(() => {
     async function loadServiceTypes() {
       try {
@@ -61,8 +73,45 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
         setServiceTypes([]);
       }
     }
+    async function loadSuggestions() {
+      try {
+        const res = await API.get("/reminders/suggestions");
+        if (res.data) {
+          setSuggestions({
+            clientNames: res.data.clientNames || [],
+            contactPersons: res.data.contactPersons || [],
+            mobiles1: res.data.mobiles1 || [],
+            mobiles2: res.data.mobiles2 || [],
+            emails: res.data.emails || [],
+            domainProviders: res.data.domainProviders || [],
+            hostingProviders: res.data.hostingProviders || [],
+            amounts: res.data.amounts || [],
+            clientProfiles: res.data.clientProfiles || {},
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load suggestions:", err);
+      }
+    }
     loadServiceTypes();
+    loadSuggestions();
   }, []);
+
+  const handleClientNameChange = (newVal) => {
+    setForm((prev) => {
+      const nextForm = { ...prev, clientName: newVal };
+      const profile = suggestions.clientProfiles[newVal.trim()];
+      if (profile && !isEdit) {
+        if (profile.contactPerson) nextForm.contactPerson = profile.contactPerson;
+        if (profile.mobile1) nextForm.mobile1 = profile.mobile1;
+        if (profile.mobile2) nextForm.mobile2 = profile.mobile2;
+        if (profile.email) nextForm.email = profile.email;
+        if (profile.domainProvider) nextForm.domainProvider = profile.domainProvider;
+        if (profile.hostingProvider) nextForm.hostingProvider = profile.hostingProvider;
+      }
+      return nextForm;
+    });
+  };
 
   const originalExpiryDate = existing?.expiryDate ? dayjs(existing.expiryDate) : null;
   const minExpiryDate = form.activationDate
@@ -296,19 +345,19 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   Client Details
                 </div>
 
-                <Input label="Client Name" required value={form.clientName}
-                  onChange={(v) => setForm({ ...form, clientName: v })} />
+                <Input label="Client Name" required value={form.clientName} list="clientName-list"
+                  onChange={(v) => handleClientNameChange(v)} />
 
-                <Input label="Contact Person" value={form.contactPerson}
+                <Input label="Contact Person" value={form.contactPerson} list="contactPerson-list"
                   onChange={(v) => setForm({ ...form, contactPerson: v })} />
 
-                <Input label="Mobile No 1" required value={form.mobile1}
+                <Input label="Mobile No 1" required value={form.mobile1} list="mobile1-list"
                   onChange={(v) => setForm({ ...form, mobile1: v })} />
 
-                <Input label="Mobile No 2 (Optional)" value={form.mobile2}
+                <Input label="Mobile No 2 (Optional)" value={form.mobile2} list="mobile2-list"
                   onChange={(v) => setForm({ ...form, mobile2: v })} />
 
-                <Input label="Email (Optional)" type="email" value={form.email}
+                <Input label="Email (Optional)" type="email" value={form.email} list="email-list"
                   onChange={(v) => setForm({ ...form, email: v })} />
 
                 <label className="space-y-1 block">
@@ -334,10 +383,10 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                   </select>
                 </label>
 
-                <Input label="Domain Provider (Optional)" value={form.domainProvider}
+                <Input label="Domain Provider (Optional)" value={form.domainProvider} list="domainProvider-list"
                   onChange={(v) => setForm({ ...form, domainProvider: v })} />
 
-                <Input label="Hosting Provider (Optional)" value={form.hostingProvider}
+                <Input label="Hosting Provider (Optional)" value={form.hostingProvider} list="hostingProvider-list"
                   onChange={(v) => setForm({ ...form, hostingProvider: v })} />
 
                 {/* SPACER */}
@@ -418,7 +467,7 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
                 )}
 
                 <div className="md:col-span-2">
-                  <Input label="Amount (₹)" required type="number" value={form.amount}
+                  <Input label="Amount (₹)" required type="number" value={form.amount} list="amount-list"
                     onChange={(v) => setForm({ ...form, amount: v })} />
                 </div>
 
@@ -513,6 +562,48 @@ export default function AddReminderModal({ onClose, onAdded, existing }) {
 
           </form>
         </div>
+
+        {/* 💡 AUTO-COMPLETE DATALISTS */}
+        <datalist id="clientName-list">
+          {suggestions.clientNames.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="contactPerson-list">
+          {suggestions.contactPersons.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="mobile1-list">
+          {suggestions.mobiles1.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="mobile2-list">
+          {suggestions.mobiles2.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="email-list">
+          {suggestions.emails.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="domainProvider-list">
+          {suggestions.domainProviders.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="hostingProvider-list">
+          {suggestions.hostingProviders.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
+        <datalist id="amount-list">
+          {suggestions.amounts.map((val) => (
+            <option key={val} value={val} />
+          ))}
+        </datalist>
       </div>
     </div>
   );
@@ -605,7 +696,7 @@ function MobileDateInput({
  }
 
 /* ================= INPUT ================= */
-function Input({ label, required, type = "text", value, onChange }) {
+function Input({ label, required, type = "text", value, onChange, list }) {
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
@@ -614,6 +705,7 @@ function Input({ label, required, type = "text", value, onChange }) {
       <input
         type={type}
         value={value}
+        list={list}
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-4 py-2.5 rounded-xl
                    bg-slate-50 dark:bg-slate-900/50
