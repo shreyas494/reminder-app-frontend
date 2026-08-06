@@ -117,7 +117,7 @@ export default function Dashboard() {
               Subscriptions
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
-              Manage your client reminders and renewals
+              Manage your client subscriptions and renewals
             </p>
           </div>
 
