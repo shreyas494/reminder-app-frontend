@@ -124,20 +124,18 @@ export default function NearExpiry() {
   };
 
   const buildReminderMessage = (r) => {
-    const expiryDate = dayjs(r.expiryDate);
-    const isExpired = dayjs().isAfter(expiryDate) || dayjs().isSame(expiryDate);
     const expiryIST = new Date(r.expiryDate).toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       dateStyle: "medium",
       timeStyle: "short",
     });
 
-    const noticeTitle = isExpired ? "Subscription Expired Notice" : "Subscription Expiry Notice";
-    const statusLine = isExpired
-      ? `Your service has expired on ${expiryIST}.`
-      : `Your service is about to expire on ${expiryIST}.`;
+    const contactPerson = r.contactPerson || r.clientName || "Client";
+    const serviceName = r.serviceType || "service";
+    const projectName = r.projectName || "-";
+    const amount = r.amount ?? "-";
 
-    return `📢 ${noticeTitle}\n\nClient: ${r.clientName}\nProject: ${r.projectName}\nDomain: ${r.domainName || "-"}\nExpiry: ${expiryIST}\nAmount: ₹${r.amount ?? "-"}\n\n${statusLine}`;
+    return `Dear ${contactPerson}, Your ${serviceName} for ${projectName} expires on ${expiryIST}. Please pay ₹${amount} (excluding taxes) to avoid service interruption.\n\n— Lemonade Software Developers`;
   };
 
   const smsLink = (r) => {
