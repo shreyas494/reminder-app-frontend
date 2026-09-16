@@ -234,7 +234,7 @@ export default function NearExpiry() {
               Dashboard
             </h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
-              Subscriptions expiring in the next 30 days
+              Expired subscriptions & subscriptions expiring in the next 30 days
             </p>
           </div>
         </div>
@@ -306,7 +306,7 @@ export default function NearExpiry() {
                   </tr>
                 ) : reminders.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="text-center py-12 text-slate-500">No near-expiry subscriptions found.</td>
+                    <td colSpan="11" className="text-center py-12 text-slate-500">No expired or near-expiry subscriptions found.</td>
                   </tr>
                 ) : (
                   reminders.map((r, i) => {
